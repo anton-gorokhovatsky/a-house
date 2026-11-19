@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { keepProjectNames } from './typography.mjs';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const file = (...parts) => path.join(projectRoot, ...parts);
@@ -48,7 +49,7 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
   const cssFor = page => [...new Set([
     'media/fonts/ahouse-fonts.css',
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
-    ...page.styles, 'styles/site.css', 'styles/interactions.css', 'styles/services.css'
+    ...page.styles, 'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css'
   ])];
   const references = new Set([...scripts, ...routes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
@@ -65,7 +66,7 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     const values = {
       TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug),
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:scriptTags,
-      FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:body
+      FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:keepProjectNames(body)
     };
     const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);

@@ -446,32 +446,168 @@
     $$('[data-elem-type="gallery"][data-field-imgs-value]').forEach(container => {
       const holder = $('.tn-atom__gallery', container);
       if (!holder || initialized.has(holder)) return;
-      if (!$('[data-image-slide]',holder)) {
+      if (!$('[data-image-slide]', holder)) {
         let images;
-        try { images=JSON.parse(container.getAttribute('data-field-imgs-value')); } catch (_) { return; }
-        images.filter(image=>image.li_img).forEach(image=>{
-          const slide=document.createElement('figure');slide.className='ah-image-slide';slide.dataset.imageSlide='';
-          const img=document.createElement('img');img.src=image.li_img;img.alt=image.li_imgalt||'';img.loading='lazy';img.decoding='async';slide.append(img);holder.append(slide);
+        try {
+          images = JSON.parse(container.getAttribute('data-field-imgs-value'));
+        } catch (_) {
+          return;
+        }
+        images.filter(image => image.li_img).forEach(image => {
+          const slide = document.createElement('figure');
+          slide.className = 'ah-image-slide';
+          slide.dataset.imageSlide = '';
+          const img = document.createElement('img');
+          img.src = image.li_img;
+          img.alt = image.li_imgalt || '';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          slide.append(img);
+          holder.append(slide);
         });
       }
-      const slides=$$('[data-image-slide]',holder);
+      const slides = $$('[data-image-slide]', holder);
       if (!slides.length) return;
-      initialized.add(holder);holder.classList.add('ah-image-gallery');holder.setAttribute('role','region');holder.setAttribute('aria-label','Фотографии Дома A-House');
-      let index=0,paused=reduced.matches,timer=0,inView=false;
-      const controls=document.createElement('div');controls.className='ah-gallery-controls';
-      const prev=button('Предыдущая фотография','ah-gallery-prev','←'),next=button('Следующая фотография','ah-gallery-next','→'),pause=button('Остановить смену фотографий','ah-gallery-pause','Пауза');
-      const count=document.createElement('span');count.className='ah-gallery-count';
-      controls.append(prev,count,next,pause);holder.append(controls);
-      const show=n=>{index=(n+slides.length)%slides.length;slides.forEach((slide,i)=>{slide.hidden=i!==index;});count.textContent=`${index+1} / ${slides.length}`;};
-      const schedule=()=>{clearInterval(timer);timer=0;const seconds=Number(container.getAttribute('data-field-slds_autoplay-value'))||0;if(seconds>0&&!paused&&!reduced.matches&&inView&&!document.hidden&&!holder.matches(':hover')&&!holder.contains(document.activeElement))timer=setInterval(()=>show(index+1),Math.max(3,seconds)*1000);};
-      prev.addEventListener('click',()=>{show(index-1);schedule();});next.addEventListener('click',()=>{show(index+1);schedule();});
-      pause.addEventListener('click',()=>{paused=!paused;pause.textContent=paused?'Продолжить':'Пауза';pause.setAttribute('aria-label',paused?'Продолжить смену фотографий':'Остановить смену фотографий');schedule();});
-      for(const type of ['mouseenter','mouseleave','focusin','focusout'])holder.addEventListener(type,()=>requestAnimationFrame(schedule));
-      document.addEventListener('visibilitychange',schedule);reduced.addEventListener('change',()=>{pause.hidden=reduced.matches;paused=reduced.matches;pause.textContent=paused?'Продолжить':'Пауза';pause.setAttribute('aria-label',paused?'Продолжить смену фотографий':'Остановить смену фотографий');schedule();});
-      new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;schedule();},{threshold:.05}).observe(holder);
-      if(slides.length===1)controls.hidden=true;
-      if(reduced.matches)pause.hidden=true;
-      show(0);schedule();
+      initialized.add(holder);
+      holder.classList.add('ah-image-gallery');
+      holder.setAttribute('role', 'region');
+      holder.setAttribute('aria-label', 'Фотографии Дома A-House');
+      const multiple = slides.length > 1;
+      const seconds = Number(container.getAttribute('data-field-slds_autoplay-value')) || 0;
+      const automatic = multiple && seconds > 0;
+      holder.id ||= 'ah-gallery-' + container.dataset.elemId;
+      if (multiple) holder.tabIndex = 0;
+
+      let index = 0;
+      let paused = false;
+      let timer = 0;
+      let inView = false;
+      let explicitPlay = false;
+      const controls = document.createElement('div');
+      controls.className = 'ah-gallery-controls';
+      const navigation = document.createElement('div');
+      navigation.className = 'ah-gallery-navigation';
+      const prev = button('Предыдущая фотография', 'ah-gallery-prev', '←');
+      const next = button('Следующая фотография', 'ah-gallery-next', '→');
+      const pause = button('Пауза — остановить смену фотографий', 'ah-gallery-pause', 'Пауза');
+      const count = document.createElement('span');
+      count.className = 'ah-gallery-count';
+      const announcement = document.createElement('span');
+      announcement.className = 'ah-gallery-announcement';
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.setAttribute('aria-atomic', 'true');
+      for (const control of [prev, next, pause]) {
+        control.setAttribute('aria-controls', holder.id);
+      }
+      navigation.append(prev, count, next);
+      controls.append(navigation, pause);
+      holder.append(controls);
+      holder.append(announcement);
+
+      function show(n, announce = false) {
+        index = (n + slides.length) % slides.length;
+        slides.forEach((slide, i) => {
+          slide.hidden = i !== index;
+        });
+        count.textContent = `${index + 1} / ${slides.length}`;
+        if (announce) announcement.textContent = `Фотография ${index + 1} из ${slides.length}`;
+      }
+
+      function canRotate() {
+        const interacting = holder.matches(':hover') || holder.contains(document.activeElement);
+        return automatic && !paused && !reduced.matches && inView && !document.hidden
+          && (!interacting || explicitPlay);
+      }
+
+      function scheduleRotation() {
+        clearInterval(timer);
+        timer = 0;
+        if (canRotate()) {
+          timer = setInterval(() => show(index + 1), Math.max(3, seconds) * 1000);
+        }
+      }
+
+      function syncPauseControl() {
+        pause.hidden = !automatic || reduced.matches;
+        pause.textContent = paused ? 'Продолжить' : 'Пауза';
+        const label = paused ? 'Продолжить смену фотографий' : 'Пауза — остановить смену фотографий';
+        pause.setAttribute('aria-label', label);
+        pause.title = label;
+      }
+
+      function setPaused(nextPaused) {
+        paused = nextPaused;
+        // An explicit request to resume also works while its button has focus.
+        explicitPlay = !paused;
+        syncPauseControl();
+        scheduleRotation();
+      }
+
+      function moveTo(n) {
+        explicitPlay = false;
+        show(n, true);
+        scheduleRotation();
+      }
+
+      prev.addEventListener('click', () => moveTo(index - 1));
+      next.addEventListener('click', () => moveTo(index + 1));
+      pause.addEventListener('click', () => setPaused(!paused));
+      holder.addEventListener('keydown', event => {
+        if (event.target !== holder || !multiple) return;
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === 'Home' || event.key === 'End') {
+          moveTo(event.key === 'Home' ? 0 : slides.length - 1);
+        } else {
+          moveTo(index + (event.key === 'ArrowRight' ? 1 : -1));
+        }
+      });
+
+      let touch = null;
+      holder.addEventListener('pointerdown', event => {
+        if (!multiple || event.pointerType === 'mouse' || event.target.closest('button,a')) return;
+        touch = { x: event.clientX, y: event.clientY };
+      });
+      holder.addEventListener('pointerup', event => {
+        if (!touch) return;
+        const dx = event.clientX - touch.x;
+        const dy = event.clientY - touch.y;
+        touch = null;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          moveTo(index + (dx < 0 ? 1 : -1));
+        }
+      });
+      holder.addEventListener('pointercancel', () => {
+        touch = null;
+      });
+
+      function resetInteractionOverride() {
+        explicitPlay = false;
+        requestAnimationFrame(scheduleRotation);
+      }
+      for (const type of ['mouseenter', 'mouseleave', 'focusin', 'focusout']) {
+        holder.addEventListener(type, resetInteractionOverride);
+      }
+      document.addEventListener('visibilitychange', scheduleRotation);
+      reduced.addEventListener('change', () => {
+        syncPauseControl();
+        scheduleRotation();
+      });
+      new IntersectionObserver(entries => {
+        inView = entries[0].isIntersecting;
+        if (inView) {
+          slides.forEach(slide => {
+            const img = $('img', slide);
+            if (img) img.loading = 'eager';
+          });
+        }
+        scheduleRotation();
+      }, { threshold: .05 }).observe(holder);
+
+      controls.hidden = !multiple;
+      show(0);
+      syncPauseControl();
+      scheduleRotation();
     });
   }
 

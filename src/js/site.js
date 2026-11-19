@@ -12,6 +12,7 @@ function fitCompositions() {
     }
     const scale = mode === 'window' ? width / design : 1;
     board.style.zoom = String(scale);
+    board.style.setProperty('--artboard-scale', String(scale));
     board.style.width = mode === 'window' ? design + 'px' : '';
     // Coordinates can inherit from a larger breakpoint. The last coordinate
     // stays valid; the centre of that larger drawing does not.
@@ -38,85 +39,132 @@ window.addEventListener('resize', () => {
   pendingFrame = requestAnimationFrame(fitCompositions);
 });
 
-const header = document.querySelector('#t-header');
+// The text and photographs share an artboard on the original spreads.
+const readingBoards = [...document.querySelectorAll('[data-reading-scene]')];
+for (const board of readingBoards) {
+  board.style.setProperty('--reading-rows', String(board.querySelectorAll('[data-type-role]').length));
+}
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+function fitReadingText() {
+  const largeType = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
+  for (const board of readingBoards) {
+    board.classList.toggle('reading-flow', largeType || (reduced.matches && board.hasAttribute('data-cycling-copy')));
+  }
+}
+fitReadingText();
+reduced.addEventListener('change', fitReadingText);
+
+const header = document.querySelector('.site-header');
 if (header) {
-  const toggle = header.querySelector('.t-menuburger');
-  const menu = header.querySelector('.t454');
-  const trigger = header.querySelector('[data-menu-submenu-hook]:not([data-menu-submenu-hook=""])');
-  const submenu = header.querySelector('.t-menusub__menu');
+  const menu = header.querySelector('.site-navigation');
+  const toggle = header.querySelector('.site-menu-toggle');
+  const presence = header.querySelector('.site-nav-presence');
+  const trigger = presence.querySelector('button');
+  const submenu = presence.querySelector('.site-submenu');
+  const compact = matchMedia('(max-width: 61.25em)');
+
+  function openSubmenu(open) {
+    trigger.setAttribute('aria-expanded', String(open));
+    submenu.hidden = !open;
+  }
   function openMenu(open) {
-    if (!menu || !toggle) return;
-    menu.classList.toggle('site-menu-open', open);
-    toggle.classList.toggle('t-menuburger-opened',open);
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label',open ? 'Закрыть меню' : 'Открыть меню');
+    toggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+    menu.hidden = compact.matches && !open;
     if (!open) openSubmenu(false);
   }
-  function openSubmenu(open) {
-    if (!trigger || !submenu) return;
-    submenu.classList.toggle('site-submenu-open',open);
-    trigger.setAttribute('aria-expanded',String(open));
+  function measureHeader() {
+    fitReadingText();
+    document.documentElement.style.setProperty('--site-header-height', header.getBoundingClientRect().height + 'px');
   }
-  if (toggle && menu) {
-    toggle.setAttribute('aria-controls',menu.id);
-    menu.setAttribute('role','navigation');
-    menu.setAttribute('aria-label','Основное меню');
+
+  header.dataset.navReady = '';
+  openMenu(false);
+  measureHeader();
+  new ResizeObserver(measureHeader).observe(header);
+  compact.addEventListener('change', () => {
+    if (compact.matches && menu.contains(document.activeElement)) toggle.focus({preventScroll: true});
+    if (!compact.matches && document.activeElement === toggle) header.querySelector('.site-header-brand').focus({preventScroll: true});
     openMenu(false);
-    toggle.addEventListener('click',() => openMenu(toggle.getAttribute('aria-expanded') !== 'true'));
-  }
-  if (trigger && submenu) {
-    submenu.id='presence-submenu';
-    trigger.setAttribute('aria-controls',submenu.id);
-    trigger.setAttribute('role','button');
-    trigger.setAttribute('href','#presence-submenu');
-    trigger.addEventListener('click',event => {
+  });
+  window.addEventListener('pageshow', event => { if (event.persisted) openMenu(false); });
+  toggle.addEventListener('click', () => openMenu(menu.hidden));
+  trigger.addEventListener('click', () => openSubmenu(submenu.hidden));
+  trigger.addEventListener('keydown', event => {
+    if (event.key === 'ArrowDown') {
       event.preventDefault();
-      openSubmenu(trigger.getAttribute('aria-expanded') !== 'true');
-    });
-    trigger.addEventListener('keydown',event => {
-      if (event.key===' ') { event.preventDefault(); trigger.click(); }
-      if (event.key==='ArrowDown') { event.preventDefault(); openSubmenu(true); submenu.querySelector('a')?.focus(); }
-    });
-    document.addEventListener('click',event => {
-      if (!trigger.contains(event.target) && !submenu.contains(event.target)) openSubmenu(false);
-    });
-    header.addEventListener('focusout',event => {
-      if (!header.contains(event.relatedTarget)) openSubmenu(false);
-    });
+      openSubmenu(true);
+      submenu.querySelector('a').focus();
+    }
+  });
+  function dismissOutside(target) {
+    if (!presence.contains(target)) openSubmenu(false);
+    if (!header.contains(target)) openMenu(false);
   }
-  document.addEventListener('keydown',event => {
-    if (event.key!=='Escape') return;
-    if (trigger?.getAttribute('aria-expanded')==='true') { openSubmenu(false); trigger.focus(); }
-    else if (toggle?.getAttribute('aria-expanded')==='true') { openMenu(false); toggle.focus(); }
+  document.addEventListener('click', event => dismissOutside(event.target));
+  document.addEventListener('focusin', event => dismissOutside(event.target));
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (!submenu.hidden) { openSubmenu(false); trigger.focus(); }
+    else if (toggle.getAttribute('aria-expanded') === 'true') { openMenu(false); toggle.focus(); }
   });
   for (const link of header.querySelectorAll('a[href]')) {
-    if (link.origin===location.origin && link.pathname===location.pathname && !link.hash) link.setAttribute('aria-current','page');
+    if (link.origin === location.origin && link.pathname === location.pathname && !link.hash) link.setAttribute('aria-current', 'page');
   }
 }
 
-const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 for (const button of document.querySelectorAll('button.t-cover__arrow')) {
   button.addEventListener('click', () => {
     const section = button.closest('.t-rec')?.nextElementSibling;
-    section?.scrollIntoView({behavior: reduced.matches ? 'instant' : 'smooth'});
+    if (!section) return;
+    section.tabIndex = -1;
+    section.focus({preventScroll: true});
+    section.scrollIntoView({behavior: reduced.matches ? 'instant' : 'smooth'});
   });
 }
 for (const gallery of document.querySelectorAll('.archive-gallery')) {
   const track = gallery.querySelector('.archive-gallery-track');
   const controls = gallery.querySelector('.archive-gallery-controls');
   if (!controls || !track) continue;
-  const index = () => Math.min(track.children.length-1, Math.max(0,Math.round(track.scrollLeft/Math.max(1,track.clientWidth))));
+  const multiple = track.children.length > 1;
+  controls.hidden = !multiple;
+  if (!multiple) track.removeAttribute('tabindex');
+  track.setAttribute('role', 'region');
+  track.setAttribute('aria-label', 'Фотографии публикации');
+  const index = () => Math.min(track.children.length - 1,
+    Math.max(0, Math.round(track.scrollLeft / Math.max(1, track.clientWidth))));
   const update = () => {
-    controls.querySelector('[data-gallery-status]').textContent = (index()+1)+' / '+track.children.length;
-    controls.firstElementChild.disabled = index()===0;
-    controls.lastElementChild.disabled = index()===track.children.length-1;
+    const current = index();
+    controls.querySelector('[data-gallery-status]').textContent = (current + 1) + ' / ' + track.children.length;
+    controls.firstElementChild.disabled = current === 0;
+    controls.lastElementChild.disabled = current === track.children.length - 1;
   };
-  controls.addEventListener('click',event => {
+  const move = (step, instant = false) => {
+    track.scrollTo({
+      left: (index() + step) * track.clientWidth,
+      behavior: instant || reduced.matches ? 'instant' : 'smooth'
+    });
+  };
+  controls.addEventListener('click', event => {
     const step = event.target.closest('[data-gallery-step]');
     if (!step) return;
-    track.scrollTo({left:(index()+Number(step.dataset.galleryStep))*track.clientWidth,behavior:reduced.matches?'instant':'smooth'});
+    move(Number(step.dataset.galleryStep), event.detail === 0);
   });
-  track.addEventListener('scroll',update,{passive:true});
+  track.addEventListener('keydown', event => {
+    if (event.target !== track || !multiple) return;
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    if (event.key === 'Home' || event.key === 'End') {
+      track.scrollTo({
+        left: event.key === 'Home' ? 0 : track.scrollWidth,
+        behavior: 'instant'
+      });
+    } else {
+      move(event.key === 'ArrowRight' ? 1 : -1, true);
+    }
+  });
+  track.addEventListener('scroll', update, { passive: true });
+  new ResizeObserver(update).observe(track);
   update();
 }
 for (const video of document.querySelectorAll('[data-archive-video]')) {

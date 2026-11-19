@@ -51,7 +51,7 @@
   },
   {
     "slug": "agreement",
-    "title": "Agreement",
+    "title": "Пользовательское соглашение — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -63,7 +63,7 @@
   },
   {
     "slug": "agreement2",
-    "title": "Agreement2",
+    "title": "Согласие на обработку персональных данных — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -125,7 +125,7 @@
   },
   {
     "slug": "longevity",
-    "title": "Longevity",
+    "title": "Лонжевити и недвижимость — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -163,7 +163,7 @@
   },
   {
     "slug": "mts",
-    "title": "MTS",
+    "title": "«Меняя привычное» — конкурс МТС — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -175,7 +175,7 @@
   },
   {
     "slug": "mts_docs",
-    "title": "Agreement MTS",
+    "title": "Согласие участника конкурса МТС — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -207,7 +207,7 @@
   },
   {
     "slug": "politic",
-    "title": "1Politic",
+    "title": "Обновление Дома и сайта — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -219,7 +219,7 @@
   },
   {
     "slug": "politic_a-com",
-    "title": "Politic",
+    "title": "Политика обработки персональных данных — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -268,7 +268,7 @@
   },
   {
     "slug": "report",
-    "title": "Report",
+    "title": "Годовой отчёт 2023–2026 — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -280,7 +280,7 @@
   },
   {
     "slug": "report__",
-    "title": "Report",
+    "title": "Годовой отчёт 2023–2026 — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -315,7 +315,7 @@
   },
   {
     "slug": "rules",
-    "title": "Rules",
+    "title": "Правила пользования клубным пространством — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -343,7 +343,7 @@
   },
   {
     "slug": "t_bank",
-    "title": "T Bank",
+    "title": "Партнёрство с Т-Банком — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -356,7 +356,7 @@
   },
   {
     "slug": "t_business",
-    "title": "t business program",
+    "title": "Программа Т-Бизнес — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
@@ -368,7 +368,7 @@
   },
   {
     "slug": "t_private",
-    "title": "t private program",
+    "title": "Программа T-Private — A–House",
     "description": "",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
