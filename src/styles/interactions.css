@@ -1,0 +1,44 @@
+/* Behavioural styles only. The imported compositions and artwork stay intact. */
+.ah-legacy-dialog[hidden],.ah-authored-dialog[hidden],.ah-accordion-panel[hidden],.ah-image-slide[hidden],[data-interaction-hidden][hidden]{display:none!important}
+.ah-legacy-dialog.ah-interaction-open{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;overflow-y:auto;overscroll-behavior:contain;z-index:100000}
+.ah-legacy-dialog.ah-nonmodal-panel{pointer-events:none!important}
+.ah-legacy-dialog.ah-nonmodal-panel:before{content:"";position:fixed;inset:0 0 0 50%;pointer-events:auto}
+.ah-legacy-dialog .ah-popup-record{display:block!important;opacity:1!important}
+.ah-legacy-dialog .t-popup__container{max-width:100%;box-sizing:border-box}
+.ah-legacy-dialog .t-popup__close{z-index:100001}
+.ah-legacy-dialog .t-popup__close-wrapper:focus-visible{outline:2px solid currentColor;outline-offset:5px}
+.ah-legacy-dialog .t868__code-wrap{display:block!important;min-height:100%;overflow:auto}
+.ah-accordion-heading{cursor:pointer}
+.ah-accordion-heading:focus-visible{outline:3px solid currentColor;outline-offset:-5px}
+.ah-accordion-panel.open-accord{max-height:none!important;overflow:visible!important}
+.ah-accordion-heading .accord-icon .tn-atom{transition:transform .2s ease}
+.ah-accordion-heading.active-accord .accord-icon .tn-atom{transform:rotate(45deg)}
+.hacc__panel:focus-visible{outline:3px solid currentColor;outline-offset:-6px}
+.ah-authored-dialog{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;max-height:calc(100dvh - 32px);--half:50%}
+.ah-authored-dialog .modal-scroll{max-height:calc(100dvh - 32px);overscroll-behavior:contain}
+.ah-program .card .img>img,.ah-authored-dialog .img>img{width:100%;height:100%;object-fit:cover;display:block}
+.ah-program .card [data-event-open]:focus-visible,.arc-row:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.ah-image-gallery{position:relative!important;width:100%;height:100%;overflow:hidden}
+.ah-image-slide{position:absolute;inset:0;margin:0}
+.ah-image-slide>img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.ah-gallery-controls{position:absolute;z-index:3;right:12px;bottom:12px;display:flex;align-items:center;gap:4px;padding:4px;background:rgba(255,255,255,.92);color:#111;font:14px/1.2 sans-serif}
+.ah-gallery-controls button,.ah-scroll-controls button{appearance:none;border:0;border-radius:0;background:transparent;color:inherit;min-width:40px;min-height:40px;padding:6px 10px;cursor:pointer;font:inherit}
+.ah-gallery-controls button:focus-visible,.ah-scroll-controls button:focus-visible{outline:2px solid currentColor;outline-offset:1px}
+.ah-gallery-count{min-width:3em;text-align:center;font-variant-numeric:tabular-nums}
+.ah-gallery-pause{font-size:12px!important}
+.ah-horizontal-gallery{position:relative}
+.ah-horizontal-scene{overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.ah-horizontal-scene.ah-can-scroll{cursor:grab}
+.ah-horizontal-scene.is-dragging{cursor:grabbing;user-select:none}
+.ah-horizontal-scene:focus-visible{outline:2px solid currentColor;outline-offset:-4px}
+.ah-horizontal-scene .t396__carrier{position:sticky!important;left:0;pointer-events:none}
+.ah-scroll-controls{position:absolute;z-index:30;right:16px;bottom:12px;display:flex;gap:8px;background:rgba(255,255,255,.9);color:#111;font:24px/1 sans-serif}
+.ah-scroll-controls[hidden]{display:none}
+.ah-scroll-controls button:disabled{opacity:.3;cursor:default}
+.ah-video-player{position:relative;width:100%;aspect-ratio:16/9;min-height:160px;background:#111;display:flex;align-items:center;justify-content:center}
+.ah-video-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ah-video-play{appearance:none;border:1px solid #fff;background:transparent;color:#fff;padding:16px 24px;cursor:pointer;font:inherit}
+.ah-video-play:focus-visible,.ah-video-source:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.ah-video-source{position:absolute;bottom:12px;right:12px;color:#fff!important;background:#111;padding:6px 8px;font:13px/1.2 sans-serif;z-index:2}
+@media(max-width:600px){.ah-authored-dialog{max-height:calc(100dvh - 16px)}.ah-authored-dialog .modal-scroll{max-height:calc(100dvh - 16px)}.ah-gallery-controls{right:6px;bottom:6px}.ah-scroll-controls{right:8px;bottom:8px}}
+@media(prefers-reduced-motion:reduce){.ah-accordion-heading .accord-icon .tn-atom,.hacc,.hacc__item,.hacc__head,.hacc__panel,.hacc__body,.arc-body,.ah-authored-dialog,.ah-authored-dialog *{transition:none!important;animation:none!important}}

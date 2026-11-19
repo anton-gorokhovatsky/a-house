@@ -1,0 +1,137 @@
+#rec5013073901 .t058__text-impact{line-height:1;color:#ffffff;}
+
+#rec5013330401 .t153__uptitle{line-height:1;font-family:var(--t-text-font,Arial);font-weight:500;}
+#rec5013330401 .t153__title{line-height:1;font-size:23px;font-family:var(--t-text-font,Arial);font-weight:400;max-width:650px;}
+#rec5013330401 .t153__descr{line-height:1;font-family:var(--t-text-font,Arial);font-weight:500;text-transform:uppercase;}
+
+#rec5014960601 .t396__artboard{height:600px;background-color:#ffffff;}
+#rec5014960601 .t396__filter{height:600px;}
+#rec5014960601 .t396__carrier{height:600px;background-position:center center;background-attachment:scroll;background-size:cover;background-repeat:no-repeat;}
+@media screen and (max-width:1199px){#rec5014960601 .t396__artboard,#rec5014960601 .t396__filter,#rec5014960601 .t396__carrier{}
+#rec5014960601 .t396__filter{}
+#rec5014960601 .t396__carrier{background-attachment:scroll;}
+}
+@media screen and (max-width:959px){#rec5014960601 .t396__artboard,#rec5014960601 .t396__filter,#rec5014960601 .t396__carrier{height:1100px;}
+#rec5014960601 .t396__filter{}
+#rec5014960601 .t396__carrier{background-attachment:scroll;}
+}
+@media screen and (max-width:639px){#rec5014960601 .t396__artboard,#rec5014960601 .t396__filter,#rec5014960601 .t396__carrier{}
+#rec5014960601 .t396__filter{}
+#rec5014960601 .t396__carrier{background-attachment:scroll;}
+}
+@media screen and (max-width:479px){#rec5014960601 .t396__artboard,#rec5014960601 .t396__filter,#rec5014960601 .t396__carrier{height:700px;}
+#rec5014960601 .t396__filter{}
+#rec5014960601 .t396__carrier{background-attachment:scroll;}
+}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"]{z-index:3;position:absolute;top:1px;left:calc(50% - 600px + 695px);width:405px;height:600px;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{width:100%;height:100%;position:relative;overflow:visible visible;display:flex;flex-direction:column;row-gap:126px;align-items:center;justify-content:center;align-content:flex-start;padding:0px 0px 0px 0px;border-color:transparent;border-style:solid;box-sizing:border-box;border-radius:0px 0px 0px 0px;transition:background-color var(--t396-speedhover,0s) ease-in-out,color var(--t396-speedhover,0s) ease-in-out,border-color var(--t396-speedhover,0s) ease-in-out,box-shadow var(--t396-shadowshoverspeed,0.2s) ease-in-out;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007>*:not(:last-child){margin-bottom:126px;}
+}
+@media screen and (max-width:1199px){#rec5014960601 .tn-group[data-group-id="1787066587323000007"]{display:flex;left:calc(50% - 480px + 514px);height:599px;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{display:flex;}
+}
+@media screen and (max-width:959px){#rec5014960601 .tn-group[data-group-id="1787066587323000007"]{display:flex;top:25px;left:calc(50% - 320px + 81px);width:478px;height:420px;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{display:flex;row-gap:63px;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007>*:not(:last-child){margin-bottom:63px;}
+}
+}
+@media screen and (max-width:639px){#rec5014960601 .tn-group[data-group-id="1787066587323000007"]{display:flex;left:calc(50% - 240px + 1px);height:420px;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{display:flex;}
+}
+@media screen and (max-width:479px){#rec5014960601 .tn-group[data-group-id="1787066587323000007"]{display:flex;top:5px;left:calc(50% - 160px + 0px);width:320px;height:274px;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{display:flex;row-gap:410px;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066587323000007"] #molecule-1787066587323000007>*:not(:last-child){margin-bottom:410px;}
+}
+}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"]{z-index:3;position:absolute;top:246px;left:7px;width:392px;height:auto;flex-shrink:0;margin:0 0 0 0;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{width:100%;height:100%;position:relative;overflow:visible visible;display:flex;flex-direction:column;row-gap:160px;align-items:center;justify-content:flex-start;align-content:flex-start;padding:0px 0px 0px 0px;border-color:transparent;border-style:solid;box-sizing:border-box;border-radius:0px 0px 0px 0px;transition:background-color var(--t396-speedhover,0s) ease-in-out,color var(--t396-speedhover,0s) ease-in-out,border-color var(--t396-speedhover,0s) ease-in-out,box-shadow var(--t396-shadowshoverspeed,0.2s) ease-in-out;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006>*:not(:last-child){margin-bottom:160px;}
+}
+@media screen and (max-width:1199px){#rec5014960601 .tn-group[data-group-id="1787066561876000006"]{display:flex;left:7px;height:auto;flex-shrink:0;order:;align-self:auto;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{display:flex;}
+}
+@media screen and (max-width:959px){#rec5014960601 .tn-group[data-group-id="1787066561876000006"]{display:flex;top:155px;left:-4px;width:486px;height:auto;flex-shrink:0;order:;align-self:auto;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{display:flex;row-gap:112px;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006>*:not(:last-child){margin-bottom:112px;}
+}
+}
+@media screen and (max-width:639px){#rec5014960601 .tn-group[data-group-id="1787066561876000006"]{display:flex;left:-4px;height:auto;flex-shrink:0;order:;align-self:auto;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{display:flex;}
+}
+@media screen and (max-width:479px){#rec5014960601 .tn-group[data-group-id="1787066561876000006"]{display:flex;top:83px;left:-83px;height:auto;flex-shrink:0;order:;align-self:auto;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{display:flex;row-gap:70px;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066561876000006"] #molecule-1787066561876000006>*:not(:last-child){margin-bottom:70px;}
+}
+}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"]{z-index:3;position:absolute;top:0px;left:0px;width:100%;height:auto;flex-shrink:0;margin:0 0 0 0;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{width:100%;height:100%;position:relative;overflow:visible visible;display:flex;flex-direction:column;row-gap:20px;align-items:center;justify-content:flex-start;align-content:flex-start;padding:0px 0px 0px 0px;border-color:transparent;border-style:solid;box-sizing:border-box;border-radius:0px 0px 0px 0px;transition:background-color var(--t396-speedhover,0s) ease-in-out,color var(--t396-speedhover,0s) ease-in-out,border-color var(--t396-speedhover,0s) ease-in-out,box-shadow var(--t396-shadowshoverspeed,0.2s) ease-in-out;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005>*:not(:last-child){margin-bottom:20px;}
+}
+@media screen and (max-width:1199px){#rec5014960601 .tn-group[data-group-id="1787066539145000005"]{display:flex;top:0px;left:0px;width:100%;height:auto;flex-shrink:0;order:;align-self:auto;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{display:flex;}
+}
+@media screen and (max-width:959px){#rec5014960601 .tn-group[data-group-id="1787066539145000005"]{display:flex;top:0px;left:0px;width:100%;height:auto;flex-shrink:0;order:;align-self:auto;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{display:flex;row-gap:0px;}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005>*:not(:last-child){margin-bottom:0px;}
+}
+}
+@media screen and (max-width:639px){#rec5014960601 .tn-group[data-group-id="1787066539145000005"]{display:flex;left:0px;width:100%;height:auto;flex-shrink:0;order:;align-self:auto;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{display:flex;}
+}
+@media screen and (max-width:479px){#rec5014960601 .tn-group[data-group-id="1787066539145000005"]{display:flex;top:0px;left:0px;width:100%;height:auto;flex-shrink:0;order:;align-self:auto;border-radius:0px 0px 0px 0px;margin:0 0 0 0;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{overflow:visible visible;display:flex;flex-direction:column;flex-wrap:unset;row-gap:20px;align-items:center;justify-content:flex-start;align-content:flex-start;padding:0px 0px 0px 0px;background-position:center center;border-radius:0px 0px 0px 0px;opacity:1;-webkit-transform:rotate(0deg);-moz-transform:rotate(0deg);transform:rotate(0deg);}
+@supports (-webkit-touch-callout:none) and (not (translate:none)){#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005{gap:0;}
+#rec5014960601 .tn-group[data-group-id="1787066539145000005"] #molecule-1787066539145000005>*:not(:last-child){margin-bottom:20px;}
+}
+}
+#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"]{color:#000000;text-align:center;z-index:3;top:0px;left:15px;width:362px;flex-shrink:0;height:108px;margin:0 0 0 0;}
+#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"] .tn-atom{vertical-align:middle;color:#000000;font-size:18px;font-family:var(--t-text-font,Arial);line-height:1.1;font-weight:400;border-radius:0px 0px 0px 0px;padding:0px 0px 0px 0px;background-position:center center;border-width:var(--t396-borderwidth,0);border-style:var(--t396-borderstyle,solid);border-color:var(--t396-bordercolor,transparent);transition:background-color var(--t396-speedhover,0s) ease-in-out,color var(--t396-speedhover,0s) ease-in-out,border-color var(--t396-speedhover,0s) ease-in-out,box-shadow var(--t396-shadowshoverspeed,0.2s) ease-in-out;--t396-shadow-text-opacity:100%;text-shadow:var(--t396-shadow-text-x,0px) var(--t396-shadow-text-y,0px) var(--t396-shadow-text-blur,0px) rgba(var(--t396-shadow-text-color),var(--t396-shadow-text-opacity,100%));}
+@media screen and (max-width:1199px){#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"]{display:table;top:0px;left:15px;width:362px;height:108px;flex-shrink:0;}
+#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"] .tn-atom{white-space:normal;background-size:cover;}
+}
+@media screen and (max-width:959px){#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"]{display:table;top:0px;left:61px;width:365px;height:111px;flex-shrink:0;}
+#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"] .tn-atom{vertical-align:middle;white-space:normal;background-size:cover;}
+}
+@media screen and (max-width:639px){#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"]{display:table;left:61px;flex-shrink:0;}
+#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"] .tn-atom{white-space:normal;background-size:cover;}
+}
+@media screen and (max-width:479px){#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"]{display:table;top:0px;left:94px;width:298px;height:108px;flex-shrink:0;}
+#rec5014960601 .tn-elem[data-elem-id="1787064632682000001"] .tn-atom{vertical-align:middle;white-space:normal;line-height:1;background-size:cover;}
+}
+#rec5014960601 .tn-group[data-group-id="1787066505712000003"]{z-index:3;position:absolute;top:-70px;left:calc(50% - 600px + 0px);width:600px;height:670px;}
+#rec5014960601 .tn-group[data-group-id="1787066505712000003"] #molecule-1787066505712000003{width:100%;height:100%;position:relative;overflow:visible;border-color:transparent;border-style:solid;box-sizing:border-box;border-radius:0px 0px 0px 0px;transition:background-color var(--t396-speedhover,0s) ease-in-out,color var(--t396-speedhover,0s) ease-in-out,border-color var(--t396-speedhover,0s) ease-in-out,box-shadow var(--t396-shadowshoverspeed,0.2s) ease-in-out;}
+@media screen and (max-width:1199px){#rec5014960601 .tn-group[data-group-id="1787066505712000003"]{display:block;top:0px;left:calc(50% - 480px + 0px);width:470px;height:600px;}
+#rec5014960601 .tn-group[data-group-id="1787066505712000003"] #molecule-1787066505712000003{}
+}
+@media screen and (max-width:959px){#rec5014960601 .tn-group[data-group-id="1787066505712000003"]{display:block;top:478px;left:calc(50% - 320px + -1px);width:641px;height:622px;}
+#rec5014960601 .tn-group[data-group-id="1787066505712000003"] #molecule-1787066505712000003{}
+}
+@media screen and (max-width:639px){#rec5014960601 .tn-group[data-group-id="1787066505712000003"]{display:block;top:478px;left:calc(50% - 240px + -1px);width:481px;height:622px;}
+#rec5014960601 .tn-group[data-group-id="1787066505712000003"] #molecule-1787066505712000003{}
+}
+@media screen and (max-width:479px){#rec5014960601 .tn-group[data-group-id="1787066505712000003"]{display:block;top:289px;left:calc(50% - 160px + -4px);width:328px;height:411px;}
+#rec5014960601 .tn-group[data-group-id="1787066505712000003"] #molecule-1787066505712000003{}
+}
+#rec5014960601 .tn-elem[data-elem-id="1779289845639000003"]{display:block;z-index:3;top:0px;left:0px;width:600px;height:670px;}
+#rec5014960601 .tn-elem[data-elem-id="1779289845639000003"] .tn-atom{display:block;height:100%;box-sizing:border-box;border-radius:0px 0px 0px 0px;background-position:center center;border-width:var(--t396-borderwidth,0);border-style:var(--t396-borderstyle,solid);border-color:var(--t396-bordercolor,transparent);transition:background-color var(--t396-speedhover,0s) ease-in-out,color var(--t396-speedhover,0s) ease-in-out,border-color var(--t396-speedhover,0s) ease-in-out,box-shadow var(--t396-shadowshoverspeed,0.2s) ease-in-out;}
+#rec5014960601 .tn-elem[data-elem-id="1779289845639000003"] .tn-atom__img{border-radius:0px 0px 0px 0px;object-fit:cover;height:100%;object-position:center center;}
+@media screen and (max-width:1199px){#rec5014960601 .tn-elem[data-elem-id="1779289845639000003"]{display:block;top:0px;left:0px;width:470px;height:600px;}
+}
+@media screen and (max-width:959px){#rec5014960601 .tn-elem[data-elem-id="1779289845639000003"]{display:block;top:0px;left:0px;width:641px;height:622px;}
+}
+@media screen and (max-width:639px){#rec5014960601 .tn-elem[data-elem-id="1779289845639000003"]{display:block;top:0px;left:0px;width:481px;height:622px;}
+}
+@media screen and (max-width:479px){#rec5014960601 .tn-elem[data-elem-id="1779289845639000003"]{display:block;top:0px;left:0px;width:328px;height:411px;}
+}
+
+.t-inputpromocode__wrapper .t-text{color:#000;}
+
+#rec5013074701 .t-btnflex.t-btnflex_type_submit{color:#ffffff;background-color:#000000;--border-width:0px;border-style:none !important;box-shadow:none !important;font-family:AHTimes;font-weight:500;text-transform:uppercase;transition-duration:0.2s;transition-property:background-color,color,border-color,box-shadow,opacity,transform,gap;transition-timing-function:ease-in-out;}

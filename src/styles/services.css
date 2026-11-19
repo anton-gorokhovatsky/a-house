@@ -1,0 +1,119 @@
+/* Small shared layer; source catalogue composition remains in its original CSS. */
+.services-modal-open { overflow: hidden; }
+.services-dialog {
+  box-sizing: border-box;
+  width: min(1120px, calc(100vw - 48px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 48px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: #111;
+  font-family: AHTimes, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  text-align: left;
+}
+.services-dialog:not([open]) { display: none !important; }
+.services-dialog::backdrop { background: rgb(0 0 0 / 78%); }
+.services-dialog h2 { font: inherit; font-size: clamp(28px, 4vw, 48px); line-height: 1.05; margin: 12px 0 28px; }
+.services-dialog h3 { font: inherit; font-size: 26px; line-height: 1.15; margin: 0 0 16px; }
+.services-dialog p { margin: 0 0 20px; }
+.services-dialog a { color: inherit; }
+.services-close {
+  display: block;
+  margin: -20px -20px 28px auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+.services-dialog :focus-visible,
+.services-form :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.services-product { background: #000; color: #fff; }
+.services-product-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.services-product-media { display: grid; gap: 16px; }
+.services-product-media img { display: block; width: 100%; height: auto; object-fit: contain; }
+.services-product-copy { min-width: 0; }
+.services-product-description { font-size: 18px; font-weight: 300; overflow-wrap: anywhere; }
+.services-primary,
+.services-result-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 12px 18px;
+  margin-top: 24px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.services-checkout { width: min(720px, calc(100vw - 48px)); }
+.services-eyebrow { font-size: 14px; text-transform: uppercase; letter-spacing: .03em; }
+.services-order-price { font-size: 17px; }
+.services-demo-note { margin: 0 0 32px; padding: 16px 0; border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; font: 16px/1.45 AHTimes, Arial, sans-serif; }
+.services-demo-note strong { font-family: inherit; font-weight: 600; }
+.services-demo-note p { margin: 6px 0 0; }
+.services-form { color: inherit; }
+.services-form .t-input-group { margin-bottom: 24px; }
+.services-form .t-input-title { display: block; margin-bottom: 8px; }
+.services-checkout .services-form .t-input,
+.services-checkout .services-form .t-select,
+.services-checkout .services-form .t-input-title,
+.services-checkout .services-form .t-checkbox__control,
+.services-checkout .services-form .t-radio__control { color: #111 !important; }
+.services-form input, .services-form select, .services-form textarea { box-sizing: border-box; max-width: 100%; font-size: max(16px, 1em); }
+.services-form input:not([type="checkbox"]):not([type="radio"]),
+.services-form select { min-height: 44px; }
+.services-form .t-checkbox__indicator,
+.services-form .t-radio__indicator { flex-shrink: 0; }
+.services-form .t-checkbox__control,
+.services-form .t-radio__control { font-size: 16px; line-height: 1.4; }
+.services-form .t-input-block { overflow: visible; }
+.services-form [aria-invalid="true"] { outline: 2px solid #b82d22; outline-offset: 2px; }
+.services-form .t-form__errorbox-middle,
+.services-form .t-form__errorbox-bottom,
+.services-form .js-successbox { display: none !important; }
+.services-offer { margin-bottom: 28px; font: 18px/1.4 AHTimes, Arial, sans-serif; }
+.services-offer label { display: block; margin-bottom: 8px; }
+.services-offer select { display: block; width: 100%; padding: 12px; border: 1px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; }
+.services-offer option { color: #111; background: #fff; }
+.services-form-status, .services-hint { margin: 12px 0; font: 15px/1.4 AHTimes, Arial, sans-serif; }
+.services-form-status:empty { display: none; }
+.services-hint { color: #555; }
+.services-result { padding: 28px 0; font: 18px/1.5 AHTimes, Arial, sans-serif; }
+.services-result[hidden] { display: none !important; }
+.services-result p { margin: 0 0 18px; }
+.services-result h3 { font: inherit; font-size: 28px; line-height: 1.15; margin: 0 0 22px; }
+.services-link { text-underline-offset: 3px; text-decoration: underline !important; }
+.services-result-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.services-result-actions button { margin-top: 10px; }
+.services-form[data-service-complete] > .t-form__inputsbox,
+.services-form[data-service-complete] > .services-offer { display: none; }
+.services-request { width: min(640px, calc(100vw - 48px)); }
+@media (max-width: 720px) {
+  .services-dialog { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 24px; font-size: 17px; }
+  .services-close { margin: -12px -12px 20px auto; }
+  .services-product-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .services-product-media img { max-height: 54dvh; }
+  .services-product-description { font-size: 17px; }
+  .services-dialog h2 { margin-top: 0; }
+  .services-result-actions { display: grid; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .services-dialog *, .services-form * { scroll-behavior: auto !important; transition: none !important; }
+}

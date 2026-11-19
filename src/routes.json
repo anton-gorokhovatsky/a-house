@@ -1,0 +1,1697 @@
+[
+  {
+    "slug": "home",
+    "title": "A–House",
+    "description": "Клуб и просветительская платформа, посвящённые архитектуре и дизайну.",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-2.0.css",
+      "styles/source/cover-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/catalog-1.1.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-filters-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/zoom-2.0.css",
+      "styles/pages/home.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "a_pass",
+    "title": "A–PASS — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page188457209.css",
+      "styles/source/forms-1.0.css",
+      "styles/pages/a_pass.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "about",
+    "title": "О проекте — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38444886.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/about.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "agreement",
+    "title": "Agreement",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page54963133.css",
+      "styles/pages/agreement.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "agreement2",
+    "title": "Agreement2",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page151046766.css",
+      "styles/pages/agreement2.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "club",
+    "title": "Клуб A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38381038.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/catalog-1.1.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-filters-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/club.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "dompredprinimatelya",
+    "title": "Дом предпринимателя — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page323480509.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/dompredprinimatelya.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "education",
+    "title": "A–School — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38566153.css",
+      "styles/source/cover-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/education.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "longevity",
+    "title": "Longevity",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page242768809.css",
+      "styles/source/animation-2.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/pages/longevity.css"
+    ]
+  },
+  {
+    "slug": "member",
+    "title": "Заявка на участие в клубе — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page152711126.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/pages/member.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "moscow_business",
+    "title": "Бизнес Москвы",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page391812709.css",
+      "styles/pages/moscow_business.css"
+    ]
+  },
+  {
+    "slug": "mts",
+    "title": "MTS",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page141649966.css",
+      "styles/source/popup-1.1.css",
+      "styles/pages/mts.css"
+    ]
+  },
+  {
+    "slug": "mts_docs",
+    "title": "Agreement MTS",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page143533566.css",
+      "styles/pages/mts_docs.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "partnership",
+    "title": "Сотрудничество — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38445465.css",
+      "styles/source/animation-2.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/catalog-1.1.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-filters-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/partnership.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "politic",
+    "title": "1Politic",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page39233461.css",
+      "styles/source/animation-2.0.css",
+      "styles/pages/politic.css"
+    ]
+  },
+  {
+    "slug": "politic_a-com",
+    "title": "Politic",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page54810927.css",
+      "styles/pages/politic_a-com.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "presence",
+    "title": "A–Presence — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page323680509.css",
+      "styles/source/cover-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/presence.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "press",
+    "title": "Пресса — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page144088716.css",
+      "styles/source/animation-2.0.css",
+      "styles/source/cover-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/catalog-1.1.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-filters-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/press.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "report",
+    "title": "Report",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page233352509.css",
+      "styles/source/animation-2.0.css",
+      "styles/pages/report.css"
+    ]
+  },
+  {
+    "slug": "report__",
+    "title": "Report",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page210511809.css",
+      "styles/source/animation-2.0.css",
+      "styles/pages/report__.css"
+    ]
+  },
+  {
+    "slug": "residents",
+    "title": "Дом A–House и резиденты",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page67953493.css",
+      "styles/source/animation-2.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/cards-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/catalog-1.1.css",
+      "styles/source/catalog-filters-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/zero-gallery-1.0.css",
+      "styles/source/zoom-2.0.css",
+      "styles/pages/residents.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "rules",
+    "title": "Rules",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page56309619.css",
+      "styles/pages/rules.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "special_projects",
+    "title": "Спецпроекты — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page144088826.css",
+      "styles/source/cards-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/cart-1.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/pages/special_projects.css",
+      "styles/chrome.css"
+    ]
+  },
+  {
+    "slug": "t_bank",
+    "title": "T Bank",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page150661766.css",
+      "styles/source/animation-2.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/pages/t_bank.css"
+    ]
+  },
+  {
+    "slug": "t_business",
+    "title": "t business program",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page152189286.css",
+      "styles/source/popup-1.1.css",
+      "styles/pages/t_business.css"
+    ]
+  },
+  {
+    "slug": "t_private",
+    "title": "t private program",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page149166796.css",
+      "styles/source/popup-1.1.css",
+      "styles/pages/t_private.css"
+    ]
+  },
+  {
+    "slug": "tpost/020abjgjn1-dialogi",
+    "title": "Диалоги",
+    "description": "Неформальные встречи с представителями архитектурных бюро, где в#nbsp;формате диалогов они обсудят взгляд профессионалов на город, здания и перспективы профессии.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/047y7z7h91-iz-moskvi-2024-v-moskvu-2030",
+    "title": "Из Москвы 2024 — в Москву 2030",
+    "description": "Попросили рассказать о будущем тех, кто определяет, как выглядит настоящее.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-08-22",
+    "section": "Архитектура, События"
+  },
+  {
+    "slug": "tpost/17xaum7r91-translyatsiya-paris-design-week",
+    "title": "Трансляция: Paris Design Week",
+    "description": "Команда A–House отправилась на#nbsp;Парижскую неделю дизайна, сопровождающую популярную выставку maison&objet. ",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-09-07",
+    "section": "Дизайн, Трансляции"
+  },
+  {
+    "slug": "tpost/1f80sz0yy1-partnerskie-programmi",
+    "title": "Партнерские программы",
+    "description": "«Что такое хорошо?», Общество архитекторов МАРХИ и другие программы от партнеров.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/26i3mjtos1-ahouse-ultima-yandeks-go",
+    "title": "A–House × Ultima Яндекс Go",
+    "description": "Анонс совместной программы.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-02-12",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/2ls13l0of1-vistavka-arhitektura-10-v-ahouse",
+    "title": "Выставка «Архитектура 1.0» в A–House",
+    "description": "10 апреля в стенах A–House открылась выставка#nbsp;«Архитектура 1.0».",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-04-10",
+    "section": "Выставки, События"
+  },
+  {
+    "slug": "tpost/2pllv5izn1-dom-melnikova",
+    "title": "Дом Мельникова",
+    "description": "Команда A–House поговорила с директором музея Анной Кистановой о предстоящей реставрации Дома Мельникова.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-06-28",
+    "section": "Архитектура"
+  },
+  {
+    "slug": "tpost/4js7x2fd71-posolstvo-arhitekturnih-shkol",
+    "title": "Посольство архитектурных школ",
+    "description": "В A-House прошел цикл архитектурных школ дополнительного образования.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-08",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/4orfj4r8u1-ahouse-voshod-pervaya-detskaya-yolka",
+    "title": "A–House × VOS'HOD: первая детская ёлка",
+    "description": "24 декабря в стенах A–House прошла детская клубная елка, организованная совместно с VOS’HOD.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-12-24",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/5pjpftbsx1-translyatsiya-festival-3daysofdesign",
+    "title": "Трансляция: фестиваль 3DAYSOFDESIGN",
+    "description": "Приглашаем присоединиться к путешествию в мир скандинавского дизайна. A–House отправляется на фестиваль в Копенгаген.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-06-06",
+    "section": "Трансляции"
+  },
+  {
+    "slug": "tpost/5ynda974b1-kino-o-dizaine",
+    "title": "Кино о дизайне",
+    "description": "Художественные фильмы, раскрывающие особенности интерьера / дизайн-подход отдельного региона, и документальное кино о дизайнерах.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/6hptom68p1-plastilinovii-branch-theblueprint",
+    "title": "«Пластилиновый бранч» TheBlueprint",
+    "description": "В мастерской A-House прошел «Пластилиновый бранч», которым редакция#nbsp;TheBlueprint мы#nbsp;решили отметить финал fashion month.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-10-11",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/6ztxbz2l21-copenhagen-concierge",
+    "title": "Copenhagen concierge",
+    "description": "Гид с рекомендациями по Копенгагену. ",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-06-10",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/84mtl9uxx1-ahouse-rbk",
+    "title": "A–House × РБК",
+    "description": "Рады рассказать о сотрудничестве A–House и РБК!",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-06-02",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/8jvpu945o1-translyatsiya-design-miami-paris",
+    "title": "Трансляция: Design Miami / Paris",
+    "description": "Переносимся в Париж вместе с корреспондентом A-House. ",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-10-17",
+    "section": "Трансляции"
+  },
+  {
+    "slug": "tpost/8ol97p6sa1-translyatsiya-arh-moskva",
+    "title": "Трансляция: АРХ Москва",
+    "description": "Команда A–House посетила трехдневную выставку архитектуры и дизайна АРХ Москва.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-05-22",
+    "section": "Трансляции"
+  },
+  {
+    "slug": "tpost/9plu92x8z1-paris-concierge",
+    "title": "Paris Concierge",
+    "description": "Гид с знаковыми локациями и новыми точками притяжения.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-09-14",
+    "section": "Дизайн"
+  },
+  {
+    "slug": "tpost/a952f9t2b1-yarmarka-nomad-otkrivaetsya-v-sanktmorit",
+    "title": "Ярмарка NOMAD открывается в Санкт–Морице",
+    "description": "Рассказываем о 13-м выпуске ярмарки искусства и коллекционного дизайна.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-02-21",
+    "section": "События, Дизайн"
+  },
+  {
+    "slug": "tpost/aftf5ucec1-novogodnii-klubnii-vecher-ahouse",
+    "title": "Новогодний клубный вечер A–House",
+    "description": " Премьера перфоманса Дарьи Золотухиной на новогоднем клубном вечере#nbsp;A–House.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-12-20",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/bp99oh52d1-otkritie-vistavki-tezisi",
+    "title": "Открытие выставки ТЕЗИСЫ",
+    "description": "В A–Gallery открылась выставка ТЕЗИСЫ.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-05-29",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/cnba32rl81-arhitekturnie-byuro",
+    "title": "Архитектурные бюро",
+    "description": "Открытые встречи, на которых команда архитектурных бюро расскажет о своем подходе в работе, методе проектирования и#nbsp;проектах.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/cs4klgvjd1-venetsiya",
+    "title": "Венеция",
+    "description": "Серия лекций, дискуссий и#nbsp;встреч о#nbsp;принципах осознанного проектирования и методах работы с#nbsp;культурным наследием на#nbsp;примерах Венеции, проектов биеннале и#nbsp;современного контекста.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/d2x3lccd91-yarmarka-collectible-v-bryussele",
+    "title": "Ярмарка COLLECTIBLE в Брюсселе",
+    "description": "Приглашаем следить за ярмаркой современного дизайна вместе с командой A–House.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-03-07",
+    "section": "Дизайн, События"
+  },
+  {
+    "slug": "tpost/exorhz0kr1-kollektsionnii-dizain-praktikum",
+    "title": "Коллекционный дизайн. Практикум",
+    "description": "Встречи с предметными дизайнерами и кураторами / общение и#nbsp;обсуждение локальных аспектов развития дизайна.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/f0997i9441-anews-2",
+    "title": "A–News #2",
+    "description": "A–News #2 на превью ярмарки blazar.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-09-12",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/f5g8bjbv11-kino-ob-arhitekture",
+    "title": "Кино об архитектуре",
+    "description": "Кинопросмотр с последующим обсуждением архитектуры, дизайна интерьера и#nbsp;работы со светом.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/fb8oelzme1-otkritie-vistavki-yumiko-ono-peripetiya",
+    "title": "Открытие выставки Юмико Оно «Перипетия»",
+    "description": "Совместная выставка с галереей#nbsp;«Триумф».",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-11-29",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/fixyci24f1-aseasons-winter-still",
+    "title": "A–SEASONS: WINTER. STILL",
+    "description": "Открытие первого сезона A–Seasons.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-02-02",
+    "section": "Выставки, События"
+  },
+  {
+    "slug": "tpost/gmkzl28hy1-otkritii-lektorii-stemps-ahouse-rabota-s",
+    "title": "Открытый лекторий STEMPS  ×  A–House: «Работа с местом»",
+    "description": "Цикл открытых встреч в клубном пространстве A–House.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2025-02-11",
+    "section": "Архитектура"
+  },
+  {
+    "slug": "tpost/hf4zfkc051-otkritie-ahouse",
+    "title": "Открытие A–House",
+    "description": "Пространство A–House начинает свою работу.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-03-29",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/hpl6p9dzo1-9000100",
+    "title": "90–00–100",
+    "description": "Встречи с состоявшимися архитекторами, на которых они через личную историю расскажут о своём становлении и покажут, как выглядели их проекты в 90х, 00х и#nbsp;10х годах.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/ihzycsu1l1-ahouse-pioneer",
+    "title": "A–House × Pioneer",
+    "description": "В A–House прошел цикл образовательно-культурных мероприятий Pioneer.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-09-18",
+    "section": "События, Архитектура"
+  },
+  {
+    "slug": "tpost/iko7hem6t1-rezidenti",
+    "title": "Резиденты",
+    "description": "Встречи с резидентами A-House и представителями других проектов в#nbsp;сфере дизайна, обсуждение актуальных тем и Q&A.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/inznvtelv1-tsikl-lektsii-posvyaschennih-venetsii",
+    "title": "Цикл лекций, посвященных Венеции",
+    "description": "На#nbsp;Youtube-канале A–House вышли записи лекций по проектам Биеннале архитектуры разных лет.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-02-06",
+    "section": "Архитектура, События"
+  },
+  {
+    "slug": "tpost/jhvy064kv1-obrazovatelnaya-programma-po-dizainu",
+    "title": "Образовательная программа по дизайну",
+    "description": "Старт образовательной программы по дизайну в A–House.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-09-28",
+    "section": "Дизайн"
+  },
+  {
+    "slug": "tpost/kax0f60jg1-how-to-esg-arhitektura-i-development",
+    "title": "HOW TO ESG: АРХИТЕКТУРА И ДЕВЕЛОПМЕНТ",
+    "description": "",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-10-23",
+    "section": "Архитектура"
+  },
+  {
+    "slug": "tpost/kr7d2jalb1-translyatsiya-arhitekturnaya-biennale-v",
+    "title": "Трансляция: архитектурная биеннале в Венеции",
+    "description": "Команда A–House отправляется на открытие архитектурной биеннале 2023 и будет вести трансляцию самых интересных событий.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-05-17",
+    "section": "Трансляции"
+  },
+  {
+    "slug": "tpost/ksp711y641-otkritie-vistavki-ulm-memoirsvospominani",
+    "title": "Открытие выставки ULM «Memoirs|Воспоминания»",
+    "description": "Персональная выставка Анны Лапшиновой.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-06-19",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/mhtvezfzh1-kollektsionnii-dizain-teoriya",
+    "title": "Коллекционный дизайн. Tеория",
+    "description": "Актуальное состояние рынка коллекционного дизайна. Знакомство с#nbsp;ключевыми галереями и дизайнерами региона.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/n1fjjynlx1-venice-concierge",
+    "title": "Venice Concierge",
+    "description": "Гид с рекомендациями по Венеции.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-06-01",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/ng3avfidu1-aseasons-summer",
+    "title": "A–SEASONS: SUMMER",
+    "description": "Открытие летнего сезона A-Seasons.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-07-01",
+    "section": "Выставки, События"
+  },
+  {
+    "slug": "tpost/ocy2a6xms1-arh-moskva-2024",
+    "title": "АРХ МОСКВА 2024",
+    "description": "Итоги выставки-форума 2024.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-05-31",
+    "section": "Трансляции"
+  },
+  {
+    "slug": "tpost/p4jb5ndi61-otkritie-vistavki-ulm-dima-raspopov",
+    "title": "Открытие выставки ULM × Dima Raspopov",
+    "description": "Персональная выставка Димы Распопова в салоне ULM.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-04-01",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/pz3nj2pcg1-3daysofdesign-2024-translyatsiya-iz-kope",
+    "title": "3daysofdesign 2024: трансляция из Копенгагена",
+    "description": "Вторая трансляция с фестиваля 3daysofdesign от команды A–House.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-06-11",
+    "section": "Трансляции"
+  },
+  {
+    "slug": "tpost/r8me79ap71-kvartirnik-pioneer-v-ahouse",
+    "title": "Квартирник Pioneer в A–House",
+    "description": "Мероприятие, посвященное итогам прошлого года и#nbsp;презентации проекта Opus.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-02-29",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/rlhikuu9d1-translyatsii-mezhdunarodnih-sobitii",
+    "title": "Трансляции международных событий",
+    "description": "Итоги главных событий календаря: Maison&Objet, Design Miami / Paris, Dutch Design Week, Dubai Design Week, Design Miami, Stockholm Design Week, Salone del Mobile, 3 days of design / Copenhagen.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/s1n334xh71-sin-nyan-hao-ili-schastlivogo-novogo-god",
+    "title": "Синь Нянь Хао или счастливого Нового года!",
+    "description": "Совместное мероприятие A–House и Ultima Яндекс Go.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-02-08",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/se187dl1b1-otkritie-vistavki-ulm-pleski",
+    "title": "Открытие выставки ULM «Плески»",
+    "description": "Выставка живописи и графики Варвары Кулешовой «Плески».",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-10",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so",
+    "title": "Первый выпуск детского журнала A–Kids совместно с девелоперской компанией LEGENDA",
+    "description": "Издательство A-Press by A-House выпустило первый номер журнала для детей и их родителей — A-Kids. Издание рассказывает об архитектуре и дизайне для детей и на понятном детям языке.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-11-12",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/t292l9tyu1-arhitekturnii-festival",
+    "title": "Архитектурный фестиваль",
+    "description": "A–House проведет свой первый архитектурный фестиваль c 16 марта по 16 мая.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-03-16",
+    "section": "Архитектура"
+  },
+  {
+    "slug": "tpost/taem5ulof1-yaponskii-arhitektor-riken-yamamoto-polu",
+    "title": "Японский архитектор Рикэн Ямамото получил «Притцкера»‎",
+    "description": "Собрали факты про нового лауреата Притцкеровской премии.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-03-07",
+    "section": "Архитектура, События"
+  },
+  {
+    "slug": "tpost/to77ddc8p1-summary-of-the-biennale-2023",
+    "title": "SUMMARY OF THE BIENNALE 2023",
+    "description": "Куратор архитектурной программы A–House Мария Косарева подводит итоги Венецианской биеннале.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-11-27",
+    "section": "Архитектура, Выставки"
+  },
+  {
+    "slug": "tpost/vs37f7igv1-otkritie-vistavki-ulm-poverhnost",
+    "title": "Открытие выставки ULM «Поверхность»",
+    "description": "Парная выставка Михаила Крунова и Дарины Дмитриевой#nbsp;«Поверхность».",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-06-07",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/vtrgbk4v81-intro-istoriya-dizaina",
+    "title": "Intro. История дизайна",
+    "description": "Лекции по истории дизайна региона, построенные вокруг 10 культовых объектов.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-24",
+    "section": ""
+  },
+  {
+    "slug": "tpost/xcbub86a11-otkritie-ashop",
+    "title": "Открытие A–Shop",
+    "description": "Рады объявить о старте работы A–Shop и цветочной лавки A–Flowers.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-02-02",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/xenjkodze1-ahouse-cosmoscow",
+    "title": "A–House × Cosmoscow",
+    "description": "Превью 11-го Благотворительного аукциона Фонда Cosmoscow.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-05-13",
+    "section": "События"
+  },
+  {
+    "slug": "tpost/xzzytrh321-otkritie-vistavki-frontend-pavilon-rossi",
+    "title": "Открытие выставки FRONTEND: Павильон России в Венеции",
+    "description": "Рады сообщить об открытии новой выставки в архитектурной галерее A–Gallery!",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-07-13",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/y0gxryhl61-nazad-v-metabuduschee",
+    "title": "Назад в метабудущее",
+    "description": "Интервью с куратором Metaverse Architecture Biennale.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-08-17",
+    "section": "Архитектура"
+  },
+  {
+    "slug": "tpost/yj14z4sle1-translyatsiya-yarmarka-nomad",
+    "title": "Трансляция: ярмарка NOMAD",
+    "description": "Мир коллекционного дизайна уходит на каникулы и делает это очень красиво – в монастыре Сан-Джакомо на Капри.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-07-06",
+    "section": "Трансляции"
+  },
+  {
+    "slug": "tpost/yt83arya31-nominanti-arhitekturnoi-premii-moskvi-20",
+    "title": "Номинанты Архитектурной премии Москвы 2024",
+    "description": "Проект SHIFT и квартал небоскребов HIGH LIFE.",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-04-19",
+    "section": "События, Архитектура"
+  },
+  {
+    "slug": "tpost/zhmao47t21-otkritie-vistavki-teni-bliki-svet",
+    "title": "Открытие выставки «Тени. Блики. Свет»",
+    "description": "В A–House открылась выставка#nbsp;«Тени. Блики. Свет».",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2023-09-21",
+    "section": "Выставки"
+  },
+  {
+    "slug": "tpost/zpx3as36x1-ahouse-na-12oi-yarmarke-cosmoscow",
+    "title": "A–House на 12–ой ярмарке Cosmoscow",
+    "description": "Проект «Образы материальной культуры» был представлен в разделе «Дизайн».",
+    "icon": null,
+    "styles": [
+      "styles/source/grid-3.0.css",
+      "styles/source/blocks-page38363349.css",
+      "styles/source/animation-1.0.css",
+      "styles/source/popup-1.1.css",
+      "styles/source/feed-1.1.css",
+      "styles/source/slds-1.4.css",
+      "styles/source/zoom-2.0.css",
+      "styles/source/menusub-1.0.css",
+      "styles/source/forms-1.0.css",
+      "styles/source/catalog-1.1.css",
+      "styles/articles/12f217632d34.css"
+    ],
+    "published": "2024-11-01",
+    "section": "Дизайн, События, Выставки"
+  },
+  {
+    "slug": "archive",
+    "title": "Архив публикаций — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": []
+  },
+  {
+    "slug": "404",
+    "title": "Страница не найдена — A–House",
+    "description": "",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": []
+  }
+]

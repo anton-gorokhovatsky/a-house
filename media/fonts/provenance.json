@@ -1,0 +1,122 @@
+[
+  {
+    "family": "notoserif",
+    "filename": "NotoSerif[wdth,wght].ttf",
+    "axes": {
+      "wdth": 62.5,
+      "wght": 400
+    },
+    "output": "noto-serif-extra-condensed-regular.woff2",
+    "css_weights": [
+      400
+    ],
+    "original": "Times New Roman VO Condensed CYR",
+    "resolved_axes": {
+      "wght": 400,
+      "wdth": 62.5
+    },
+    "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif%5Bwdth%2Cwght%5D.ttf",
+    "licence_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/OFL.txt",
+    "source_sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+    "local_sha256": "6a37ba08768d2a2e59d81aa553557aaf1712766509076c0ac33df18f35e0efa5",
+    "local_bytes": 172740,
+    "coverage_check": "Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present",
+    "transformation": "Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained"
+  },
+  {
+    "family": "robotocondensed",
+    "filename": "RobotoCondensed[wght].ttf",
+    "axes": {
+      "wght": 500
+    },
+    "output": "roboto-condensed-medium.woff2",
+    "css_weights": [
+      300,
+      500
+    ],
+    "original": "Apercu Condensed Pro Medium",
+    "resolved_axes": {
+      "wght": 500
+    },
+    "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotocondensed/RobotoCondensed%5Bwght%5D.ttf",
+    "licence_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotocondensed/OFL.txt",
+    "source_sha256": "dace262afcee68a5276f200d8026c57221735c0118ab5fda8c2c0d3dc409a8d0",
+    "local_sha256": "b49575bca6489b8e9565aaf217ce29d23187f49ae99154d16351802188902dab",
+    "local_bytes": 65492,
+    "coverage_check": "Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present",
+    "transformation": "Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained"
+  },
+  {
+    "family": "robotoflex",
+    "filename": "RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf",
+    "axes": {
+      "wdth": 75,
+      "wght": 400,
+      "opsz": 14
+    },
+    "output": "roboto-flex-compact-regular.woff2",
+    "css_weights": [
+      600
+    ],
+    "original": "MTS Compact Regular",
+    "resolved_axes": {
+      "opsz": 14,
+      "wght": 400,
+      "GRAD": 0.0,
+      "wdth": 75,
+      "slnt": 0.0,
+      "XOPQ": 96.0,
+      "YOPQ": 79.0,
+      "XTRA": 468.0,
+      "YTUC": 712.0,
+      "YTLC": 514.0,
+      "YTAS": 750.0,
+      "YTDE": -203.0,
+      "YTFI": 738.0
+    },
+    "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotoflex/RobotoFlex%5BGRAD%2CXOPQ%2CXTRA%2CYOPQ%2CYTAS%2CYTDE%2CYTFI%2CYTLC%2CYTUC%2Copsz%2Cslnt%2Cwdth%2Cwght%5D.ttf",
+    "licence_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotoflex/OFL.txt",
+    "source_sha256": "9b523f7d82593df0107173849ebb8c817471a1df4b4fb2c3cbf40cfd810c8281",
+    "local_sha256": "fedc8763fab9c652c7f7a672b9bf39dcc9b09a61573d5ea48c1201edb5e9f213",
+    "local_bytes": 34588,
+    "coverage_check": "Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present",
+    "transformation": "Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained"
+  },
+  {
+    "family": "robotoflex",
+    "filename": "RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf",
+    "axes": {
+      "wdth": 151,
+      "XTRA": 570,
+      "wght": 400,
+      "opsz": 14
+    },
+    "output": "roboto-flex-extended-regular.woff2",
+    "css_weights": [
+      700
+    ],
+    "original": "MTS Extended Regular",
+    "resolved_axes": {
+      "opsz": 14,
+      "wght": 400,
+      "GRAD": 0.0,
+      "wdth": 151,
+      "slnt": 0.0,
+      "XOPQ": 96.0,
+      "YOPQ": 79.0,
+      "XTRA": 570,
+      "YTUC": 712.0,
+      "YTLC": 514.0,
+      "YTAS": 750.0,
+      "YTDE": -203.0,
+      "YTFI": 738.0
+    },
+    "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotoflex/RobotoFlex%5BGRAD%2CXOPQ%2CXTRA%2CYOPQ%2CYTAS%2CYTDE%2CYTFI%2CYTLC%2CYTUC%2Copsz%2Cslnt%2Cwdth%2Cwght%5D.ttf",
+    "licence_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotoflex/OFL.txt",
+    "source_sha256": "9b523f7d82593df0107173849ebb8c817471a1df4b4fb2c3cbf40cfd810c8281",
+    "local_sha256": "5219db4f9696de02ecb4cc1635efe508a47ee3b971487771aa3c8c515e819613",
+    "local_bytes": 32960,
+    "coverage_check": "Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present",
+    "transformation": "Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained"
+  }
+]

@@ -1,0 +1,23 @@
+#rec .t-feed__post-popup__cover-wrapper .t-slds__bullet_active .t-slds__bullet_body,
+#rec .t-feed__post-popup__cover-wrapper .t-slds__bullet:hover .t-slds__bullet_body {
+    background-color: #222 !important;
+}
+
+#rec .t-feed__post-popup__arrow-top {
+    position:fixed;
+    z-index:1;
+    bottom:20px;
+    left: 20px;
+    
+    
+    min-height:30px;
+}
+
+#rec .t-feed__post-popup__arrow-top svg path {
+    
+}
+
+
+    .t-feed__post-popup.t-popup_show {
+        min-height: 100vh;
+    }

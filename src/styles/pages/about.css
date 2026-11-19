@@ -1,0 +1,60 @@
+#rec2256936601 .t058__text-impact{color:#ffffff;}
+
+#rec2309204961 .t-text{font-size:24px;line-height:1.2;color:#ffffff;font-family:var(--t-text-font,Arial);font-weight:400;}
+
+#rec2256969081 .t058__text-impact{color:#ffffff;}
+
+@media screen and (max-width:960px){#rec2256945301 .t1053__line{height:;}
+}
+
+#rec2256945301 .t1053__uptitle{font-family:'AHTimes';font-weight:500;color:#ffffff;}
+#rec2256945301 .t1053__title{font-size:22px;line-height:1.1;color:#ffffff;font-family:var(--t-text-font,Arial);font-weight:400;}
+#rec2256945301 .t1053__descr{color:#ffffff;}
+
+#rec2282429171 .t1241__container{}
+
+#rec2282429171 .t1241__title{line-height:1;max-width:480px;color:#312500;}
+@media screen and (max-width:480px),(orientation:landscape) and (max-height:480px){#rec2282429171 .t1241__title{font-size:36px;}
+}
+#rec2282429171 .t1241__descr{line-height:1.2;max-width:500px;color:#312500;letter-spacing:0px;}
+
+#rec2291352761 .t1241__container{}
+
+#rec2291352761 .t1241__title{line-height:1;max-width:480px;color:#312500;}
+@media screen and (max-width:480px),(orientation:landscape) and (max-height:480px){#rec2291352761 .t1241__title{font-size:36px;}
+}
+#rec2291352761 .t1241__descr{line-height:1.2;max-width:500px;color:#312500;}
+
+#rec2252655961 .t474__descr{font-size:22px;color:#ffffff;font-family:var(--t-text-font,Arial);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
+
+.t-section__title,.t-section__descr{overflow-wrap:break-word;}
+.t-section__descr{max-width:560px;}
+#rec2256930791 .t-section__title{}
+#rec2256930791 .t-section__descr{margin-bottom:105px;}
+#rec2256930791 .t-section__container:not(:has(.t-section__descr)) .t-section__title{margin-bottom:105px;}
+@media screen and (max-width:960px){#rec2256930791 .t-section__descr{margin-bottom:45px;}
+#rec2256930791 .t-section__container:not(:has(.t-section__descr)) .t-section__title{margin-bottom:45px;}
+}
+
+.t-persons-social-links{line-height:0px;}
+.t-persons-social-links__wrapper{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-ms-flex-wrap:wrap;flex-wrap:wrap;width:auto;}
+.t-persons-social-links{margin-top:15px;}
+.t-persons-social-links__item{padding:0px 4px;}
+.t-persons-social-links__item svg{width:20px;height:20px;}
+.t-persons-social-links__wrapper_round .t-persons-social-links__item svg{width:23px;height:23px;}
+.t-persons-social-links__item:first-child{padding-left:0px;}
+@media screen and (max-width:960px){.t-persons-social-links__item{margin-bottom:3px;}
+}
+@media screen and (max-width:640px){.t-persons-social-links{margin-top:13px;}
+.t-persons-social-links__item{padding:0px 3px;}
+.t-persons-social-links__item svg{width:17px;height:17px;}
+.t-persons-social-links__wrapper_round .t-persons-social-links__item svg{width:20px;height:20px;}
+}
+
+#rec2256930791 .t524__persname{font-size:20px;color:#ffffff;font-family:'AHTimes';font-weight:300;}
+#rec2256930791 .t524__persdescr{line-height:1;color:#ffffff;font-family:'AHTimes';font-weight:500;}
+#rec2256930791 .t524__perstext{color:#ffffff;}
+
+.t-inputpromocode__wrapper .t-text{color:#000;}
+
+#rec810897319 .t-btnflex.t-btnflex_type_submit{color:#ffffff;background-color:#000000;--border-width:0px;border-style:none !important;box-shadow:none !important;font-family:AHTimes;font-weight:500;text-transform:uppercase;transition-duration:0.2s;transition-property:background-color,color,border-color,box-shadow,opacity,transform,gap;transition-timing-function:ease-in-out;}

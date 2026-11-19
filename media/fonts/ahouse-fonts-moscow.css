@@ -1,0 +1,3 @@
+/* Only /moscow_business had the AHTimes 300 face in the original CSS.
+   Load after ahouse-fonts.css on that page only. */
+@font-face{font-family:'AHTimes';src:url('./roboto-condensed-medium.woff2') format('woff2');font-weight:300;font-style:normal;font-display:swap}
