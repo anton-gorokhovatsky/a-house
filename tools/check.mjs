@@ -44,10 +44,13 @@ for (const file of htmlFiles) {
     const value=tag[0].match(new RegExp('\\s'+attribute+'\\s*=\\s*["\\x27]([^"\\x27]*)','i'))?.[1];
     if (value!==undefined) validateURL(file,value,element!=='a');
     if (element==='a' && value===base+'404.html') errors.push(file+' links straight to the error page');
-    if (element==='source' && tag[0].includes('prefers-reduced-motion')) {
-      const still=tag[0].match(/\bsrcset="([^"]+)"/i)?.[1];
-      if (still) validateURL(file,still,true);
-      else errors.push(file+' is missing its reduced-motion picture');
+    if (element==='img' || element==='source') {
+      const candidates=tag[0].match(/\bsrcset="([^"]+)"/i)?.[1];
+      if (candidates) {
+        for (const candidate of candidates.split(',')) validateURL(file,candidate.trim().split(/\s+/)[0],true);
+      } else if (element==='source' && tag[0].includes('prefers-reduced-motion')) {
+        errors.push(file+' is missing its reduced-motion picture');
+      }
     }
     if (element==='script' && !value) errors.push(file+' contains an inline script');
     if (element==='form' && (!/\smethod="dialog"/i.test(tag[0]) || /\saction=/i.test(tag[0]))) errors.push(file+' contains a live form');

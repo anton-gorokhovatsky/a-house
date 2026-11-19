@@ -22,8 +22,10 @@ jobs:
         with:
           node-version: 22
       - uses: actions/configure-pages@v5
+      - run: npm ci --ignore-scripts
       - run: npm run build
       - run: npm run check
+      - run: npm run check:browser
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

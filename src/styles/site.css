@@ -67,10 +67,10 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
 }
 .site-nav-house { grid-column: 3; justify-content: flex-end; }
 .site-navigation a, .site-presence-toggle {
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
+  vertical-align: middle;
   min-block-size: 44px;
-  padding: 0;
+  padding: max(0px, calc((44px - 1.25em) / 2)) 0;
   border: 0;
   background: none;
   font: inherit;
@@ -160,10 +160,16 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
     overscroll-behavior: contain;
   }
   .site-nav-projects, .site-nav-house { display: block; text-align: center; }
-  .site-navigation :is(a, .site-presence-toggle) { justify-content: center; max-width: 100%; }
+  .site-navigation :is(a, .site-presence-toggle) { max-width: 100%; }
   #t-header .site-submenu { position: static; width: auto; max-width: 100%; padding: 0; transform: none; }
   .site-submenu a { text-transform: none; }
   .home-cover .t-cover__arrow-svg { width: 28px; }
+}
+
+/* Keep the original crop, overlays and focal point of each background. */
+[data-scene-image] { background-image: var(--scene-image); }
+@media screen {
+  .defer-offscreen-images [data-load-on-approach] { background-image: none !important; }
 }
 @media(prefers-reduced-motion:reduce) {
   *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

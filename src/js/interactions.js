@@ -458,10 +458,10 @@
           slide.className = 'ah-image-slide';
           slide.dataset.imageSlide = '';
           const img = document.createElement('img');
-          img.src = image.li_img;
-          img.alt = image.li_imgalt || '';
           img.loading = 'lazy';
           img.decoding = 'async';
+          img.alt = image.li_imgalt || '';
+          img.src = image.li_img;
           slide.append(img);
           holder.append(slide);
         });

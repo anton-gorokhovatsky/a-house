@@ -3,6 +3,8 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { keepProjectNames } from './typography.mjs';
+import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
+import { loadImageDelivery } from './images.mjs';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const file = (...parts) => path.join(projectRoot, ...parts);
@@ -19,6 +21,7 @@ const source = name => readFile(file('src', name), 'utf8');
 
 export async function build(base = siteBase(process.env.SITE_BASE)) {
   const output = file('dist');
+  const delivery = await loadImageDelivery(projectRoot);
   const routes = JSON.parse(await source('routes.json'));
   const archive = routes.filter(page => page.slug.startsWith('tpost/'))
     .sort((a,b) => (b.published || '').localeCompare(a.published || '') || a.title.localeCompare(b.title,'ru'))
@@ -41,7 +44,7 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     for (const item of await readdir(file('src',folder), { withFileTypes: true })) {
       const name = path.join(folder,item.name);
       if (item.isDirectory()) await styles(name);
-      else await writeFile(path.join(output,name), (await source(name)).replaceAll('@@ROOT@@',base));
+      else await writeFile(path.join(output,name), delivery.rewriteCSS(await source(name), { base }).replaceAll('@@ROOT@@',base));
     }
   }
   await styles('styles');
@@ -51,7 +54,8 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
     ...page.styles, 'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css'
   ])];
-  const references = new Set([...scripts, ...routes.flatMap(cssFor)]);
+  const nearbyImages = 'js/nearby-images.js';
+  const references = new Set([nearbyImages, ...scripts, ...routes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
     const bytes = await readFile(path.join(output, name));
     const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
@@ -63,10 +67,14 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     await mkdir(location,{ recursive:true });
     const body = (await source('pages/' + page.slug + '.html')).replace('<!-- HEADER -->',()=>header)
       .replace('<!-- FOOTER -->',()=>footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
+    const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(keepProjectNames(body)), { base, slug: page.slug });
+    const pageScripts = contentBody.includes(' data-load-on-approach')
+      ? '<script src="' + urls.get(nearbyImages) + '"></script>\n' + scriptTags
+      : scriptTags;
     const values = {
       TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug),
-      STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:scriptTags,
-      FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:keepProjectNames(body)
+      STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
+      FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
     const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
