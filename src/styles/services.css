@@ -85,6 +85,12 @@
 .services-form .t-radio__control { font-size: 16px; line-height: 1.4; }
 .services-form .t-input-block { overflow: visible; }
 .services-form [aria-invalid="true"] { outline: 2px solid #b82d22; outline-offset: 2px; }
+.services-form .t-input-error[data-service-field-error] {
+  display: block !important;
+  margin: 6px 0 0;
+  color: #8a211a;
+  font: 16px/1.4 AHTimes, Georgia, serif;
+}
 .services-form .t-form__errorbox-middle,
 .services-form .t-form__errorbox-bottom,
 .services-form .js-successbox { display: none !important; }
@@ -100,6 +106,7 @@
 .services-result p { margin: 0 0 18px; }
 .services-result h3 { font: inherit; font-size: 28px; line-height: 1.15; margin: 0 0 22px; }
 .services-link { text-underline-offset: 3px; text-decoration: underline !important; }
+#allrecords .services-result .services-link { color: inherit; }
 .services-result-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .services-result-actions button { margin-top: 10px; }
 .services-form[data-service-complete] > .t-form__inputsbox,

@@ -1,4 +1,5 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -43,20 +44,30 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     }
   }
   await styles('styles');
+  const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
+  const cssFor = page => [...new Set([
+    'media/fonts/ahouse-fonts.css',
+    ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
+    ...page.styles, 'styles/site.css', 'styles/interactions.css', 'styles/services.css'
+  ])];
+  const references = new Set([...scripts, ...routes.flatMap(cssFor)]);
+  const urls = new Map(await Promise.all([...references].map(async name => {
+    const bytes = await readFile(path.join(output, name));
+    const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
+    return [name, base+name+'?v='+digest];
+  })));
+  const scriptTags = scripts.map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
   for (const page of routes) {
     const location = page.slug === 'home' || page.slug === '404' ? output : path.join(output,page.slug);
     await mkdir(location,{ recursive:true });
-    const fonts = ['media/fonts/ahouse-fonts.css'];
-    if (page.slug==='moscow_business') fonts.push('media/fonts/ahouse-fonts-moscow.css');
-    const stylesheets = [...new Set([...fonts, ...page.styles, 'styles/site.css', 'styles/interactions.css', 'styles/services.css'])];
     const body = (await source('pages/' + page.slug + '.html')).replace('<!-- HEADER -->',()=>header)
       .replace('<!-- FOOTER -->',()=>footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
     const values = {
       TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug),
-      STYLE:stylesheets.map(url=>'<link rel="stylesheet" href="'+base+url+'">').join('\n'),
+      STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:scriptTags,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:body
     };
-    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|FAVICON|BODY)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
+    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
   }
   await writeFile(path.join(output,'.nojekyll'),'');

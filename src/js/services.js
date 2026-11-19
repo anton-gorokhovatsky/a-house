@@ -50,8 +50,8 @@
     form.reset();
     form.removeAttribute('data-service-complete');
     $$('input,select,textarea', form).forEach(field => {
-      field.removeAttribute('aria-invalid');
-      if (typeof field.setCustomValidity === 'function') field.setCustomValidity('');
+      field.setCustomValidity('');
+      showFieldError(field, '');
     });
     const result = $('[data-service-result]', form);
     if (result) result.hidden = true;
@@ -60,31 +60,45 @@
     setOffer(form);
   }
 
-  function fieldsValid(form) {
-    let valid = true;
-    $$('input,select,textarea', form).forEach(field => {
-      field.setCustomValidity('');
-      if (field.required && !['radio', 'checkbox'].includes(field.type) && !field.value.trim()) {
-        field.setCustomValidity('Заполните это поле.');
+  function showFieldError(field, message) {
+    if (message) field.setAttribute('aria-invalid', 'true');
+    else field.removeAttribute('aria-invalid');
+    const hint = field.closest('.t-input-group')?.querySelector('.t-input-error');
+    if (!hint) return;
+    hint.textContent = message;
+    hint.toggleAttribute('data-service-field-error', Boolean(message));
+    if (message && hint.id) {
+      const descriptions = new Set((field.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+      descriptions.add(hint.id);
+      field.setAttribute('aria-describedby', [...descriptions].join(' '));
+    }
+  }
+
+  function validateField(field) {
+    field.setCustomValidity('');
+    const value = field.value.trim();
+    let message = '';
+    if (field.validity.valueMissing || (field.required && !value && !['radio', 'checkbox'].includes(field.type))) {
+      if (field.type === 'radio' || field.tagName === 'SELECT') message = 'Выберите один из вариантов.';
+      else if (field.type === 'checkbox') message = 'Для продолжения требуется согласие.';
+      else message = 'Заполните это поле.';
+    } else if (field.type === 'tel' && value) {
+      const digits = value.replace(/\D/g, '');
+      if (digits.length < 7 || digits.length > 15 || /[^\d\s+().-]/.test(value)) {
+        message = 'Укажите номер телефона, например +7 900 000-00-00.';
       }
-      if (field.type === 'tel' && field.value.trim()) {
-        const digits = field.value.replace(/\D/g, '');
-        if (digits.length < 7 || digits.length > 15 || /[^\d\s+().-]/.test(field.value)) field.setCustomValidity('Укажите номер телефона, например +7 900 000-00-00.');
-      }
-      const ok = field.validity.valid;
-      if (ok) field.removeAttribute('aria-invalid');
-      else {
-        field.setAttribute('aria-invalid', 'true');
-        valid = false;
-      }
-    });
-    return valid;
+    } else if (field.type === 'email' && field.validity.typeMismatch) {
+      message = 'Укажите адрес почты в формате name@example.ru.';
+    }
+    field.setCustomValidity(message);
+    showFieldError(field, field.validationMessage);
   }
 
   function reviewForm(form) {
     const status = $('[data-service-status]', form);
-    if (!fieldsValid(form)) {
-      if (status) status.textContent = 'Проверьте обязательные поля и отметьте согласия. Анкета никуда не отправляется.';
+    $$('input,select,textarea', form).forEach(validateField);
+    if (form.querySelector('[aria-invalid="true"]')) {
+      if (status) status.textContent = 'Исправьте отмеченные поля. Подсказка есть рядом с каждым из них.';
       form.reportValidity();
       return;
     }
@@ -129,10 +143,13 @@
       }
     });
     form.addEventListener('input', event => {
-      if (event.target.matches('input,select,textarea')) {
-        event.target.setCustomValidity('');
-        event.target.removeAttribute('aria-invalid');
-      }
+      const field = event.target;
+      if (!field.matches('input,select,textarea') || !field.hasAttribute('aria-invalid')) return;
+      if (field.type === 'radio') {
+        $$('input[type="radio"]', form).filter(radio => radio.name === field.name).forEach(validateField);
+      } else validateField(field);
+      const status = $('[data-service-status]', form);
+      if (status && !form.querySelector('[aria-invalid="true"]')) status.textContent = '';
     });
   }
 
