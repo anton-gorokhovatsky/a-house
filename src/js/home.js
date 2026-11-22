@@ -2,7 +2,6 @@
   const overview = document.getElementById('overview');
   const sections = [...document.querySelectorAll('[data-home-section]')];
   const choices = [...document.querySelectorAll('[data-home-view]')];
-  const returnLink = document.querySelector('[data-home-return]');
   const links = [...document.querySelectorAll('a')];
   let restoreFrame = 0;
 
@@ -21,7 +20,6 @@
       if (choice.hash === '#' + (selected?.id || 'overview')) choice.setAttribute('aria-current', 'true');
       else choice.removeAttribute('aria-current');
     }
-    returnLink.hidden = !selected;
     const disclosure = target?.closest('details');
     if (disclosure) disclosure.open = true;
   }
@@ -79,6 +77,8 @@
   const events = document.querySelector('[data-home-events]');
   const past = document.querySelector('[data-events-past]');
   const pastItems = past.querySelector('.home-events');
+  const emptyEvents = document.querySelector('[data-events-empty]');
+  const upcomingChannel = document.querySelector('[data-upcoming-channel]');
   const entries = [...document.querySelectorAll('#program [data-event-end]')];
   const spotlight = document.querySelector('[data-home-now]');
   const featured = spotlight.querySelector('[data-event-end]');
@@ -93,12 +93,24 @@
     for (const item of entries) {
       const expired = item.dataset.eventEnd < today;
       const destination = expired ? pastItems : item === featured && featureIsCurrent ? spotlight : events;
-      if (item.parentElement !== destination) destination.append(item);
+      if (item.parentElement !== destination) {
+        const dateOf = entry => expired ? entry.dataset.eventEnd : entry.dataset.eventStart || entry.dataset.eventEnd;
+        const next = [...destination.children].find(entry =>
+          expired ? dateOf(entry) < dateOf(item) : dateOf(entry) > dateOf(item)
+        );
+        destination.insertBefore(item, next || null);
+        if (expired && item.contains(hashTarget())) past.open = true;
+      }
       const booking = item.querySelector('[data-event-booking]');
       if (booking) booking.hidden = expired;
+      const year = item.dataset.eventEnd.slice(0, 4);
+      const yearLabel = item.querySelector('[data-event-year]');
+      if (yearLabel) yearLabel.textContent = expired || year !== today.slice(0, 4) ? '\u00a0' + year : '';
     }
     past.hidden = !pastItems.childElementCount;
-    document.querySelector('[data-events-empty]').hidden = !!events.childElementCount;
+    const hasUpcoming = events.childElementCount > 0;
+    emptyEvents.hidden = hasUpcoming;
+    upcomingChannel.hidden = !hasUpcoming;
   }
   refreshDates();
   displayView(hashTarget());

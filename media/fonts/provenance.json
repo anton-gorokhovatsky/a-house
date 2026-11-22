@@ -118,5 +118,28 @@
     "local_bytes": 32960,
     "coverage_check": "Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present",
     "transformation": "Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained"
+  },
+  {
+    "family": "notoserif",
+    "filename": "NotoSerif[wdth,wght].ttf",
+    "axes": {
+      "wdth": 100,
+      "wght": 400
+    },
+    "output": "noto-serif-regular.woff2",
+    "css_weights": [],
+    "usage": "Noto Serif Regular for homepage editorial headings",
+    "sample": "A–Sport № 2, 4 000 ₽",
+    "resolved_axes": {
+      "wght": 400,
+      "wdth": 100
+    },
+    "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif%5Bwdth%2Cwght%5D.ttf",
+    "licence_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/OFL.txt",
+    "source_sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+    "local_sha256": "57a7aba3741fc8b976fc475fbbdb3f5aca79a2ec1069a9ac4d213539c6bad2e2",
+    "local_bytes": 163300,
+    "coverage_check": "Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present",
+    "transformation": "Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained"
   }
 ]

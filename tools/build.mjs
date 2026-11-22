@@ -2,7 +2,7 @@ import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { keepProjectNames } from './typography.mjs';
+import { keepProjectNames, typesetHomeText } from './typography.mjs';
 import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
 import { loadImageDelivery } from './images.mjs';
 
@@ -78,7 +78,8 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     await mkdir(location,{ recursive:true });
     const body = (await source('pages/' + page.slug + '.html')).replace('<!-- HEADER -->',()=>header)
       .replace('<!-- FOOTER -->',()=>page.slug === 'home' ? homeFooter : footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
-    const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(keepProjectNames(body)), { base, slug: page.slug });
+    const typeset = page.slug === 'home' ? typesetHomeText(body) : keepProjectNames(body);
+    const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')
       ? '<script src="' + urls.get(nearbyImages) + '"></script>\n' + scriptTags

@@ -42,6 +42,12 @@ FONT_ROLES = [
     {'family': 'robotocondensed', 'filename': 'RobotoCondensed[wght].ttf', 'axes': {'wght': 500}, 'output': 'roboto-condensed-medium.woff2', 'css_weights': [300, 500], 'original': 'Apercu Condensed Pro Medium'},
     {'family': 'robotoflex', 'filename': 'RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf', 'axes': {'wdth': 75, 'wght': 400, 'opsz': 14}, 'output': 'roboto-flex-compact-regular.woff2', 'css_weights': [600], 'original': 'MTS Compact Regular'},
     {'family': 'robotoflex', 'filename': 'RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf', 'axes': {'wdth': 151, 'XTRA': 570, 'wght': 400, 'opsz': 14}, 'output': 'roboto-flex-extended-regular.woff2', 'css_weights': [700], 'original': 'MTS Extended Regular'},
+    {
+        'family': 'notoserif', 'filename': 'NotoSerif[wdth,wght].ttf',
+        'axes': {'wdth': 100, 'wght': 400}, 'output': 'noto-serif-regular.woff2',
+        'css_weights': [], 'usage': 'Noto Serif Regular for homepage editorial headings',
+        'sample': 'A–Sport №\u00a02, 4\u202f000\u00a0₽',
+    },
 ]
 
 
@@ -260,9 +266,15 @@ def install_open_fonts():
     from fontTools.varLib.instancer import instantiateVariableFont
     output = MEDIA / 'fonts'
     output.mkdir(exist_ok=True)
+    manifest = output / 'provenance.json'
+    previous = {}
+    if manifest.exists():
+        previous = {entry['output']: entry for entry in json.loads(manifest.read_text())}
     provenance = []
-    css = ['/* Prototype font alternatives, SIL OFL 1.1. See README.md and provenance.json.', '   The original AHTimes weights select different families, not boldness.', '   Remove the source-site @font-face rules before loading this file. */']
+    css = ['/* Prototype font alternatives, SIL OFL 1.1. See README.md and provenance.json.', '   The original AHTimes weights select different families, not boldness.', '   Remove the source-site @font-face rules before loading this file. */', '/* Widths were fitted against the original Russian title and paragraph in the annual report. */']
     moscow_css = ['/* Only /moscow_business had the AHTimes 300 face in the original CSS.', '   Load after ahouse-fonts.css on that page only. */']
+    # The legacy families were optically fitted to the source annual report.
+    size_adjust = {400: ';size-adjust:93%', 500: ';size-adjust:88%', 700: ';size-adjust:112%'}
     for role in FONT_ROLES:
         directory = CACHE / 'fonts' / role['family']
         directory.mkdir(parents=True, exist_ok=True)
@@ -274,24 +286,32 @@ def install_open_fonts():
             raise ValueError('Expected OFL 1.1 licence for ' + role['family'])
         shutil.copyfile(directory / 'OFL.txt', output / (role['family'] + '-OFL.txt'))
         source = directory / role['filename']
-        font = TTFont(source)
+        destination = output / role['output']
+        for weight in role['css_weights']:
+            target = moscow_css if weight == 300 else css
+            target.append("@font-face{font-family:'AHTimes';src:url('./" + role['output'] + "') format('woff2');font-weight:" + str(weight) + ";font-style:normal;font-display:swap" + size_adjust.get(weight, '') + "}")
+
+        source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+        existing = previous.get(role['output'])
+        if (existing and all(existing.get(key) == value for key, value in role.items())
+                and existing['source_sha256'] == source_hash and destination.is_file()
+                and existing['local_sha256'] == hashlib.sha256(destination.read_bytes()).hexdigest()):
+            provenance.append(existing)
+            continue
+        font = TTFont(source, recalcTimestamp=False)
         axes = {axis.axisTag: role['axes'].get(axis.axisTag, axis.defaultValue) for axis in font['fvar'].axes}
         instantiateVariableFont(font, axes, inplace=True)
         font.flavor = 'woff2'
-        destination = output / role['output']
         font.save(destination)
         cmap = font.getBestCmap()
-        required = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789₽—«»'
+        required = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789₽—«»' + role.get('sample', '')
         missing = [ch for ch in required if ord(ch) not in cmap]
         if missing:
             raise ValueError('Required characters missing from ' + role['output'] + ': ' + ''.join(missing))
-        for weight in role['css_weights']:
-            target = moscow_css if weight == 300 else css
-            target.append("@font-face{font-family:'AHTimes';src:url('./" + role['output'] + "') format('woff2');font-weight:" + str(weight) + ";font-style:normal;font-display:swap}")
-        provenance.append({**role, 'resolved_axes': axes, 'source_url': base + urllib.parse.quote(role['filename']), 'licence_url': base + 'OFL.txt', 'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(), 'local_sha256': hashlib.sha256(destination.read_bytes()).hexdigest(), 'local_bytes': destination.stat().st_size, 'coverage_check': 'Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present', 'transformation': 'Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained'})
+        provenance.append({**role, 'resolved_axes': axes, 'source_url': base + urllib.parse.quote(role['filename']), 'licence_url': base + 'OFL.txt', 'source_sha256': source_hash, 'local_sha256': hashlib.sha256(destination.read_bytes()).hexdigest(), 'local_bytes': destination.stat().st_size, 'coverage_check': 'Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present', 'transformation': 'Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained'})
     (output / 'ahouse-fonts.css').write_text('\n'.join(css) + '\n')
     (output / 'ahouse-fonts-moscow.css').write_text('\n'.join(moscow_css) + '\n')
-    write_json(output / 'provenance.json', provenance)
+    write_json(manifest, provenance)
     print(json.dumps({'stage': 'fonts', 'files': len(provenance), 'bytes': sum(item['local_bytes'] for item in provenance), 'provenance': 'media/fonts/provenance.json'}), flush=True)
 
 

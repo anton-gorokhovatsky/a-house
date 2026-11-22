@@ -139,7 +139,26 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await section('program').isVisible(), true);
   assert.equal(await section('media').isVisible(), true);
   assert.equal(await section('club').isVisible(), false, 'The overview must keep club details in their own view');
-  assert.equal(await choice('media').isVisible(), false, 'Section choices belong to the closed menu');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const more = page.locator('.home-section-tail a[href="#publications"]');
+  await more.press('Enter');
+  const publications = page.getByRole('region', { name: 'Другие публикации' });
+  assert.equal(new URL(page.url()).hash, '#publications');
+  assert.ok(await publications.locator('.home-kicker').first().evaluate(async el => {
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const box = el.getBoundingClientRect();
+    return box.top >= document.querySelector('#t-header').getBoundingClientRect().bottom - 1 && box.top < innerHeight;
+  }), 'Other publications must immediately reveal the first additional article');
+  await page.goBack();
+  await page.waitForFunction(link => document.activeElement === link, await more.elementHandle());
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  assert.equal(await menu.isVisible(), mobile, 'Only a compact header needs a menu toggle');
+  assert.equal(await choice('media').isVisible(), !mobile, 'Desktop sections should be visible before interaction');
+  if (!mobile) {
+    const links = page.locator('#site-navigation a:visible');
+    const rows = await links.evaluateAll(items => items.map(a => Math.round(a.getBoundingClientRect().top)));
+    assert.ok(rows.length > 1 && Math.max(...rows) - Math.min(...rows) < 2, 'Desktop destinations must share one visible row');
+  }
   if (mobile) {
     await menu.focus();
     await page.keyboard.press('Enter');
@@ -154,7 +173,7 @@ async function checkHomeRoutes(page, mobile) {
     await page.waitForFunction(() => document.querySelector('#program').contains(document.activeElement));
     assert.equal(await menu.getAttribute('aria-expanded'), 'false', 'Choosing a section must close the mobile menu');
   }
-  await menu.click();
+  if (mobile) await menu.click();
   await choice('media').click();
   await section('media').waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media');
@@ -162,7 +181,7 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await section('program').isVisible(), false);
   const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
-  await menu.click();
+  if (mobile) await menu.click();
   await choice('program').focus();
   await page.keyboard.press('Enter');
   await section('program').waitFor({ state: 'visible' });

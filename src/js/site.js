@@ -61,7 +61,7 @@ if (header) {
   const presence = header.querySelector('.site-nav-presence');
   const trigger = presence?.querySelector('button');
   const submenu = presence?.querySelector('.site-submenu');
-  const compact = matchMedia(header.hasAttribute('data-menu-collapsed') ? 'all' : '(max-width: 61.25em)');
+  const compact = matchMedia('(max-width: 61.25em)');
 
   function openSubmenu(open) {
     if (!submenu || !trigger) return;
@@ -85,7 +85,10 @@ if (header) {
   new ResizeObserver(measureHeader).observe(header);
   compact.addEventListener('change', () => {
     if (compact.matches && menu.contains(document.activeElement)) toggle.focus({preventScroll: true});
-    if (!compact.matches && document.activeElement === toggle) header.querySelector('.site-header-brand').focus({preventScroll: true});
+    const focused = document.activeElement;
+    if (!compact.matches && (focused === toggle || (header.contains(focused) && !focused.getClientRects().length))) {
+      header.querySelector('.site-header-brand').focus({preventScroll: true});
+    }
     openMenu(false);
   });
   window.addEventListener('pageshow', event => { if (event.persisted) openMenu(false); });
@@ -106,8 +109,8 @@ if (header) {
   document.addEventListener('focusin', event => dismissOutside(event.target));
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
-    if (submenu && !submenu.hidden) { openSubmenu(false); trigger.focus(); }
-    else if (toggle.getAttribute('aria-expanded') === 'true') { openMenu(false); toggle.focus(); }
+    if (submenu && !submenu.hidden) { openSubmenu(false); trigger.focus({ preventScroll: true }); }
+    else if (toggle.getAttribute('aria-expanded') === 'true') { openMenu(false); toggle.focus({ preventScroll: true }); }
   });
   menu.addEventListener('click', event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

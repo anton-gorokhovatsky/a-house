@@ -1,10 +1,22 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { projectRoot, siteBase } from './build.mjs';
+import { keepProjectNames, typesetHomeText } from './typography.mjs';
 
 const dist = path.join(projectRoot, 'dist');
 const base = siteBase(process.env.SITE_BASE);
 const errors = [];
+
+// Keep a real inline boundary and a form in the sample: plain-text checks miss
+// misplaced characters on either side of an anchor and changes to form values.
+const linkTag = '<a title="Вход в Дом" href="/visit/">';
+const form = '<dialog><form><label>Вход в Дом <input value="№ 2"></label></form></dialog>';
+const sample = '<p>В ' + linkTag + 'Доме</a> до <time>29</time> ноября 2026, 19:30. Билет — 4 000 ₽. Выпуск № 2.</p>' + form;
+const typesetSample = '<p>В\u00a0' + linkTag + 'Доме</a> до\u00a0<time>29</time>\u00a0ноября\u00a02026, 19:30. Билет\u00a0— 4\u202f000\u00a0₽. Выпуск №\u202f2.</p>' + form;
+if (typesetHomeText(sample) !== typesetSample || keepProjectNames(sample) !== sample) {
+  errors.push('Homepage typography must preserve inline markup, imported pages and form values');
+}
+
 const files = new Set();
 async function inventory(directory) {
   for (const file of await readdir(path.join(dist,directory),{withFileTypes:true})) {
