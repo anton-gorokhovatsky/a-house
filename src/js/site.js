@@ -165,7 +165,7 @@ if (['archive', 'special_projects'].includes(document.body.dataset.page)) {
     const link = original?.getClientRects().length ? original : matches.find(item => item.getClientRects().length);
     if (!link) return;
     link.focus({ preventScroll: true });
-    // WebKit can restore scroll before the project thumbnails acquire their height.
+    // WebKit can restore scroll before the responsive project layout has settled.
     requestAnimationFrame(() => {
       if (document.activeElement !== link) return;
       const shift = link.getBoundingClientRect().top - entry.top;

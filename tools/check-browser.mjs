@@ -212,6 +212,22 @@ async function checkArchiveReading(page) {
   await page.waitForURL(url + 'archive/');
   assert.ok(await listing.getByRole('link', { name: title, exact: true }).isVisible(),
     'The archive must contain the same article on return');
+
+  await page.goto(url + 'special_projects/');
+  const clients = page.locator('main .t594__container');
+  assert.ok(await clients.locator('img').evaluateAll(images => images.length > 0 && images.every(image =>
+    Number(image.getAttribute('width')) > 0 && Number(image.getAttribute('height')) > 0)),
+    'Project logos must reserve their area before the lazy files arrive');
+  const projects = clients.getByRole('link');
+  await projects.first().focus();
+  await page.keyboard.press('Tab');
+  const chosen = projects.nth(1);
+  const position = await chosen.evaluate(link => ({ address: link.href, top: link.getBoundingClientRect().top }));
+  await page.keyboard.press('Enter');
+  await page.waitForURL(position.address);
+  await page.goBack();
+  await page.waitForFunction(({ address, top }) => document.activeElement?.href === address &&
+    Math.abs(document.activeElement.getBoundingClientRect().top - top) <= 2, position);
 }
 
 async function checkClubApplication(page) {
