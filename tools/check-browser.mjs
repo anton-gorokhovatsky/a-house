@@ -11,8 +11,10 @@ server.listen(0, '127.0.0.1');
 await once(server, 'listening');
 const url = 'http://127.0.0.1:' + server.address().port + base;
 
-async function checkFirstHouseVisit(page, requested) {
-  const house = page.locator('.home-intro + .t-rec .t396__artboard');
+async function checkHouseVisit(page, requested) {
+  // The House page retains the original multi-breakpoint composition. Six of
+  // its desktop photos are outside the cropped mobile artboard.
+  const house = page.locator('#rec4578583101 .t396__artboard');
   const clippedURLs = await house.evaluate(board => {
     const frame = board.getBoundingClientRect();
     const style = getComputedStyle(board);
@@ -33,15 +35,9 @@ async function checkFirstHouseVisit(page, requested) {
     return [...new Set([...hidden].flatMap(sources))].filter(src => !elsewhere.has(src));
   });
 
-  const [scrolled] = await Promise.all([
-    page.evaluate(() => new Promise(resolve => {
-      const timeout = setTimeout(() => resolve(false), 10000);
-      document.addEventListener('scrollend', () => { clearTimeout(timeout); resolve(true); }, { once: true });
-    })),
-    page.locator('.home-cover .t-cover__arrow').tap()
-  ]);
-  assert.ok(scrolled, 'Tapping the arrow must scroll to the House');
-  const facade = house.locator('[data-elem-type="image"] img');
+  assert.ok(clippedURLs.length, 'Expected clipped desktop photographs in the mobile House artboard');
+  const facade = page.locator('main img[src*="/ill-"]').first();
+  await facade.scrollIntoViewIfNeeded();
   await page.waitForFunction(img => img.complete && img.naturalWidth > 0, await facade.elementHandle(), { timeout: 10000 });
   const view = await facade.evaluate(async img => {
     await img.decode();
@@ -57,9 +53,106 @@ async function checkFirstHouseVisit(page, requested) {
       observer.observe(img);
     });
   });
-  assert.ok(view.received && view.visible, 'The first scroll must reveal the loaded illustration of the House');
+  assert.ok(view.received && view.visible, 'Opening the House must reveal its loaded illustration');
+  await house.scrollIntoViewIfNeeded();
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   assert.deepEqual(clippedURLs.filter(src => requested.has(src)), [], 'Photos clipped by the mobile House scene were requested');
-  console.log('First mobile scroll showed the facade without fetching the clipped photographs.');
+  console.log('The House page showed the facade without fetching its clipped photographs.');
+}
+
+async function checkExpiredProgram(page) {
+  await page.goto(url + '#program');
+  const endDates = await page.locator('#program [data-event-end]').evaluateAll(items => items.map(item => item.dataset.eventEnd));
+  if (!endDates.length) return;
+  const afterProgram = new Date(endDates.sort().at(-1) + 'T12:00:00+03:00');
+  afterProgram.setUTCDate(afterProgram.getUTCDate() + 1);
+  await page.clock.setFixedTime(afterProgram);
+  await page.reload();
+  assert.ok(await page.locator('[data-events-empty]').isVisible(), 'An ended program must point visitors to fresh announcements');
+  assert.equal(await page.locator('[data-home-now]').isVisible(), false, 'An expired exhibition cannot be featured as current');
+  const past = page.locator('[data-events-past]');
+  await past.locator('summary').click();
+  assert.equal(await past.locator('[data-event-end]:visible').count(), endDates.length);
+  assert.equal(await past.locator('[data-event-booking]:visible').count(), 0, 'Expired entries must withdraw booking links');
+}
+
+async function checkReadingReturn(page, mobile) {
+  await page.goto(mobile ? url : url + '#media');
+  if (mobile) await page.locator('[data-home-view][href="#media"]').click();
+  const subscription = page.locator('#media a[href="#friend"]');
+  const originalTop = await subscription.evaluate(async link => {
+    await document.fonts.ready;
+    link.scrollIntoView({ block: 'center', behavior: 'instant' });
+    link.focus({ preventScroll: true });
+    return link.getBoundingClientRect().top;
+  });
+  await page.keyboard.press('Enter');
+  assert.equal(new URL(page.url()).hash, '#friend');
+  const order = page.locator('[data-service-order="A-Friend"]:visible').first();
+  await order.press('Enter');
+  const dialog = page.locator('#services-checkout');
+  await dialog.waitFor({ state: 'visible' });
+  assert.equal(await dialog.locator('[data-service-order-title]').innerText(), 'A-Friend');
+  // The browser can refocus the section after popstate. Check the final render.
+  const restored = page.evaluate(() => new Promise(resolve => {
+    window.addEventListener('hashchange', () => requestAnimationFrame(() => requestAnimationFrame(resolve)), { once: true });
+  }));
+  await page.goBack();
+  await restored;
+  assert.equal(await dialog.isVisible(), false, 'Back must close an open preview');
+  assert.equal(new URL(page.url()).hash, '#media');
+  assert.ok(await subscription.evaluate((link, top) => link === document.activeElement
+    && Math.abs(link.getBoundingClientRect().top - top) < 4, originalTop), 'Back must return to the focused link at the same reading position');
+  await page.goForward();
+  await order.click();
+  await dialog.waitFor({ state: 'visible' });
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({ state: 'hidden' });
+  assert.ok(await order.evaluate(el => el === document.activeElement), 'Closing the preview should restore focus to A-Friend');
+}
+
+async function checkHomeRoutes(page, mobile) {
+  const choice = name => page.locator('[data-home-view][href$="#' + name + '"]:visible').first();
+  const section = name => page.locator('[data-home-section][id="' + name + '"]');
+  await checkReadingReturn(page, mobile);
+  await page.goto(url);
+  const menu = page.locator('.site-menu-toggle');
+  if (mobile) {
+    await menu.focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+    await page.keyboard.press('Escape');
+    assert.equal(await menu.getAttribute('aria-expanded'), 'false');
+    assert.ok(await menu.evaluate(el => el === document.activeElement), 'Escape must return focus to the menu toggle');
+    await page.keyboard.press('Enter');
+    const programLink = page.locator('.site-navigation a[href="#program"]');
+    await programLink.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => document.querySelector('#program').contains(document.activeElement));
+    assert.equal(await menu.getAttribute('aria-expanded'), 'false', 'Choosing a section must close the mobile menu');
+  }
+  await choice('media').click();
+  await section('media').waitFor({ state: 'visible' });
+  assert.equal(new URL(page.url()).hash, '#media');
+  assert.equal(await choice('media').getAttribute('aria-current'), 'true');
+  assert.equal(await section('program').isVisible(), false);
+  const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
+  assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
+  await choice('program').focus();
+  await page.keyboard.press('Enter');
+  await section('program').waitFor({ state: 'visible' });
+  assert.equal(new URL(page.url()).hash, '#program');
+  assert.ok(await section('program').locator('a[href^="https://"]:visible').first().isVisible(), 'The program must identify where an external event continues');
+  await page.goBack();
+  await section('media').waitFor({ state: 'visible' });
+  assert.equal(new URL(page.url()).hash, '#media', 'Back must restore the chosen reading view');
+  await page.goto(url + '#services-checkout');
+  await page.locator('#services-checkout').waitFor({ state: 'visible' });
+  await page.keyboard.press('Escape');
+  await page.goto(url + '#visit');
+  await section('visit').waitFor({ state: 'visible' });
+  await section('visit').locator('a[href$="/residents/"]').first().click();
+  await page.waitForURL(url + 'residents/');
 }
 
 let browser;
@@ -71,8 +164,11 @@ try {
       viewport: { width, height: 844 }, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1
     });
     const requested = new Set();
-    page.on('request', request => requested.add(request.url()));
-    await page.goto(url);
+    page.on('request', request => {
+      if (request.isNavigationRequest() && request.frame() === page.mainFrame()) requested.clear();
+      requested.add(request.url());
+    });
+    await checkHomeRoutes(page, mobile);
     const menu = page.locator('.site-menu-toggle');
     if (await menu.isVisible()) await menu.click();
     const link = page.locator('.site-navigation').getByRole('link', { name: /^Дом A[–‑-]House$/i });
@@ -96,19 +192,20 @@ try {
     assert.ok(gap > 1, 'Missing visible space in «Дом A–House» at ' + width + ' px');
     if (mobile) {
       await menu.click();
-      const photo = page.locator('main .t786__imgwrapper .js-product-img').last();
-      const source = await photo.evaluate(el => getComputedStyle(el).getPropertyValue('--scene-image').match(/url\(["']?([^"')]+)/)[1]);
-      const photoURL = new URL(source, url).href;
-      assert.equal(requested.has(photoURL), false, 'A distant photo loaded before scrolling');
-      await checkFirstHouseVisit(page, requested);
-      await photo.scrollIntoViewIfNeeded();
-      await page.waitForFunction(src => performance.getEntriesByName(src).some(r => r.responseEnd > 0), photoURL);
+      await checkHouseVisit(page, requested);
       requested.clear();
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.goto(url + 'press/');
       const cover = await page.locator('.reading-cover').evaluate(el => getComputedStyle(el).backgroundImage);
       assert.match(cover, /\/stills\//, 'Reduced motion must show a still on the press cover');
+      const photo = page.locator('main .t1241__cover[data-scene-image]').first();
+      const source = await photo.evaluate(el => getComputedStyle(el).getPropertyValue('--scene-image').match(/url\(["']?([^"')]+)/)[1]);
+      const photoURL = new URL(source, url).href;
+      assert.equal(requested.has(photoURL), false, 'A distant photo loaded before scrolling');
+      await photo.scrollIntoViewIfNeeded();
+      await page.waitForFunction(src => performance.getEntriesByName(src).some(r => r.responseEnd > 0), photoURL);
       assert.ok(![...requested].some(src => /\.gif(?:\?|$)/i.test(src)), 'An animated GIF loaded in reduced motion');
+      await checkExpiredProgram(page);
     }
     console.log('Visible word space at ' + width + ' px: ' + gap.toFixed(2) + ' px');
     await page.close();

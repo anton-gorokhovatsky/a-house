@@ -49,25 +49,26 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
   }
   await styles('styles');
   const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
+  const scriptsFor = page => page.slug === 'home' ? [...scripts, 'js/home.js'] : scripts;
   const cssFor = page => [...new Set([
     'media/fonts/ahouse-fonts.css',
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
     ...page.styles, 'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
-  const references = new Set([nearbyImages, ...scripts, ...routes.flatMap(cssFor)]);
+  const references = new Set([nearbyImages, ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
     const bytes = await readFile(path.join(output, name));
     const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
     return [name, base+name+'?v='+digest];
   })));
-  const scriptTags = scripts.map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
   for (const page of routes) {
     const location = page.slug === 'home' || page.slug === '404' ? output : path.join(output,page.slug);
     await mkdir(location,{ recursive:true });
     const body = (await source('pages/' + page.slug + '.html')).replace('<!-- HEADER -->',()=>header)
       .replace('<!-- FOOTER -->',()=>footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(keepProjectNames(body)), { base, slug: page.slug });
+    const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')
       ? '<script src="' + urls.get(nearbyImages) + '"></script>\n' + scriptTags
       : scriptTags;

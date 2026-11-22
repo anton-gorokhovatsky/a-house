@@ -11,7 +11,6 @@ main:focus { outline: none; }
 .t396__artboard .tn-elem,.t396__artboard .tn-group,.t396__artboard .t396__carrier,.t396__artboard .t396__filter { visibility: visible; }
 .t-img,.t-bgimg,.t-cover__carrier,.t-animate,.t-animate_started,.t396__artboard .tn-atom[data-animate-sbs-event] { opacity: 1; }
 .t-animate { transform: none; }
-.t-records .t-cover__arrow { border: 0; background: transparent; padding: 0; cursor: pointer; }
 .t396__artboard .tn-atom img { max-width: 100%; }
 /* The source uses separate desktop and mobile recommendations links. */
 @media(min-width:960px) {
@@ -23,7 +22,7 @@ main:focus { outline: none; }
   [data-page="longevity"] #rec3917158401 .t396__artboard { position:relative; top:auto; bottom:auto; }
   [data-page="longevity"] #rec3917158401 [data-elem-id="1789477822553"] { top:auto; bottom:0; }
 }
-/* The header's measured height is also the first cover's inset and anchor offset. */
+/* Keep fragment targets clear of the sticky desktop navigation. */
 :root { --site-header-height: 3.75rem; }
 html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
 .site-header {
@@ -94,25 +93,6 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
   background: #000;
 }
 .site-header [hidden], .site-header .site-menu-toggle { display: none; }
-.home-cover {
-  --cover-height: calc(100vh - var(--site-header-height));
-  --cover-height: calc(100dvh - var(--site-header-height));
-  display: grid;
-  height: var(--cover-height);
-  place-items: center;
-  background: #000;
-}
-.home-cover-title { max-width: calc(100% - 2.5rem); margin: 0; line-height: 0; }
-.home-cover-title .t306__img { display: block; width: auto; max-width: 100%; max-height: max(1px, calc(var(--cover-height) - 7rem)); }
-.home-cover .t-cover__arrow {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  margin-inline: auto;
-  bottom: max(12px, env(safe-area-inset-bottom));
-  line-height: 0;
-}
 @media (max-width: 61.25em) {
   :root { --site-header-height: 4.375rem; }
   html:has(.site-header) { scroll-padding-top: 0; }
@@ -163,7 +143,6 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
   .site-navigation :is(a, .site-presence-toggle) { max-width: 100%; }
   #t-header .site-submenu { position: static; width: auto; max-width: 100%; padding: 0; transform: none; }
   .site-submenu a { text-transform: none; }
-  .home-cover .t-cover__arrow-svg { width: 28px; }
 }
 
 /* Keep the original crop, overlays and focal point of each background. */

@@ -6,9 +6,14 @@
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 
+  function syncScrollLock() {
+    document.documentElement.classList.toggle('services-modal-open', !!$('dialog.services-dialog[open]'));
+  }
+
   function closeDialog(dialog) {
     if (!dialog?.open) return;
     dialog.close();
+    syncScrollLock();
   }
 
   function wireDialog(dialog) {
@@ -23,7 +28,7 @@
     });
     dialog.addEventListener('close', () => {
       $$('[data-service-form]', dialog).forEach(clearForm);
-      document.documentElement.classList.toggle('services-modal-open', !!$('dialog.services-dialog[open]'));
+      syncScrollLock();
       const opener = openers.get(dialog);
       if (opener?.isConnected) opener.focus({ preventScroll: true });
     });
@@ -219,6 +224,15 @@
       }
     });
     window.addEventListener('hashchange', openHash);
+    // A history traversal can leave the dialog's section while the dialog is open.
+    // Release the modal before the destination restores keyboard focus and scroll.
+    window.addEventListener('popstate', () => {
+      for (const dialog of $$('dialog.services-dialog[open]')) {
+        if ('#' + dialog.id === location.hash) continue;
+        openers.delete(dialog);
+        closeDialog(dialog);
+      }
+    }, { capture: true });
     // Only the current DOM holds entries; clear them when leaving or closing.
     window.addEventListener('pagehide', () => $$('[data-service-form]').forEach(clearForm));
     openHash();

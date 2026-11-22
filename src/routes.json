@@ -2,23 +2,15 @@
   {
     "slug": "home",
     "title": "A–House",
-    "description": "Клуб и просветительская платформа, посвящённые архитектуре и дизайну.",
+    "description": "События, пространства и издания A–House. Программа Дома, каталог архитектурных бюро, клуб и сотрудничество.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
       "styles/source/blocks-page38363349.css",
-      "styles/source/animation-2.0.css",
-      "styles/source/cover-1.0.css",
-      "styles/source/popup-1.1.css",
-      "styles/source/slds-1.4.css",
-      "styles/source/catalog-1.1.css",
       "styles/source/forms-1.0.css",
-      "styles/source/catalog-filters-1.0.css",
       "styles/source/cart-1.0.css",
-      "styles/source/menusub-1.0.css",
-      "styles/source/zoom-2.0.css",
-      "styles/pages/home.css",
-      "styles/chrome.css"
+      "styles/chrome.css",
+      "styles/pages/home.css"
     ]
   },
   {

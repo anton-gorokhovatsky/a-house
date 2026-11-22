@@ -59,11 +59,12 @@ if (header) {
   const menu = header.querySelector('.site-navigation');
   const toggle = header.querySelector('.site-menu-toggle');
   const presence = header.querySelector('.site-nav-presence');
-  const trigger = presence.querySelector('button');
-  const submenu = presence.querySelector('.site-submenu');
+  const trigger = presence?.querySelector('button');
+  const submenu = presence?.querySelector('.site-submenu');
   const compact = matchMedia('(max-width: 61.25em)');
 
   function openSubmenu(open) {
+    if (!submenu || !trigger) return;
     trigger.setAttribute('aria-expanded', String(open));
     submenu.hidden = !open;
   }
@@ -89,8 +90,8 @@ if (header) {
   });
   window.addEventListener('pageshow', event => { if (event.persisted) openMenu(false); });
   toggle.addEventListener('click', () => openMenu(menu.hidden));
-  trigger.addEventListener('click', () => openSubmenu(submenu.hidden));
-  trigger.addEventListener('keydown', event => {
+  trigger?.addEventListener('click', () => openSubmenu(submenu.hidden));
+  trigger?.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       openSubmenu(true);
@@ -98,30 +99,37 @@ if (header) {
     }
   });
   function dismissOutside(target) {
-    if (!presence.contains(target)) openSubmenu(false);
+    if (!presence?.contains(target)) openSubmenu(false);
     if (!header.contains(target)) openMenu(false);
   }
   document.addEventListener('click', event => dismissOutside(event.target));
   document.addEventListener('focusin', event => dismissOutside(event.target));
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
-    if (!submenu.hidden) { openSubmenu(false); trigger.focus(); }
+    if (submenu && !submenu.hidden) { openSubmenu(false); trigger.focus(); }
     else if (toggle.getAttribute('aria-expanded') === 'true') { openMenu(false); toggle.focus(); }
+  });
+  menu.addEventListener('click', event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest('a[href]');
+    if (!link || !link.hash || link.origin !== location.origin || link.pathname !== location.pathname ||
+        link.search !== location.search || toggle.getAttribute('aria-expanded') !== 'true') return;
+    const target = document.getElementById(link.hash.slice(1));
+    if (!target) return;
+    if (target.tabIndex < 0) target.tabIndex = -1;
+    openMenu(false);
+    // A selection may reveal its target as part of the fragment navigation.
+    requestAnimationFrame(() => {
+      if (document.activeElement === document.body || menu.contains(document.activeElement)) {
+        target.focus({ preventScroll: true });
+      }
+    });
   });
   for (const link of header.querySelectorAll('a[href]')) {
     if (link.origin === location.origin && link.pathname === location.pathname && !link.hash) link.setAttribute('aria-current', 'page');
   }
 }
 
-for (const button of document.querySelectorAll('button.t-cover__arrow')) {
-  button.addEventListener('click', () => {
-    const section = button.closest('.t-rec')?.nextElementSibling;
-    if (!section) return;
-    section.tabIndex = -1;
-    section.focus({preventScroll: true});
-    section.scrollIntoView({behavior: reduced.matches ? 'instant' : 'smooth'});
-  });
-}
 for (const gallery of document.querySelectorAll('.archive-gallery')) {
   const track = gallery.querySelector('.archive-gallery-track');
   const controls = gallery.querySelector('.archive-gallery-controls');
