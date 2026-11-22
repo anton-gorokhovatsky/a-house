@@ -19,6 +19,42 @@ export function siteBase(value = '/a-house/') {
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const source = name => readFile(file('src', name), 'utf8');
 
+function consentLink(link, hintId) {
+  const tokens = { rel: [], 'aria-describedby': [] };
+  const attributes = link.slice(0, -1).replace(/\s+(target|rel|aria-describedby)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi,
+    (_, name, doubleQuoted, singleQuoted, unquoted) => {
+      const list = tokens[name.toLowerCase()];
+      if (list) {
+        const value = doubleQuoted ?? singleQuoted ?? unquoted;
+        list.push(...value.split(/\s+/).filter(Boolean));
+      }
+      return '';
+    });
+  tokens.rel.push('noopener', 'noreferrer');
+  tokens['aria-describedby'].push(hintId);
+  const metadata = Object.entries(tokens).map(([name, list]) => {
+    const value = [...new Set(list)].join(' ').replaceAll('"', '&quot;');
+    return ` ${name}="${value}"`;
+  }).join('');
+  return `${attributes} target="_blank"${metadata}>`;
+}
+
+function prepareConsentDocuments(html) {
+  let formNumber = 0;
+  return html.replace(/<form\b[^>]*\bdata-service-form\b[^>]*>[\s\S]*?<\/form>/gi, form => {
+    const hintId = `service-documents-${++formNumber}`;
+    let needsHint = true;
+    return form.replace(/<label\b[^>]*\bt-checkbox__control\b[^>]*>[\s\S]*?<\/label>/gi, label => {
+      if (!/<a\s[^>]*\bhref=/i.test(label)) return label;
+      const hint = needsHint ? `<p class="services-hint" id="${hintId}">Документы открываются в новой вкладке.</p>` : '';
+      needsHint = false;
+      // The demo clears entered data on pagehide. Reading a consent document
+      // must leave the original form open, including when JavaScript is off.
+      return hint + label.replace(/<a\s[^>]*\bhref=[^>]*>/gi, link => consentLink(link, hintId));
+    });
+  });
+}
+
 export async function build(base = siteBase(process.env.SITE_BASE)) {
   const output = file('dist');
   const delivery = await loadImageDelivery(projectRoot);
@@ -78,7 +114,8 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     await mkdir(location,{ recursive:true });
     const body = (await source('pages/' + page.slug + '.html')).replace('<!-- HEADER -->',()=>header)
       .replace('<!-- FOOTER -->',()=>page.slug === 'home' ? homeFooter : footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
-    const typeset = page.slug === 'home' ? typesetHomeText(body) : keepProjectNames(body);
+    const pageBody = prepareConsentDocuments(body);
+    const typeset = page.slug === 'home' ? typesetHomeText(pageBody) : keepProjectNames(pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')

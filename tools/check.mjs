@@ -28,6 +28,7 @@ async function inventory(directory) {
 await inventory('');
 const routes = JSON.parse(await readFile(path.join(projectRoot,'src/routes.json'),'utf8'));
 const htmlFiles = routes.map(({slug}) => slug==='home' ? 'index.html' : slug==='404' ? '404.html' : slug+'/index.html');
+const routeTitles = new Map(routes.map(({slug, title}) => [base + slug + '/', title]));
 function validateURL(source, value, asset) {
   value=value.trim().replaceAll('&amp;','&');
   if (!value || value[0]==='#' || value.startsWith('data:')) return;
@@ -50,6 +51,16 @@ for (const file of htmlFiles) {
   if (!/<meta\b[^>]*\bname="robots"[^>]*\bcontent="[^"]*\bnoindex\b/i.test(source)) errors.push(file+' lacks noindex');
   if (!/<h1\b|role="heading" aria-level="1"/i.test(source)) errors.push(file+' lacks its page heading');
   if (source.includes('@@ROOT@@') || source.includes('{{BODY}}')) errors.push(file+' has an unresolved template');
+  // The House renovation announcement also returns HTTP 200. A consent link
+  // labelled as a privacy policy must lead to the published policy itself.
+  for (const [label] of source.matchAll(/<label\b[^>]*\bt-checkbox__control\b[^>]*>[\s\S]*?<\/label>/gi)) {
+    for (const [, , href, contents] of label.matchAll(/<a\b[^>]*?\shref=(["'])([^"']+)\1[^>]*>([\s\S]*?)<\/a>/gi)) {
+      const title = routeTitles.get(href);
+      if (title && /политик/iu.test(contents.replace(/<[^>]+>/g, '')) && !/политик/iu.test(title)) {
+        errors.push(file + ' labels ' + href + ' as a privacy policy, but its page is «' + title + '»');
+      }
+    }
+  }
   for (const tag of source.matchAll(/<(a|img|source|script|link|form|iframe|video|audio)\b[^>]*>/gi)) {
     const element=tag[1].toLowerCase();
     const attribute=element==='a' || element==='link' ? 'href' : 'src';

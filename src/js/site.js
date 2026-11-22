@@ -133,6 +133,47 @@ if (header) {
   }
 }
 
+if (['archive', 'special_projects'].includes(document.body.dataset.page)) {
+  const list = document.querySelector('main');
+  const articles = [...list.querySelectorAll('a[href]')].filter(link =>
+    link.origin === location.origin && /\/tpost\/[^/]+\/?$/.test(link.pathname));
+  const matchingLinks = path => articles.filter(link => link.pathname === path);
+
+  document.addEventListener('click', event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest('a[href]');
+    if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
+    const state = { ...history.state };
+    if (articles.includes(link)) {
+      state.articleReturn = {
+        path: link.pathname, occurrence: matchingLinks(link.pathname).indexOf(link), top: link.getBoundingClientRect().top
+      };
+    } else if (state.articleReturn) {
+      delete state.articleReturn;
+    } else return;
+    history.replaceState(state, '');
+  });
+
+  window.addEventListener('pageshow', event => {
+    const entry = history.state?.articleReturn;
+    if (!entry) return;
+    const returning = event.persisted || window.navigation?.activation?.navigationType === 'traverse' ||
+      performance.getEntriesByType?.('navigation')?.[0]?.type === 'back_forward';
+    if (!returning) return;
+    const matches = matchingLinks(entry.path);
+    const original = matches[entry.occurrence];
+    const link = original?.getClientRects().length ? original : matches.find(item => item.getClientRects().length);
+    if (!link) return;
+    link.focus({ preventScroll: true });
+    // WebKit can restore scroll before the project thumbnails acquire their height.
+    requestAnimationFrame(() => {
+      if (document.activeElement !== link) return;
+      const shift = link.getBoundingClientRect().top - entry.top;
+      if (Math.abs(shift) > 1) window.scrollBy({ top: shift, behavior: 'instant' });
+    });
+  });
+}
+
 for (const gallery of document.querySelectorAll('.archive-gallery')) {
   const track = gallery.querySelector('.archive-gallery-track');
   const controls = gallery.querySelector('.archive-gallery-controls');

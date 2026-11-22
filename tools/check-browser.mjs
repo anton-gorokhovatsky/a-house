@@ -130,11 +130,166 @@ async function checkEnlargedMenu(page) {
   assert.ok(await page.locator('.home-footer details[open] a').first().isVisible());
 }
 
+async function checkEditorialGrouping(page) {
+  const issue = page.locator('.home-issue');
+  const group = await issue.evaluate(async el => {
+    await document.fonts.ready;
+    const cover = el.querySelector('figure').getBoundingClientRect();
+    const label = el.querySelector('.home-kicker');
+    const number = label.getBoundingClientRect();
+    return { gap: number.left - cover.right, offset: number.top - cover.top, em: parseFloat(getComputedStyle(label).fontSize) };
+  });
+  assert.ok(Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em,
+    'The issue number must sit beside the upper edge of its cover on the phone and desktop overview');
+
+  const archive = page.locator('[data-events-past]');
+  if (await archive.isVisible()) await archive.locator('summary').click();
+  const lists = page.locator('.home-events:visible');
+  for (const list of await lists.all()) {
+    const entries = await list.locator(':scope > article:visible').evaluateAll(cards => cards.map(card => {
+      const link = card.querySelector('.home-event-link');
+      const entry = { top: card.getBoundingClientRect().top, paid: Boolean(link?.innerText.includes('₽')) };
+      if (!entry.paid) return entry;
+      const price = link.querySelector('.home-event-price');
+      const description = link.querySelector('.home-event-info > p:last-child');
+      if (!price || !description) return entry;
+      const text = document.createRange();
+      text.selectNodeContents(price);
+      const lines = [...text.getClientRects()].filter(rect => rect.width > 0);
+      if (!lines.length) return entry;
+      return { ...entry, endOfCopy: description.getBoundingClientRect().bottom,
+        priceTop: lines[0].top, priceBottom: lines.at(-1).bottom, sameLine: lines.every(rect => Math.abs(rect.top - lines[0].top) < 1) };
+    }));
+    for (const [index, entry] of entries.entries()) {
+      if (!entry.paid) continue;
+      assert.ok(entry.sameLine && entry.priceTop > entry.endOfCopy, 'Each price belongs on a separate, unbroken line under its description');
+      const next = entries[index + 1];
+      if (!next) continue;
+      if (Math.abs(entry.top - next.top) >= 1) {
+        assert.ok(next.top - entry.priceBottom > entry.priceTop - entry.endOfCopy, 'A price must be closer to its own event than the next one');
+      } else if (next.paid) {
+        assert.ok(Math.abs(entry.priceTop - next.priceTop) < 1, 'Prices for side-by-side events must share a baseline');
+      }
+    }
+  }
+}
+
+async function checkArchiveReading(page) {
+  const missing = await page.goto(url + 'missing-publication-for-browser-check/');
+  assert.equal(missing.status(), 404);
+  await page.getByRole('main').getByRole('link', { name: /в архив публикаций/i }).click();
+  await page.waitForURL(url + 'archive/');
+  const listing = page.getByRole('main').getByRole('list');
+  const articles = listing.getByRole('link');
+  const index = Math.floor(await articles.count() / 2);
+  const entry = articles.nth(index);
+  const title = (await entry.textContent()).replace(/\s+/g, ' ').trim();
+  const address = await entry.evaluate(link => link.href);
+  assert.ok(title, 'The catalogue must name the article it links to');
+  await entry.scrollIntoViewIfNeeded();
+  await entry.focus();
+  const scroll = await page.evaluate(() => scrollY);
+  await entry.press('Enter');
+  await page.waitForURL(address);
+  const main = page.getByRole('main');
+  const heading = main.getByRole('heading', { name: title, level: 1, exact: true });
+  await heading.waitFor({ state: 'visible' });
+  const body = main.locator('[itemprop="articleBody"]');
+  await body.waitFor({ state: 'visible' });
+  if (!(await body.innerText()).trim()) {
+    const media = body.locator('img[src], video, [data-archive-video]').filter({ visible: true }).first();
+    assert.ok(await media.isVisible(), 'The selected publication must have visible text or editorial media');
+  }
+  for (let visit = 0; visit < 2; visit++) {
+    await page.goBack();
+    await page.waitForFunction(({ address, scroll }) =>
+      document.activeElement?.href === address && Math.abs(scrollY - scroll) <= 2, { address, scroll });
+    await page.keyboard.press('Tab');
+    assert.ok(await articles.nth(index + 1).evaluate(link => link === document.activeElement), 'Tab must continue to the next publication');
+    await page.goForward();
+  }
+  await main.getByRole('link', { name: /к архиву публикаций/i }).click();
+  await page.waitForURL(url + 'archive/');
+  assert.ok(await listing.getByRole('link', { name: title, exact: true }).isVisible(),
+    'The archive must contain the same article on return');
+}
+
+async function checkClubApplication(page) {
+  await page.goto(url + '#club');
+  await page.locator('#club').getByRole('link', { name: /сравнить программы клуба/i }).click();
+  await page.waitForURL(url + 'club/');
+  // Pick a non-default level and read the name and offer from its visible card.
+  const card = page.locator('main [data-catalog-card]').nth(1);
+  const cardText = (await card.innerText()).toLocaleLowerCase('ru');
+  const apply = card.getByRole('link', { name: /оставить заявку/i });
+  const application = new URL(await apply.evaluate(link => link.href));
+  const offer = application.searchParams.get('offer');
+  assert.ok(offer && application.origin === new URL(url).origin, 'Club membership must lead to a local demo for the selected level');
+  await apply.click();
+  await page.waitForURL(application.href);
+  const form = page.locator('form[data-service-form="member"]');
+  const level = form.getByLabel('Уровень участия');
+  assert.equal(await level.inputValue(), offer);
+  const levelName = (await level.locator('option:checked').innerText()).trim();
+  assert.ok(levelName && cardText.includes(levelName.toLocaleLowerCase('ru')), 'The form must name the same level as the chosen card');
+
+  const outside = target => target.origin !== application.origin;
+  const external = [];
+  await page.context().route(outside, route => {
+    external.push(route.request().resourceType());
+    return route.abort();
+  });
+  const name = form.locator('input[name="name"]');
+  const email = form.locator('input[type="email"]');
+  const visitor = 'Тестовый посетитель';
+  const mailbox = 'reader@example.invalid';
+  await name.fill(visitor);
+  await email.fill(mailbox);
+  const consent = form.getByRole('link', { name: /согласие на обработку персональных данных/i });
+  const consentChoice = form.getByRole('checkbox', { name: /согласие на обработку персональных данных/i });
+  const consentURL = await consent.evaluate(link => link.href);
+  const [documentPage] = await Promise.all([page.waitForEvent('popup', { timeout: 6000 }), consent.click()]);
+  await documentPage.waitForURL(consentURL);
+  await documentPage.getByRole('heading', { level: 1, name: /согласие.+обработку персональных данных/i }).waitFor();
+  await documentPage.close();
+  assert.equal(page.url(), application.href);
+  assert.equal(await name.inputValue(), visitor, 'Reading the consent must preserve the name already entered');
+  assert.equal(await email.inputValue(), mailbox);
+  assert.equal(await level.inputValue(), offer);
+  assert.equal(await consentChoice.isChecked(), false, 'Reading the terms must not itself give consent');
+
+  const companyGroup = form.locator('[data-field-name="company"]');
+  const company = companyGroup.getByRole('textbox');
+  await form.locator('input[type="tel"]').fill('+7 000 000-00-00');
+  await form.getByRole('radio', { name: 'Email', exact: true }).press('Space');
+  for (const agreement of await form.getByRole('checkbox').all()) await agreement.press('Space');
+  const review = form.getByRole('button', { name: /проверить анкету/i });
+  await review.click();
+  assert.equal(await company.getAttribute('aria-invalid'), 'true');
+  const hint = companyGroup.locator('[data-service-field-error]');
+  assert.ok(await hint.isVisible() && (await hint.innerText()).trim(),
+    'A missing company needs a visible correction near the field');
+  assert.equal(await form.locator('[data-service-result]').isVisible(), false);
+  await company.fill('Учебное бюро');
+  assert.equal(await company.getAttribute('aria-invalid'), null);
+  assert.equal(await hint.isVisible(), false, 'Correcting the company should clear its own hint');
+  assert.equal(await name.inputValue(), visitor);
+  assert.equal(await email.inputValue(), mailbox);
+  assert.equal(await level.inputValue(), offer);
+  await review.click();
+  const result = form.locator('[data-service-result]');
+  await result.getByRole('heading', { name: 'Анкета проверена' }).waitFor();
+  assert.ok((await result.locator('[data-service-result-offer]').innerText()).includes(levelName));
+  assert.deepEqual(external, [], 'Checking a demo application must not contact an external service');
+  await page.context().unroute(outside);
+}
+
 async function checkHomeRoutes(page, mobile) {
   const choice = name => page.locator('[data-home-view][href="#' + name + '"]');
   const section = name => page.locator('[data-home-section][id="' + name + '"]');
   await checkReadingReturn(page, mobile);
   await page.goto(url);
+  await checkEditorialGrouping(page);
   const menu = page.locator('.site-menu-toggle');
   assert.equal(await section('program').isVisible(), true);
   assert.equal(await section('media').isVisible(), true);
@@ -207,9 +362,10 @@ try {
   await narrowPage.close();
   for (const width of [390, 1511]) {
     const mobile = width === 390;
-    const page = await browser.newPage({
+    const pageOptions = {
       viewport: { width, height: 844 }, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1
-    });
+    };
+    const page = await browser.newPage(pageOptions);
     const requested = new Set();
     page.on('request', request => {
       if (request.isNavigationRequest() && request.frame() === page.mainFrame()) requested.clear();
@@ -252,9 +408,13 @@ try {
       await photo.scrollIntoViewIfNeeded();
       await page.waitForFunction(src => performance.getEntriesByName(src).some(r => r.responseEnd > 0), photoURL);
       assert.ok(![...requested].some(src => /\.gif(?:\?|$)/i.test(src)), 'An animated GIF loaded in reduced motion');
-      await checkExpiredProgram(page);
+      const futurePage = await browser.newPage({ ...pageOptions, reducedMotion: 'reduce' });
+      await checkExpiredProgram(futurePage);
+      await futurePage.close();
     }
-    console.log('Visible word space at ' + width + ' px: ' + gap.toFixed(2) + ' px');
+    await checkArchiveReading(page);
+    await checkClubApplication(page);
+    console.log('Archive reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');
     await page.close();
   }
 } finally {
