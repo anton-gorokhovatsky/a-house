@@ -1,122 +1,105 @@
 <div id="allrecords" class="t-records home-page">
-  <header id="t-header" class="site-header home-masthead">
+  <header id="t-header" class="site-header home-masthead" data-menu-collapsed>
     <div class="site-header-bar">
-      <a class="site-header-brand" href="@@ROOT@@" aria-label="A–House, главная">A–HOUSE</a>
-      <button type="button" class="site-menu-toggle t-menuburger" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-navigation"><i class="menu-lines" aria-hidden="true"></i></button>
+      <h1 class="home-wordmark"><a class="site-header-brand" href="@@ROOT@@" aria-label="A–House, главная"><img src="@@ROOT@@media/ah_logo-d765e23d69d9.svg" width="469" height="89" alt="A–House"></a></h1>
+      <div class="home-tools">
+        <a href="#visit">Визит</a>
+        <button type="button" class="site-menu-toggle" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-navigation"><span class="home-open-label">Меню</span><span class="home-close-label">Закрыть</span></button>
+      </div>
     </div>
-    <nav id="site-navigation" class="site-navigation" aria-label="Основное меню">
-      <ul class="site-nav-projects">
-        <li><a href="#program">Программа</a></li>
-        <li><a href="#projects">Все проекты</a></li>
+    <nav id="site-navigation" class="site-navigation" aria-label="Разделы A–House">
+      <ul>
+        <li><a data-home-view href="#overview">Главная</a></li>
+        <li><a data-home-view href="#program">Программа</a></li>
+        <li><a data-home-view href="#media">Медиа и издания</a></li>
+        <li><a data-home-view href="#visit">Места и визит</a></li>
+        <li><a data-home-view href="#industry">Индустрия и вакансии</a></li>
+        <li><a data-home-view href="#club">Клуб и подписка</a></li>
+        <li><a data-home-view href="#partnership">Сотрудничество</a></li>
       </ul>
-      <ul class="site-nav-house">
+      <ul class="home-menu-about">
+        <li><a data-home-view href="#projects">Все проекты</a></li>
         <li><a href="@@ROOT@@about/">Об A–House</a></li>
         <li><a href="#t-footer">Контакты</a></li>
       </ul>
     </nav>
   </header>
   <main id="site-content" tabindex="-1">
-    <div class="home-editorial">
-      <div class="home-hero" id="rec619984956">
-        <div class="home-hero-copy">
-          <h1><img src="@@ROOT@@media/ah_logo-d765e23d69d9.svg" width="469" height="89" alt="A–House"></h1>
-          <p>Платформа развития среды через архитектуру, дизайн и культуру.</p>
-          <p class="home-now" data-home-now hidden><span></span><a></a></p>
-          <div class="home-links">
-            <a class="home-primary" href="#program">Вся программа</a>
-            <a href="#visit">Как попасть в Дом</a>
+    <div id="overview" class="home-editorial" tabindex="-1">
+      <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-label="Программа A–House">
+        <div class="home-house-intro" data-home-intro hidden>
+          <h2>Дом на Большом Афанасьевском</h2>
+          <p>A–House объединяет архитектуру, дизайн и культуру в Москве.</p>
+          <a class="home-action" href="#visit">Спланировать визит</a>
+        </div>
+        <div id="rec619984956" class="home-feature-slot" data-home-now>
+          <article id="light-of-time" class="home-feature" data-event-start="2026-11-17" data-event-end="2026-11-29">
+            <div class="home-feature-heading">
+              <p class="home-meta">Выставка мобильной фотографии <span class="home-feature-date">до&nbsp;<time datetime="2026-11-29">29&nbsp;ноября</time></span></p>
+              <h2>Здесь и сейчас. <span>Свет времени</span></h2>
+            </div>
+            <div class="home-feature-visit">
+              <p class="home-detail">В экспозицию вошли работы специальной номинации A–House «Лучшая архитектурная фотография».</p>
+              <p><a class="home-venue-link" href="#visit">Большой Афанасьевский пер.,&nbsp;14</a></p>
+              <p>Экскурсия с медиатором — 40&nbsp;минут. Вход по записи.</p>
+              <a class="home-action" data-event-booking href="https://ahouse.timepad.ru/event/4293210/">Записаться на Timepad</a>
+              <a class="home-archive-source" href="https://t.me/ahouseproject/10732">Анонс выставки</a>
+            </div>
+            <figure class="home-feature-photo">
+              <img src="@@ROOT@@media/home/exhibition-light-of-time-602.webp" width="602" height="800" alt="Две пейзажные фотографии на деревянных стендах в выставочном зале Дома" fetchpriority="high">
+              <figcaption><a href="https://t.me/ahouseproject/10737?single">Вид экспозиции. Из фотоподборки A–House</a></figcaption>
+            </figure>
+          </article>
+        </div>
+        <div class="home-season">
+          <div class="home-program-head">
+            <h2>Программа</h2>
+            <p class="home-meta">Ноябрь 2026</p>
           </div>
-        </div>
-        <figure class="home-facade">
-          <img src="@@ROOT@@media/home/house-facade-800.webp" srcset="@@ROOT@@media/home/house-facade-800.webp 800w, @@ROOT@@media/home/house-facade-1600.webp 1600w" sizes="(max-width: 46em) 100vw, 51vw" width="1600" height="1200" fetchpriority="high" alt="Красный фасад Дома A–House с двумя чёрными маркизами">
-          <figcaption><a href="https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/">Большой Афанасьевский, 14</a><span>Фото Дианы Вешкурцевой</span></figcaption>
-        </figure>
-      </div>
-      <nav class="home-views" id="overview" aria-label="Подборки главной" tabindex="-1">
-        <p>Что вам интересно?</p>
-        <ul>
-          <li><a data-home-view href="#overview">Всё</a></li>
-          <li><a data-home-view href="#program">События</a></li>
-          <li><a data-home-view href="#visit">Визит</a></li>
-          <li><a data-home-view href="#media">Чтение</a></li>
-          <li><a data-home-view href="#industry">Индустрия</a></li>
-          <li><a data-home-view href="#club">Клуб</a></li>
-          <li><a data-home-view href="#partnership">Сотрудничество</a></li>
-        </ul>
-      </nav>
-      <section id="program" class="home-section home-program" data-home-section tabindex="-1" aria-labelledby="program-heading">
-        <div class="home-section-head">
-          <h2 id="program-heading">Программа</h2>
-          <p>Ноябрь 2026</p>
-        </div>
-        <div class="home-events" data-home-events>
-          <article class="home-event home-event-feature" id="light-of-time" data-home-spotlight="В Доме" data-event-start="2026-11-17" data-event-end="2026-11-29">
-            <div class="home-date"><span>до</span> <time datetime="2026-11-29">29 ноября</time></div>
-            <div class="home-event-body">
-              <p class="home-kicker">Выставка в Доме A–House</p>
-              <h3>Здесь и сейчас. Свет времени</h3>
-              <p>Выставка мобильной фотографии. По залам гостей проводит медиатор. Экскурсия длится 40 минут, нужна предварительная запись.</p>
-              <p class="home-where">Большой Афанасьевский пер., 14</p>
-              <div class="home-links">
-                <a href="https://t.me/ahouseproject/10732">О выставке</a>
-                <a data-event-booking href="https://ahouse.timepad.ru/event/4293210/">Запись на Timepad</a>
-              </div>
-            </div>
-          </article>
-          <article class="home-event" data-event-end="2026-11-25">
-            <div class="home-date"><time datetime="2026-11-25T19:30:00+03:00">25 ноября<span>19:30</span></time></div>
-            <div class="home-event-body">
-              <p class="home-kicker" id="rec2309679131">Паблик-ток A–School × ММОМА</p>
-              <h3><a href="https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description">Археология будущего</a></h3>
-              <p>Как уличное искусство переосмысливает руины и утраченные пространства. Билет — 300 ₽, продажа онлайн.</p>
-              <p class="home-where">Образовательный центр ММОМА, Ермолаевский пер., 17</p>
-              <div class="home-links">
-                <a href="https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description">Программа в ММОМА</a>
-              </div>
-            </div>
-          </article>
-          <article class="home-event" data-event-end="2026-11-26">
-            <div class="home-date"><time datetime="2026-11-26T19:00:00+03:00">26 ноября<span>19:00</span></time></div>
-            <div class="home-event-body">
-              <p class="home-kicker">Встреча в Доме предпринимателя</p>
-              <h3><a href="https://dompred.ru/events/marketing-mastermind">Маркетинг на разбор</a></h3>
-              <p>Участники разбирают свои задачи с руководителями бренд-направлений Точка Банка. Участие — 4 000 ₽.</p>
-              <p class="home-where">Зал Строгановых, Малый Каретный пер., 11с10</p>
-              <div class="home-links">
-                <a href="https://dompred.ru/events/marketing-mastermind">О встрече в Доме предпринимателя</a>
-              </div>
-            </div>
-          </article>
-        </div>
-        <p class="home-upcoming-empty" data-events-empty hidden>Новых дат в этой подборке пока нет. Следующие анонсы выходят в <a href="https://t.me/ahouseproject">канале A–House</a>.</p>
-        <details class="home-past" data-events-past hidden>
-          <summary>Прошедшие события</summary>
-          <div class="home-events">
+          <div class="home-events" data-home-events>
+            <article class="home-event" data-event-end="2026-11-25">
+              <a class="home-event-link" href="https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description">
+                <p class="home-meta"><time datetime="2026-11-25T19:30:00+03:00">25 ноября, 19:30</time> · ММОМА</p>
+                <h3 id="rec2309679131">Археология будущего</h3>
+                <p>Паблик-ток A–School об уличном искусстве. Билет — 300&nbsp;₽.</p>
+              </a>
+              <p class="home-detail">Образовательный центр ММОМА, Ермолаевский пер., 17. Продажа билетов онлайн.</p>
+            </article>
+            <article class="home-event" data-event-end="2026-11-26">
+              <a class="home-event-link" href="https://dompred.ru/events/marketing-mastermind">
+                <p class="home-meta"><time datetime="2026-11-26T19:00:00+03:00">26 ноября, 19:00</time> · Дом предпринимателя</p>
+                <h3>Маркетинг на разбор</h3>
+                <p>Мастермайнд с командой Точка Банка. Участие — 4&#8239;000&nbsp;₽.</p>
+              </a>
+              <p class="home-detail">Зал Строгановых, Малый Каретный пер., 11с10.</p>
+            </article>
           </div>
-        </details>
-        <div class="home-section-tail"><a href="https://t.me/ahouseproject">Анонсы A–House в Telegram</a>
-          <a href="@@ROOT@@archive/">Архив публикаций</a>
+          <p class="home-upcoming-empty" data-events-empty hidden>Следующие даты появятся в <a href="https://t.me/ahouseproject">канале A–House</a>.</p>
+          <details class="home-past" data-events-past hidden><summary>Прошедшие события</summary><div class="home-events"></div></details>
+          <div class="home-links home-detail"><a href="https://t.me/ahouseproject">Анонсы A–House в Telegram</a><a href="@@ROOT@@archive/">Архив публикаций</a></div>
         </div>
       </section>
-      <section id="media" class="home-section home-reading" data-home-section tabindex="-1" aria-labelledby="media-heading">
+      <section id="media" class="home-section home-reading" data-home-section data-overview-section tabindex="-1" aria-labelledby="media-heading">
         <div class="home-section-head">
-          <h2 id="media-heading">Медиа и издания</h2><a href="@@ROOT@@press/">Издательство A–Press</a>
+          <h2 id="media-heading">Медиа и издания</h2>
+          <a class="home-overview-only" href="#media">Все материалы</a>
+          <a class="home-detail" href="@@ROOT@@press/">Издательство A–Press</a>
         </div>
         <article class="home-issue">
           <figure class="home-issue-cover">
             <img src="@@ROOT@@media/stills/sport3-c2f11fc70a91.webp" width="1155" height="1155" alt="Обложка выпуска A–Sport № 2 «Движение»" loading="lazy">
           </figure>
           <div class="home-issue-copy">
-            <p class="home-kicker">Газета A–Sport · № 2</p>
+            <p class="home-kicker">A–Sport № 2</p>
             <h3>Движение</h3>
-            <p>Как выбрать велосипед, обувь и одежду для тренировок? Команда Velopraktika разбирает экипировку в выпуске A–Sport, подготовленном с Upside Development.</p>
+            <p>Как выбрать велосипед, обувь и одежду для тренировок? Разбирает команда Velopraktika.<span class="home-detail"> Номер подготовлен вместе с Upside Development.</span></p>
             <div class="home-links">
               <a class="home-primary" href="https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/">Читать статью из номера</a>
-              <a href="#friend">О подписке на полные номера</a>
+              <a href="#friend">Полный номер по подписке A–Friend</a>
             </div>
           </div>
         </article>
-        <div class="home-dispatches">
+        <div class="home-dispatches home-detail">
           <article>
             <p class="home-kicker">A–House On Air · 20 ноября 2026</p>
             <h3><a href="https://t.me/ahouseonair/416">Memphis на ярмарке NOMAD в Абу-Даби</a></h3>
@@ -136,8 +119,9 @@
         </div>
         <div class="home-places">
           <article id="rec2340799251">
-            <figure class="home-place-media home-place-drawing">
-              <img src="@@ROOT@@media/ill-8dd09df6ee80.webp" width="1678" height="1660" alt="Архитектурный рисунок особняка A–House" loading="lazy">
+            <figure class="home-place-media">
+              <img src="@@ROOT@@media/home/house-facade-800.webp" srcset="@@ROOT@@media/home/house-facade-800.webp 800w, @@ROOT@@media/home/house-facade-1600.webp 1600w" sizes="(max-width: 48em) 90vw, 44vw" width="1600" height="1200" alt="Красный фасад Дома A–House с двумя чёрными маркизами" loading="lazy">
+              <figcaption><a href="https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/">Фото Дианы Вешкурцевой</a></figcaption>
             </figure>
             <h3>Дом A–House</h3>
             <p class="home-address">Большой Афанасьевский пер., 14</p>
@@ -236,8 +220,7 @@
         </div>
         <div class="home-section-tail"><a href="mailto:partners@ahouseproject.com">Написать о партнёрском проекте</a></div>
       </section>
-      <p class="home-return" data-home-return hidden><a href="#overview">Показать всё на главной</a></p>
-      <section id="projects" class="home-section home-directory" tabindex="-1" aria-labelledby="projects-heading">
+      <section id="projects" class="home-section home-directory" data-home-section tabindex="-1" aria-labelledby="projects-heading">
         <div class="home-section-head">
           <h2 id="projects-heading">Все проекты</h2><a href="@@ROOT@@about/">Об институции</a>
         </div>
@@ -283,6 +266,17 @@
           </div>
         </div>
       </section>
+      <nav class="home-ways home-overview-only" aria-label="Другие разделы A–House">
+        <h2>Ещё в A–House</h2>
+        <ul>
+          <li><a href="#visit">Спланировать визит</a></li>
+          <li><a href="#industry">Найти бюро или работу</a></li>
+          <li><a href="#club">Вступить в клуб</a></li>
+          <li><a href="#partnership">Предложить проект</a></li>
+          <li><a href="#projects">Все проекты A–House</a></li>
+        </ul>
+      </nav>
+      <p class="home-return" data-home-return hidden><a href="#overview">На главную A–House</a></p>
     </div>
     <div id="rec634408909"><dialog class="services-dialog services-checkout" id="services-checkout" aria-labelledby="services-checkout-title"><button class="services-close" type="button" data-service-close aria-label="Закрыть оформление">Закрыть ×</button><header><p class="services-eyebrow">Оформление · демонстрация</p>
 <h2 id="services-checkout-title" data-service-order-title>A-Friend</h2>

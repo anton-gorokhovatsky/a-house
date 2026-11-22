@@ -38,7 +38,7 @@ npm run check
 - [A-House On Air](https://t.me/ahouseonair) публикует репортажи, в том числе с зарубежных ярмарок. При выборе материала ссылки ведут к конкретному посту и к связанному тексту [редакции A-News](https://news.ahouseproject.com/). Тематическая связь — выбор редактора главной.
 - У [A-Index](https://aindexproject.com/vacancies/) есть вакансии отрасли. Собственная вакансия институции оформляется отдельной записью с датой публикации и ссылкой на её описание. Актуальность набора уточняет HR.
 - У выпусков A-News, A-Kids, A-Sport и A-State полный PDF доступен подписчикам A-Friend. Для открытой части выбран [текст Velopraktika из A-Sport № 2](https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/). Для показа печатных полос редакция передаёт разрешённый PDF-фрагмент этого выпуска.
-- Фотография фасада на главной — Диана Вешкурцева, пресс-служба A-House. Два размера сделаны из фотографии в [публикации об открытии Дома](https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/).
+- Для выставки использован [вид экспозиции из официальной фотоподборки](https://t.me/ahouseproject/10737?single). У снимка сохранено доступное разрешение 602 × 800. Фасад в разделе «Места и визит» сняла Диана Вешкурцева, пресс-служба A-House. [Публикация об открытии Дома](https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/)
 
 ## Выводы для следующих разделов
 

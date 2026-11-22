@@ -1,7 +1,7 @@
 (() => {
   const overview = document.getElementById('overview');
   const sections = [...document.querySelectorAll('[data-home-section]')];
-  const choices = [...overview.querySelectorAll('[data-home-view]')];
+  const choices = [...document.querySelectorAll('[data-home-view]')];
   const returnLink = document.querySelector('[data-home-return]');
   const links = [...document.querySelectorAll('a')];
   let restoreFrame = 0;
@@ -13,7 +13,10 @@
 
   function displayView(target) {
     const selected = viewFor(target);
-    for (const section of sections) section.hidden = !!selected && selected !== section;
+    overview.dataset.view = selected?.id || 'overview';
+    for (const section of sections) {
+      section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
+    }
     for (const choice of choices) {
       if (choice.hash === '#' + (selected?.id || 'overview')) choice.setAttribute('aria-current', 'true');
       else choice.removeAttribute('aria-current');
@@ -31,8 +34,7 @@
     const target = hashTarget();
     displayView(target);
     if (target && target.id !== 'services-checkout') {
-      const place = sections.includes(target) ? overview : target;
-      place.scrollIntoView({ block: 'start', behavior: 'instant' });
+      target.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
   }
 
@@ -68,37 +70,29 @@
       history.pushState(null, '', link.hash);
     }
     displayView(target);
-    const place = sections.includes(target) ? overview : target;
-    place.scrollIntoView({ block: 'start', behavior: 'instant' });
-    if (link.hasAttribute('data-home-view')) link.focus({ preventScroll: true });
-    else {
-      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-      target.focus({ preventScroll: true });
-    }
+    target.scrollIntoView({ block: 'start', behavior: 'instant' });
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
   });
 
   // Keep dated entries and their sources together as they pass into the archive.
   const events = document.querySelector('[data-home-events]');
   const past = document.querySelector('[data-events-past]');
   const pastItems = past.querySelector('.home-events');
-  const entries = [...events.querySelectorAll('[data-event-end]')];
+  const entries = [...document.querySelectorAll('#program [data-event-end]')];
   const spotlight = document.querySelector('[data-home-now]');
-  const featured = entries.find(item => item.hasAttribute('data-home-spotlight'));
-  if (featured) {
-    spotlight.querySelector('span').textContent = featured.dataset.homeSpotlight + ' ' + featured.querySelector('.home-date').textContent.trim();
-    const link = spotlight.querySelector('a');
-    link.href = '#' + featured.id;
-    link.textContent = featured.querySelector('h3').textContent;
-  }
+  const featured = spotlight.querySelector('[data-event-end]');
   const calendar = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
   });
   function refreshDates() {
     const today = calendar.format(new Date());
-    spotlight.hidden = !featured || today < featured.dataset.eventStart || today > featured.dataset.eventEnd;
+    const featureIsCurrent = featured && featured.dataset.eventStart <= today && today <= featured.dataset.eventEnd;
+    spotlight.hidden = !featureIsCurrent;
+    document.querySelector('[data-home-intro]').hidden = !!featureIsCurrent;
     for (const item of entries) {
       const expired = item.dataset.eventEnd < today;
-      const destination = expired ? pastItems : events;
+      const destination = expired ? pastItems : item === featured && featureIsCurrent ? spotlight : events;
       if (item.parentElement !== destination) destination.append(item);
       const booking = item.querySelector('[data-event-booking]');
       if (booking) booking.hidden = expired;

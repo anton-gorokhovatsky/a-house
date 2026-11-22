@@ -29,7 +29,18 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
       const date=(page.published || '').split('-').reverse().join('.');
       return '<li><time datetime="'+escape(page.published || '')+'">'+date+'</time><div><a href="'+base+page.slug+'/">'+escape(page.title)+'</a><small>'+escape(page.section || '')+'</small></div></li>';
     }).join('\n');
-  const [shell, header, footer] = await Promise.all(['layout.html', 'partials/header.html', 'partials/footer.html'].map(source));
+  const [shell, header, footerTemplate, homeFooterTemplate] = await Promise.all([
+    'layout.html', 'partials/header.html', 'partials/footer.html', 'partials/home-footer.html'
+  ].map(source));
+  const footerContent = new Map();
+  const footer = footerTemplate.replace(/<!-- footer:(\w+) -->([\s\S]*?)<!-- \/footer -->/g, (_, name, content) => {
+    footerContent.set(name, content);
+    return content;
+  });
+  const homeFooter = homeFooterTemplate.replace(/\{\{footer\.(\w+)\}\}/g, (_, name) => {
+    if (!footerContent.has(name)) throw new Error('Missing shared footer content: ' + name);
+    return footerContent.get(name);
+  });
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   await Promise.all([
@@ -66,7 +77,7 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     const location = page.slug === 'home' || page.slug === '404' ? output : path.join(output,page.slug);
     await mkdir(location,{ recursive:true });
     const body = (await source('pages/' + page.slug + '.html')).replace('<!-- HEADER -->',()=>header)
-      .replace('<!-- FOOTER -->',()=>footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
+      .replace('<!-- FOOTER -->',()=>page.slug === 'home' ? homeFooter : footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(keepProjectNames(body)), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')

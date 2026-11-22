@@ -78,7 +78,10 @@ async function checkExpiredProgram(page) {
 
 async function checkReadingReturn(page, mobile) {
   await page.goto(mobile ? url : url + '#media');
-  if (mobile) await page.locator('[data-home-view][href="#media"]').click();
+  if (mobile) {
+    await page.locator('.site-menu-toggle').click();
+    await page.locator('[data-home-view][href="#media"]').click();
+  }
   const subscription = page.locator('#media a[href="#friend"]');
   const originalTop = await subscription.evaluate(async link => {
     await document.fonts.ready;
@@ -111,12 +114,32 @@ async function checkReadingReturn(page, mobile) {
   assert.ok(await order.evaluate(el => el === document.activeElement), 'Closing the preview should restore focus to A-Friend');
 }
 
+async function checkEnlargedMenu(page) {
+  await page.goto(url);
+  await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+  const toggle = page.locator('.site-menu-toggle');
+  const wordmark = page.locator('.home-wordmark img');
+  const originalWidth = await wordmark.evaluate(el => el.getBoundingClientRect().width);
+  assert.ok(originalWidth >= 90, 'Enlarging text must leave a legible wordmark');
+  await toggle.press('Enter');
+  const menu = page.locator('#site-navigation');
+  assert.ok(await menu.evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'All menu columns must fit on the enlarged narrow screen');
+  assert.equal(await wordmark.evaluate(el => el.getBoundingClientRect().width), originalWidth);
+  await menu.getByRole('link', { name: 'Контакты' }).press('Enter');
+  await page.locator('.home-footer summary').press('Enter');
+  assert.ok(await page.locator('.home-footer details[open] a').first().isVisible());
+}
+
 async function checkHomeRoutes(page, mobile) {
-  const choice = name => page.locator('[data-home-view][href$="#' + name + '"]:visible').first();
+  const choice = name => page.locator('[data-home-view][href="#' + name + '"]');
   const section = name => page.locator('[data-home-section][id="' + name + '"]');
   await checkReadingReturn(page, mobile);
   await page.goto(url);
   const menu = page.locator('.site-menu-toggle');
+  assert.equal(await section('program').isVisible(), true);
+  assert.equal(await section('media').isVisible(), true);
+  assert.equal(await section('club').isVisible(), false, 'The overview must keep club details in their own view');
+  assert.equal(await choice('media').isVisible(), false, 'Section choices belong to the closed menu');
   if (mobile) {
     await menu.focus();
     await page.keyboard.press('Enter');
@@ -131,6 +154,7 @@ async function checkHomeRoutes(page, mobile) {
     await page.waitForFunction(() => document.querySelector('#program').contains(document.activeElement));
     assert.equal(await menu.getAttribute('aria-expanded'), 'false', 'Choosing a section must close the mobile menu');
   }
+  await menu.click();
   await choice('media').click();
   await section('media').waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media');
@@ -138,6 +162,7 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await section('program').isVisible(), false);
   const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
+  await menu.click();
   await choice('program').focus();
   await page.keyboard.press('Enter');
   await section('program').waitFor({ state: 'visible' });
@@ -158,6 +183,9 @@ async function checkHomeRoutes(page, mobile) {
 let browser;
 try {
   browser = await chromium.launch({ channel: 'chrome' });
+  const narrowPage = await browser.newPage({ viewport: { width: 320, height: 844 } });
+  await checkEnlargedMenu(narrowPage);
+  await narrowPage.close();
   for (const width of [390, 1511]) {
     const mobile = width === 390;
     const page = await browser.newPage({

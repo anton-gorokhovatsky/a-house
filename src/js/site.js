@@ -61,7 +61,7 @@ if (header) {
   const presence = header.querySelector('.site-nav-presence');
   const trigger = presence?.querySelector('button');
   const submenu = presence?.querySelector('.site-submenu');
-  const compact = matchMedia('(max-width: 61.25em)');
+  const compact = matchMedia(header.hasAttribute('data-menu-collapsed') ? 'all' : '(max-width: 61.25em)');
 
   function openSubmenu(open) {
     if (!submenu || !trigger) return;
