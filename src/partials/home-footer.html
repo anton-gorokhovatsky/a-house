@@ -1,21 +1,20 @@
 <footer id="t-footer" class="home-footer" tabindex="-1" aria-labelledby="home-contact-heading">
   <div class="home-footer-inner">
-    <h2 id="home-contact-heading">Контакты</h2>
-    <div class="home-footer-body" id="rec620280471">
-      <ul class="home-footer-contacts" id="t-footer_620280471">
-        <li><span>Общие вопросы</span>{{footer.office}}</li>
-        <li><span>Работа в A–House</span>{{footer.jobs}}</li>
-        <li><span>Анонсы событий</span>{{footer.channel}}</li>
-      </ul>
-      <p id="rec2282198911">{{footer.press}}</p>
-      <details>
-        <summary><span class="when-closed">Показать</span><span class="when-open">Скрыть</span> документы и реквизиты</summary>
-        <div class="home-footer-documents" id="rec738691650">{{footer.documents}}</div>
-        <div id="rec810968278">
-          <p>{{footer.company}}</p>
-          <p>{{footer.notice}}</p>
-        </div>
-      </details>
+    <div class="home-footer-office" id="rec620280471">
+      <h2 id="home-contact-heading">Контакты</h2>
+      {{footer.office}}
     </div>
+    <ul class="home-footer-contacts" id="t-footer_620280471">
+      <li><span>Работа в A–House</span>{{footer.jobs}}</li>
+      <li><span>Анонсы событий</span>{{footer.channel}}</li>
+      <li id="rec2282198911"><span>Издательство A–Press</span>{{footer.press}}</li>
+    </ul>
+    <details>
+      <summary><span class="when-closed">Показать</span><span class="when-open">Скрыть</span> документы и реквизиты</summary>
+      <div class="home-footer-legal">
+        <div class="home-footer-documents" id="rec738691650">{{footer.documents}}</div>
+        <div id="rec810968278"><p>{{footer.company}}</p><p>{{footer.notice}}</p></div>
+      </div>
+    </details>
   </div>
 </footer>

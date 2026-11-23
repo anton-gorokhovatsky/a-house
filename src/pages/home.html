@@ -1,31 +1,5 @@
 <div id="allrecords" class="t-records home-page">
-  <header id="t-header" class="site-header home-masthead">
-    <div class="home-header-inner">
-      <div class="site-header-bar">
-        <h1 class="home-wordmark"><a class="site-header-brand" href="@@ROOT@@" aria-label="A–House, архитектура и дизайн — главная"><img src="@@ROOT@@media/ah_logo-d765e23d69d9.svg" width="469" height="89" alt="A–House"><span class="home-identity">Архитектура и&nbsp;дизайн</span></a></h1>
-        <div class="home-tools">
-          <a href="#visit">Как попасть</a>
-          <button type="button" class="site-menu-toggle" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-navigation"><span class="home-open-label">Меню</span><span class="home-close-label">Закрыть</span></button>
-        </div>
-      </div>
-      <nav id="site-navigation" class="site-navigation" aria-label="Разделы A–House">
-        <ul>
-          <li class="home-menu-extra"><a data-home-view href="#overview">Главная</a></li>
-          <li><a data-home-view href="#program">Программа</a></li>
-          <li><a data-home-view href="#media">Издания и&nbsp;статьи</a></li>
-          <li><a data-home-view href="#visit">Как попасть</a></li>
-          <li><a data-home-view href="#industry">Бюро и&nbsp;вакансии</a></li>
-          <li><a data-home-view href="#club">Клуб и&nbsp;подписка</a></li>
-          <li><a data-home-view href="#partnership">Сотрудничество</a></li>
-        </ul>
-        <ul class="home-menu-about">
-          <li><a data-home-view href="#projects">Все проекты</a></li>
-          <li class="home-menu-extra"><a href="@@ROOT@@about/">Об A–House</a></li>
-          <li class="home-menu-extra"><a href="#t-footer">Контакты</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+  <!-- EDITORIAL HEADER -->
   <main id="site-content" tabindex="-1">
     <div id="overview" class="home-editorial" tabindex="-1">
       <div class="home-introduction home-overview-only">
@@ -100,7 +74,7 @@
         </div>
         <article class="home-issue">
           <figure class="home-issue-cover">
-            <img src="@@ROOT@@media/stills/sport3-c2f11fc70a91.webp" width="1155" height="1155" alt="Обложка выпуска A–Sport № 2 «Движение»" loading="lazy">
+            <img src="@@ROOT@@media/home/a-sport-02-dvizhenie-77b0882f66d0.webp" width="433" height="865" alt="Обложка выпуска A–Sport № 2 «Движение»" loading="lazy">
           </figure>
           <div class="home-issue-copy">
             <p class="home-kicker">A–Sport №&#8239;2</p>
@@ -192,8 +166,7 @@
             <h3 id="rec3796030101">A–Friend</h3>
             <p>В&nbsp;приложении A–House по&nbsp;подписке можно читать полные выпуски A–News, A–Kids, A–Sport и&nbsp;A–State в&nbsp;PDF. Участникам клуба A–Member подписка уже доступна.</p>
             <div class="home-links">
-              <a class="home-primary" href="#services-checkout" data-service-order="A-Friend" data-service-price="12000" data-service-source="https://ahouseproject.com/#order:A-Friend=12000" aria-haspopup="dialog">Посмотреть демоверсию анкеты</a>
-              <a href="https://apps.apple.com/ru/app/a-house/id6470895838">Приложение в&nbsp;App Store</a>
+              <a class="home-primary" href="#services-checkout">Условия и оформление подписки</a>
             </div>
           </article>
           <article id="rec2309637911">
@@ -276,6 +249,20 @@
           </div>
         </div>
       </section>
+      <section id="services-checkout" class="home-section membership-page" data-home-section tabindex="-1" aria-labelledby="friend-heading">
+        <div class="membership-layout">
+          <header class="membership-intro" id="rec634408909">
+            <p class="home-kicker">Цифровая подписка</p>
+            <h2 id="friend-heading">A–Friend</h2>
+            <p class="membership-lead">Полные выпуски A–News, A–Kids, A–Sport и A–State в приложении A–House.</p>
+            <p class="membership-price">{{friendPrice}}</p>
+            <p class="membership-note">Для участников A–Member подписка уже включена.</p>
+          </header>
+          <div class="membership-request" id="form634408909">
+            <!-- FRIEND ORDER -->
+          </div>
+        </div>
+      </section>
       <nav class="home-ways home-overview-only" aria-label="Другие разделы A–House">
         <h2>Ещё в&nbsp;A–House</h2>
         <ul>
@@ -287,104 +274,6 @@
         </ul>
       </nav>
     </div>
-    <div id="rec634408909"><dialog class="services-dialog services-checkout" id="services-checkout" aria-labelledby="services-checkout-title"><button class="services-close" type="button" data-service-close aria-label="Закрыть оформление">Закрыть ×</button><header><p class="services-eyebrow">Оформление · демонстрация</p>
-<h2 id="services-checkout-title" data-service-order-title>A-Friend</h2>
-<p class="services-order-price" data-service-order-price></p></header><form id="form634408909" name="form634408909" role="form" data-inputbox=".t-input-group" class="t-form js-form-proccess t-form_inputs-total_6 t-form_bbonly services-form" method="dialog" autocomplete="off" data-service-form="checkout" data-service-source="https://ahouseproject.com/">
-          <div class="services-demo-note">
-<strong>Демонстрационная анкета</strong><p>Можно пройти шаги с вымышленными данными. Мы ничего не отправим, не сохраним и не спишем.</p>
-</div>
-<!-- @classes t-title t-text t-btn -->
-          <div class="js-successbox t-form__successbox t-text t-text_md" aria-live="polite" style="display:none;"></div>
-          <div class="t-form__inputsbox
-t-form__inputsbox_inrow ">
-            <div class="t-input-group t-input-group_nm " data-input-lid="1496239431201" data-field-type="nm" data-field-name="name"> <label for="input_1496239431201" class="t-input-title t-descr t-descr_md" id="field-title_1496239431201" data-redactor-toolbar="no" field="li_title__1496239431201" style="color:;">Имя Фамилия</label>
-              <div class="t-input-block "> <input type="text" autocomplete="off" name="name" id="input_1496239431201" class="t-input js-tilda-rule t-input_bbonly" value="" placeholder="Имя Фамилия " aria-required="true" aria-describedby="error_1496239431201" style="color:#000000;border:1px solid #000000;" required="required">
-              </div>
-              <div class="t-input-error" aria-live="polite" id="error_1496239431201"></div>
-            </div>
-            <div class="t-input-group t-input-group_sb " data-input-lid="1691658442370" data-field-type="sb" data-field-name="workarea" data-default-value="0"> <label for="input_1691658442370" class="t-input-title t-descr t-descr_md" id="field-title_1691658442370" data-redactor-toolbar="no" field="li_title__1691658442370" style="color:;">Сфера деятельности</label>
-              <div class="t-input-block ">
-                <div class="t-select__wrapper t-select__wrapper_bbonly"> <select name="workarea" id="input_1691658442370" class="t-select js-tilda-rule t-select_bbonly" style="color:#000000;border:1px solid #000000;"> <option value="" style="color:#000000;">
-Выберите один из вариантов
-</option> <option value="Архитектура и проектирование" style="color:#000000;">
-Архитектура и проектирование
-</option> <option value="Предметный дизайн" style="color:#000000;">
-Предметный дизайн
-</option> <option value="Интерьерный дизайн" style="color:#000000;">
-Интерьерный дизайн
-</option> <option value="Графический дизайн и брендинг" style="color:#000000;">
-Графический дизайн и брендинг
-</option> <option value="Строительство и девелопмент" style="color:#000000;">
-Строительство и девелопмент
-</option> <option value="Урбанистика" style="color:#000000;">
-Урбанистика
-</option> <option value="Искусство" style="color:#000000;">
-Искусство
-</option> <option value="Другое" style="color:#000000;">
-Другое
-</option> </select>
-                </div>
-              </div>
-              <div class="t-input-error" aria-live="polite" id="error_1691658442370"></div>
-            </div>
-            <div class="t-input-group t-input-group_em " data-input-lid="1496239459190" data-field-type="em" data-field-name="email"> <label for="input_1496239459190" class="t-input-title t-descr t-descr_md" id="field-title_1496239459190" data-redactor-toolbar="no" field="li_title__1496239459190" style="color:;">Email</label>
-              <div class="t-input-block "> <input type="email" autocomplete="off" name="email" id="input_1496239459190" class="t-input js-tilda-rule t-input_bbonly" value="" aria-required="true" aria-describedby="error_1496239459190" style="color:#000000;border:1px solid #000000;" required="required">
-              </div>
-              <div class="t-input-error" aria-live="polite" id="error_1496239459190"></div>
-            </div>
-            <div class="t-input-group t-input-group_ph " data-input-lid="1496239478607" data-field-type="ph" data-field-name="phone"> <label for="input_1496239478607" class="t-input-title t-descr t-descr_md" id="field-title_1496239478607" data-redactor-toolbar="no" field="li_title__1496239478607" style="color:;">Номер телефона</label>
-              <div class="t-input-block "> <input type="tel" autocomplete="off" name="phone" id="input_1496239478607" class="t-input js-tilda-rule js-tilda-mask t-input_bbonly" value="" aria-required="true" aria-describedby="error_1496239478607" style="color:#000000;border:1px solid #000000;" required="required" inputmode="tel">
-              </div>
-              <div class="t-input-error" aria-live="polite" id="error_1496239478607"></div>
-            </div>
-            <div class="t-input-group t-input-group_ta " data-input-lid="1691752375263" data-field-type="ta" data-field-name="Комментарий"> <label for="input_1691752375263" class="t-input-title t-descr t-descr_md" id="field-title_1691752375263" data-redactor-toolbar="no" field="li_title__1691752375263" style="color:;">Комментарий</label>
-              <div class="t-input-block "> <textarea name="Комментарий" id="input_1691752375263" class="t-input js-tilda-rule t-input_bbonly" placeholder="При покупке сертификата указывайте имя будущего владельца" aria-describedby="error_1691752375263" style="color:#000000;border:1px solid #000000;height:102px;" rows="3" autocomplete="off"></textarea>
-              </div>
-              <div class="t-input-error" aria-live="polite" id="error_1691752375263"></div>
-            </div>
-            <div class="t-input-group t-input-group_cb " data-input-lid="1693471567362" data-field-type="cb" data-field-name="Checkbox">
-              <div class="t-input-block "> <label class="t-checkbox__control t-checkbox__control_flex t-text t-text_xs" style=""> <input type="checkbox" name="Checkbox" value="yes" class="t-checkbox js-tilda-rule" aria-required="true" required="required"> <div class="t-checkbox__indicator"></div> <span>Нажимая на кнопку, Вы даете свое согласие на обработку персональных данных и соглашаетесь с <a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" style="color: rgb(0, 0, 0);"><u>Политикой конфиденциальности</u></a>.</span></label>
-              </div>
-              <div class="t-input-error" aria-live="polite" id="error_1693471567362"></div>
-            </div>
-            <div class="t-form__errorbox-middle"> <!--noindex-->
-              <div class="js-errorbox-all t-form__errorbox-wrapper" style="display:none;" data-nosnippet tabindex="-1" aria-label="Ошибки при заполнении формы">
-                <ul role="list" class="t-form__errorbox-text t-text t-text_md">
-                  <li class="t-form__errorbox-item js-rule-error js-rule-error-all">
-                  <li class="t-form__errorbox-item js-rule-error js-rule-error-req">Поле обязательное к заполнению</li>
-                  <li class="t-form__errorbox-item js-rule-error js-rule-error-email">Пожалуйста, укажите верный адрес почты</li>
-                  <li class="t-form__errorbox-item js-rule-error js-rule-error-name">
-                  <li class="t-form__errorbox-item js-rule-error js-rule-error-phone">Пожалуйста, укажите верный номер телефона</li>
-                  <li class="t-form__errorbox-item js-rule-error js-rule-error-minlength">
-                  <li class="t-form__errorbox-item js-rule-error js-rule-error-string">
-                </ul>
-              </div> <!--/noindex-->
-            </div>
-            <div class="t-form__submit"> <button class="t-submit t-btnflex t-btnflex_type_submit t-btnflex_md" type="button" data-service-review=""><span class="t-btnflex__text">Проверить анкету</span> </button>
-            </div>
-          </div>
-          <div class="t-form__errorbox-bottom"> <!--noindex-->
-            <div class="js-errorbox-all t-form__errorbox-wrapper" style="display:none;" data-nosnippet tabindex="-1" aria-label="Ошибки при заполнении формы">
-              <ul role="list" class="t-form__errorbox-text t-text t-text_md">
-                <li class="t-form__errorbox-item js-rule-error js-rule-error-all">
-                <li class="t-form__errorbox-item js-rule-error js-rule-error-req">Поле обязательное к заполнению</li>
-                <li class="t-form__errorbox-item js-rule-error js-rule-error-email">Пожалуйста, укажите верный адрес почты</li>
-                <li class="t-form__errorbox-item js-rule-error js-rule-error-name">
-                <li class="t-form__errorbox-item js-rule-error js-rule-error-phone">Пожалуйста, укажите верный номер телефона</li>
-                <li class="t-form__errorbox-item js-rule-error js-rule-error-minlength">
-                <li class="t-form__errorbox-item js-rule-error js-rule-error-string">
-              </ul>
-            </div> <!--/noindex-->
-          </div> <p class="services-form-status" data-service-status role="status" aria-live="polite"></p>
-<section class="services-result" data-service-result hidden><h3 tabindex="-1">Анкета проверена</h3>
-<p data-service-result-offer></p>
-<p>Это конец демонстрации. Заявка не отправлена, оплата не проводилась и доступ не оформлен.</p>
-<p>Для настоящего оформления перейдите на действующий сайт. Введённые здесь сведения туда не передаются.</p>
-<a class="services-link" data-service-live href="https://ahouseproject.com/" target="_blank" rel="noopener noreferrer" data-service-real-operation>Открыть подписку на&nbsp;сайте A–House</a><div class="services-result-actions">
-<button type="button" data-service-edit>Вернуться к анкете</button><button type="button" data-service-clear>Очистить поля</button>
-</div></section>
-</form>
-      </dialog></div>
   </main>
   <!-- FOOTER -->
 </div>

@@ -58,6 +58,7 @@ const header = document.querySelector('.site-header');
 if (header) {
   const menu = header.querySelector('.site-navigation');
   const toggle = header.querySelector('.site-menu-toggle');
+  const headerLinks = [...header.querySelectorAll('a[href]')];
   const presence = header.querySelector('.site-nav-presence');
   const trigger = presence?.querySelector('button');
   const submenu = presence?.querySelector('.site-submenu');
@@ -92,6 +93,23 @@ if (header) {
     openMenu(false);
   });
   window.addEventListener('pageshow', event => { if (event.persisted) openMenu(false); });
+  if (header.classList.contains('home-masthead')) {
+    header.addEventListener('click', event => {
+      const link = event.target.closest('a[href]');
+      if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (link.origin === location.origin && link.pathname !== location.pathname && !link.target) {
+        history.replaceState({ ...history.state, editorialNavReturn: headerLinks.indexOf(link) }, '');
+      }
+    });
+    window.addEventListener('pageshow', event => {
+      const link = headerLinks[history.state?.editorialNavReturn];
+      if (!link || !(event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) return;
+      const state = { ...history.state };
+      delete state.editorialNavReturn;
+      history.replaceState(state, '');
+      requestAnimationFrame(() => (link.closest('.site-navigation[hidden]') ? toggle : link).focus({ preventScroll: true }));
+    });
+  }
   toggle.addEventListener('click', () => openMenu(menu.hidden));
   trigger?.addEventListener('click', () => openSubmenu(submenu.hidden));
   trigger?.addEventListener('keydown', event => {
@@ -128,7 +146,7 @@ if (header) {
       }
     });
   });
-  for (const link of header.querySelectorAll('a[href]')) {
+  for (const link of headerLinks) {
     if (link.origin === location.origin && link.pathname === location.pathname && !link.hash) link.setAttribute('aria-current', 'page');
   }
 }

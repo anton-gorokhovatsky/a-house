@@ -1,0 +1,11 @@
+<div class="membership-field">
+  <p id="{{kind}}-documents">Документы откроются в новой вкладке.</p>
+  <div class="home-links">
+    <a href="{{terms}}" target="_blank" rel="noopener noreferrer" aria-describedby="{{kind}}-documents">{{termsLabel}}</a>
+    <a href="{{consent}}" target="_blank" rel="noopener noreferrer" aria-describedby="{{kind}}-documents">Согласие на обработку данных</a>
+  </div>
+</div>
+<div class="membership-field">
+  <label class="order-consent"><input type="checkbox" name="consent" value="1" required aria-describedby="{{kind}}-consent-error"> <span>{{consentText}}</span></label>
+  <p id="{{kind}}-consent-error" class="membership-error" data-field-error="consent" hidden></p>
+</div>

@@ -1,9 +1,9 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { projectRoot, siteBase } from './build.mjs';
+import { membershipSettings, projectRoot, siteBase } from './build.mjs';
 import { keepProjectNames, typesetHomeText } from './typography.mjs';
 
-const dist = path.join(projectRoot, 'dist');
+const dist = path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist'));
 const base = siteBase(process.env.SITE_BASE);
 const errors = [];
 
@@ -27,6 +27,10 @@ async function inventory(directory) {
 }
 await inventory('');
 const routes = JSON.parse(await readFile(path.join(projectRoot,'src/routes.json'),'utf8'));
+const membershipPages = new Map([
+  ['index.html', { kind: 'friend', settings: membershipSettings('friend') }],
+  ['member/index.html', { kind: 'member', settings: membershipSettings('member') }]
+]);
 const htmlFiles = routes.map(({slug}) => slug==='home' ? 'index.html' : slug==='404' ? '404.html' : slug+'/index.html');
 const routeTitles = new Map(routes.map(({slug, title}) => [base + slug + '/', title]));
 function validateURL(source, value, asset) {
@@ -76,7 +80,16 @@ for (const file of htmlFiles) {
       }
     }
     if (element==='script' && !value) errors.push(file+' contains an inline script');
-    if (element==='form' && (!/\smethod="dialog"/i.test(tag[0]) || /\saction=/i.test(tag[0]))) errors.push(file+' contains a live form');
+    if (element === 'form') {
+      const memberPage = membershipPages.get(file);
+      const id = tag[0].match(/\sid="([^"]+)"/i)?.[1];
+      const enabled = memberPage && id === memberPage.kind + '-form' && memberPage.settings;
+      const method = tag[0].match(/\smethod="([^"]+)"/i)?.[1]?.toLowerCase();
+      const action = tag[0].match(/\saction="([^"]*)"/i)?.[1]?.replaceAll('&amp;', '&');
+      if (enabled ? method !== 'post' || action !== enabled.action.href : method !== 'dialog' || action !== undefined) {
+        errors.push(file + ' has an unexpected form method or recipient');
+      }
+    }
   }
   if (/\son(?:click|submit|error|load|change)\s*=/i.test(source) || /data-tilda-formskey|formservices\[\]/i.test(source)) errors.push(file+' contains a live integration');
   for (const ref of source.matchAll(/url\(\s*['"]?([^)'"]+)/g)) validateURL(file,ref[1],true);

@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
-import { projectRoot, siteBase } from './build.mjs';
+import { membershipSettings, projectRoot, siteBase } from './build.mjs';
 import { previewServer } from './preview.mjs';
+import { checkMembershipTransport } from './check-membership.mjs';
 
 const base = siteBase(process.env.SITE_BASE);
 const server = previewServer(path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist')), base);
@@ -91,27 +92,25 @@ async function checkReadingReturn(page, mobile) {
   });
   await page.keyboard.press('Enter');
   assert.equal(new URL(page.url()).hash, '#friend');
-  const order = page.locator('[data-service-order="A-Friend"]:visible').first();
-  await order.press('Enter');
-  const dialog = page.locator('#services-checkout');
-  await dialog.waitFor({ state: 'visible' });
-  assert.equal(await dialog.locator('[data-service-order-title]').innerText(), 'A-Friend');
-  // The browser can refocus the section after popstate. Check the final render.
-  const restored = page.evaluate(() => new Promise(resolve => {
-    window.addEventListener('hashchange', () => requestAnimationFrame(() => requestAnimationFrame(resolve)), { once: true });
-  }));
+  const offer = page.locator('#friend a[href="#services-checkout"]');
+  await offer.press('Enter');
+  const form = page.locator('#friend-form');
+  await form.waitFor();
+  assert.equal(await page.locator('dialog[open]').count(), 0);
+  assert.equal(await form.locator('input[name="product"]').getAttribute('value'), 'A-Friend');
+  assert.equal(await page.locator('#friend, #services-checkout').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
   await page.goBack();
-  await restored;
-  assert.equal(await dialog.isVisible(), false, 'Back must close an open preview');
+  await page.waitForFunction(link => document.activeElement === link, await offer.elementHandle());
+  assert.equal(new URL(page.url()).hash, '#friend');
+  await page.goBack();
+  await page.waitForFunction(({link,top}) => link === document.activeElement &&
+    Math.abs(link.getBoundingClientRect().top - top) < 4, { link: await subscription.elementHandle(), top: originalTop });
   assert.equal(new URL(page.url()).hash, '#media');
-  assert.ok(await subscription.evaluate((link, top) => link === document.activeElement
-    && Math.abs(link.getBoundingClientRect().top - top) < 4, originalTop), 'Back must return to the focused link at the same reading position');
   await page.goForward();
-  await order.click();
-  await dialog.waitFor({ state: 'visible' });
-  await page.keyboard.press('Escape');
-  await dialog.waitFor({ state: 'hidden' });
-  assert.ok(await order.evaluate(el => el === document.activeElement), 'Closing the preview should restore focus to A-Friend');
+  await offer.waitFor();
+  await page.goForward();
+  await form.waitFor();
+  assert.equal(new URL(page.url()).hash, '#services-checkout');
 }
 
 async function checkEnlargedMenu(page) {
@@ -234,70 +233,78 @@ async function checkClubApplication(page) {
   await page.goto(url + '#club');
   await page.locator('#club').getByRole('link', { name: /сравнить программы клуба/i }).click();
   await page.waitForURL(url + 'club/');
-  // Pick a non-default level and read the name and offer from its visible card.
+  const comparison = page.getByRole('navigation', { name: 'Сравнение программ клуба' });
+  const choices = comparison.getByRole('link');
+  assert.equal(await choices.count(), 3);
+  const chosen = choices.nth(1);
+  await chosen.press('Enter');
+  const programId = new URL(page.url()).hash.slice(1);
   const card = page.locator('main [data-catalog-card]').nth(1);
-  const cardText = (await card.innerText()).toLocaleLowerCase('ru');
-  const apply = card.getByRole('link', { name: /оставить заявку/i });
-  const application = new URL(await apply.evaluate(link => link.href));
-  const offer = application.searchParams.get('offer');
-  assert.ok(offer && application.origin === new URL(url).origin, 'Club membership must lead to a local demo for the selected level');
-  await apply.click();
-  await page.waitForURL(application.href);
-  const form = page.locator('form[data-service-form="member"]');
-  const level = form.getByLabel('Уровень участия');
-  assert.equal(await level.inputValue(), offer);
-  const levelName = (await level.locator('option:checked').innerText()).trim();
-  assert.ok(levelName && cardText.includes(levelName.toLocaleLowerCase('ru')), 'The form must name the same level as the chosen card');
+  assert.equal(await card.getAttribute('id'), programId);
+  const programName = await card.getByRole('heading').innerText();
+  await card.getByRole('link', { name: /подать заявку/i }).click();
+  await page.waitForURL(url + 'member/?offer=patron');
+  assert.equal(await page.locator('.home-masthead').count(), 1);
+  const form = page.locator('#member-form');
+  const selected = form.getByRole('radio', { name: programName, exact: true });
+  assert.ok(await selected.isChecked(), 'The selected club program must follow the visitor into the form');
+  await checkMembershipForm(page, 'member');
+  await page.goBack();
+  await chosen.waitFor();
+  assert.equal(new URL(page.url()).hash, '#' + programId);
+  await page.goto(url + '#services-checkout');
+  await checkMembershipForm(page, 'friend');
+}
 
-  const outside = target => target.origin !== application.origin;
-  const external = [];
-  await page.context().route(outside, route => {
-    external.push(route.request().resourceType());
-    return route.abort();
-  });
-  const name = form.locator('input[name="name"]');
+async function checkMembershipForm(page, kind) {
+  const form = page.locator('#' + kind + '-form');
   const email = form.locator('input[type="email"]');
-  const visitor = 'Тестовый посетитель';
-  const mailbox = 'reader@example.invalid';
-  await name.fill(visitor);
-  await email.fill(mailbox);
-  const consent = form.getByRole('link', { name: /согласие на обработку персональных данных/i });
-  const consentChoice = form.getByRole('checkbox', { name: /согласие на обработку персональных данных/i });
-  const consentURL = await consent.evaluate(link => link.href);
-  const [documentPage] = await Promise.all([page.waitForEvent('popup', { timeout: 6000 }), consent.click()]);
-  await documentPage.waitForURL(consentURL);
-  await documentPage.getByRole('heading', { level: 1, name: /согласие.+обработку персональных данных/i }).waitFor();
-  await documentPage.close();
-  assert.equal(page.url(), application.href);
-  assert.equal(await name.inputValue(), visitor, 'Reading the consent must preserve the name already entered');
-  assert.equal(await email.inputValue(), mailbox);
-  assert.equal(await level.inputValue(), offer);
-  assert.equal(await consentChoice.isChecked(), false, 'Reading the terms must not itself give consent');
+  const name = form.locator('input[name="name"]');
+  const submit = form.locator('button[type="submit"]');
+  const settings = membershipSettings(kind);
+  await name.fill('Тестовый читатель');
+  await email.fill('reader');
+  await email.press('Tab');
+  assert.equal(await email.getAttribute('aria-invalid'), 'true');
+  assert.ok(await form.locator('[data-field-error="email"]').isVisible());
+  await email.fill('reader@example.invalid');
+  assert.equal(await email.getAttribute('aria-invalid'), null);
+  assert.equal(await name.inputValue(), 'Тестовый читатель');
+  if (settings) {
+    assert.equal(await form.getAttribute('method'), 'post');
+    assert.equal(await form.getAttribute('action'), settings.action.href);
+    const consent = form.locator('[name="consent"]');
+    assert.equal(await consent.isChecked(), false);
+    await submit.click();
+    assert.equal(await consent.getAttribute('aria-invalid'), 'true');
+  } else {
+    assert.equal(await form.getAttribute('method'), 'dialog');
+    assert.equal(await form.getAttribute('action'), null);
+    assert.ok(await submit.isDisabled());
+    const address = page.url();
+    const posted = [];
+    const watch = request => { if (request.method() === 'POST') posted.push(request.url()); };
+    page.on('request', watch);
+    await email.press('Enter');
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    page.off('request', watch);
+    assert.deepEqual(posted, [], 'An unconnected membership form must never send a visitor’s information');
+    assert.equal(page.url(), address);
+  }
+}
 
-  const companyGroup = form.locator('[data-field-name="company"]');
-  const company = companyGroup.getByRole('textbox');
-  await form.locator('input[type="tel"]').fill('+7 000 000-00-00');
-  await form.getByRole('radio', { name: 'Email', exact: true }).press('Space');
-  for (const agreement of await form.getByRole('checkbox').all()) await agreement.press('Space');
-  const review = form.getByRole('button', { name: /проверить анкету/i });
-  await review.click();
-  assert.equal(await company.getAttribute('aria-invalid'), 'true');
-  const hint = companyGroup.locator('[data-service-field-error]');
-  assert.ok(await hint.isVisible() && (await hint.innerText()).trim(),
-    'A missing company needs a visible correction near the field');
-  assert.equal(await form.locator('[data-service-result]').isVisible(), false);
-  await company.fill('Учебное бюро');
-  assert.equal(await company.getAttribute('aria-invalid'), null);
-  assert.equal(await hint.isVisible(), false, 'Correcting the company should clear its own hint');
-  assert.equal(await name.inputValue(), visitor);
-  assert.equal(await email.inputValue(), mailbox);
-  assert.equal(await level.inputValue(), offer);
-  await review.click();
-  const result = form.locator('[data-service-result]');
-  await result.getByRole('heading', { name: 'Анкета проверена' }).waitFor();
-  assert.ok((await result.locator('[data-service-result-offer]').innerText()).includes(levelName));
-  assert.deepEqual(external, [], 'Checking a demo application must not contact an external service');
-  await page.context().unroute(outside);
+async function checkConsentReturn(page) {
+  await page.goto(url + 'a_pass/');
+  const form = page.locator('form[data-service-form="a-pass"]');
+  const name = form.locator('input[name="name"]');
+  await name.fill('Тестовый посетитель');
+  const documentLink = form.locator('a[href$="/agreement2/"]');
+  const checkbox = documentLink.locator('xpath=ancestor::label').getByRole('checkbox');
+  const [tab] = await Promise.all([page.waitForEvent('popup'), documentLink.click()]);
+  await tab.getByRole('heading', {level: 1, name: /согласие/i}).waitFor();
+  await tab.close();
+  assert.equal(await name.inputValue(), 'Тестовый посетитель');
+  assert.equal(await checkbox.isChecked(), false, 'Reading a document must not give consent');
 }
 
 async function checkHomeRoutes(page, mobile) {
@@ -362,8 +369,8 @@ async function checkHomeRoutes(page, mobile) {
   await section('media').waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media', 'Back must restore the chosen reading view');
   await page.goto(url + '#services-checkout');
-  await page.locator('#services-checkout').waitFor({ state: 'visible' });
-  await page.keyboard.press('Escape');
+  await page.locator('#friend-form').waitFor();
+  assert.equal(await page.locator('dialog[open]').count(), 0);
   await page.goto(url + '#visit');
   await section('visit').waitFor({ state: 'visible' });
   await section('visit').locator('a[href$="/residents/"]').first().click();
@@ -430,9 +437,11 @@ try {
     }
     await checkArchiveReading(page);
     await checkClubApplication(page);
+    await checkConsentReturn(page);
     console.log('Archive reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');
     await page.close();
   }
+  await checkMembershipTransport(browser);
 } finally {
   await browser?.close();
   server.close();

@@ -19,6 +19,50 @@ export function siteBase(value = '/a-house/') {
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const source = name => readFile(file('src', name), 'utf8');
 
+export function membershipSettings(kind, env = process.env) {
+  if (kind !== 'friend' && kind !== 'member') throw new Error('Unknown membership form: ' + kind);
+  const prefix = kind === 'friend' ? 'A_FRIEND_' : 'A_MEMBER_';
+  const actionKey = prefix + (kind === 'friend' ? 'ORDER_URL' : 'APPLICATION_URL');
+  const keys = [actionKey, prefix + 'TERMS_URL', prefix + 'CONSENT_URL', prefix + 'CONSENT_TEXT'];
+  if (kind === 'friend') keys.push('A_FRIEND_PERIOD');
+  if (!keys.some(key => env[key]?.trim())) return null;
+  const missing = keys.filter(key => !env[key]?.trim());
+  if (missing.length) {
+    console.warn('The ' + kind + ' form stays closed. Missing ' + missing.join(', '));
+    return null;
+  }
+
+  function publicURL(key) {
+    const url = URL.canParse(env[key]) ? new URL(env[key]) : null;
+    if (!url || url.protocol !== 'https:' || url.username || url.password) {
+      throw new Error(key + ' must be a public HTTPS URL without embedded credentials');
+    }
+    return url;
+  }
+
+  const action = publicURL(actionKey);
+  if (action.hash) throw new Error(actionKey + ' must point to a POST handler without a fragment');
+  return {
+    action,
+    terms: publicURL(prefix + 'TERMS_URL'),
+    consent: publicURL(prefix + 'CONSENT_URL'),
+    consentText: env[prefix + 'CONSENT_TEXT']
+  };
+}
+
+function renderMembership(kind, template, agreementTemplate, settings) {
+  const friend = kind === 'friend';
+  const status = friend ? 'Оплата пока недоступна.' : 'Приём заявок пока недоступен.';
+  const legal = { ...settings, kind, termsLabel: friend ? 'Условия покупки' : 'Условия вступления' };
+  const fields = {
+    formAttributes: settings ? `method="post" action="${escape(settings.action)}"` : 'method="dialog"',
+    availability: settings ? '' : `<p class="membership-status">${status}</p>`,
+    agreements: settings ? agreementTemplate.replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : '',
+    submitState: settings ? '' : ' disabled'
+  };
+  return template.replace(/\{\{(formAttributes|availability|agreements|submitState)\}\}/g, (_, key) => fields[key]);
+}
+
 function consentLink(link, hintId) {
   const tokens = { rel: [], 'aria-describedby': [] };
   const attributes = link.slice(0, -1).replace(/\s+(target|rel|aria-describedby)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi,
@@ -55,8 +99,10 @@ function prepareConsentDocuments(html) {
   });
 }
 
-export async function build(base = siteBase(process.env.SITE_BASE)) {
-  const output = file('dist');
+export async function build(base = siteBase(process.env.SITE_BASE), { outputDirectory, env = process.env } = {}) {
+  const friend = membershipSettings('friend', env);
+  const member = membershipSettings('member', env);
+  const output = outputDirectory ?? file('dist');
   const delivery = await loadImageDelivery(projectRoot);
   const routes = JSON.parse(await source('routes.json'));
   const archive = routes.filter(page => page.slug.startsWith('tpost/'))
@@ -65,8 +111,10 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
       const date=(page.published || '').split('-').reverse().join('.');
       return '<li><time datetime="'+escape(page.published || '')+'">'+date+'</time><div><a href="'+base+page.slug+'/">'+escape(page.title)+'</a><small>'+escape(page.section || '')+'</small></div></li>';
     }).join('\n');
-  const [shell, header, footerTemplate, homeFooterTemplate] = await Promise.all([
-    'layout.html', 'partials/header.html', 'partials/footer.html', 'partials/home-footer.html'
+  const [shell, header, editorialHeader, footerTemplate, homeFooterTemplate, memberPrograms, friendTemplate, memberTemplate, agreements] = await Promise.all([
+    'layout.html', 'partials/header.html', 'partials/editorial-header.html', 'partials/footer.html',
+    'partials/home-footer.html', 'partials/member-programs.html', 'partials/friend-order.html',
+    'partials/member-application.html', 'partials/membership-agreements.html'
   ].map(source));
   const footerContent = new Map();
   const footer = footerTemplate.replace(/<!-- footer:(\w+) -->([\s\S]*?)<!-- \/footer -->/g, (_, name, content) => {
@@ -77,8 +125,15 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
     if (!footerContent.has(name)) throw new Error('Missing shared footer content: ' + name);
     return footerContent.get(name);
   });
-  await rm(output, { recursive: true, force: true });
-  await mkdir(output, { recursive: true });
+  const friendPrice = 12000;
+  const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
+  const period = env.A_FRIEND_PERIOD?.trim();
+  const orderForm = renderMembership('friend', friendTemplate, agreements, friend);
+  const applicationForm = renderMembership('member', memberTemplate, agreements, member)
+    .replace('<!-- MEMBER PROGRAMS -->', () => memberPrograms);
+  if (!outputDirectory) await rm(output, { recursive: true, force: true });
+  // A caller building an alternate variant must supply a new directory.
+  await mkdir(output);
   await Promise.all([
     cp(file('media'), path.join(output, 'media'), {
       recursive: true,
@@ -96,11 +151,17 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
   }
   await styles('styles');
   const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
-  const scriptsFor = page => page.slug === 'home' ? [...scripts, 'js/home.js'] : scripts;
+  function scriptsFor(page) {
+    if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/membership.js'];
+    if (page.slug === 'member') return [...scripts, 'js/membership.js'];
+    return scripts;
+  }
+  const clubPages = new Set(['club', 'member']);
   const cssFor = page => [...new Set([
     'media/fonts/ahouse-fonts.css',
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
-    ...page.styles, 'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css'
+    ...page.styles, ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
+    'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
   const references = new Set([nearbyImages, ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
@@ -112,10 +173,21 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
   for (const page of routes) {
     const location = page.slug === 'home' || page.slug === '404' ? output : path.join(output,page.slug);
     await mkdir(location,{ recursive:true });
-    const body = (await source('pages/' + page.slug + '.html')).replace('<!-- HEADER -->',()=>header)
-      .replace('<!-- FOOTER -->',()=>page.slug === 'home' ? homeFooter : footer).replace('<!-- ARCHIVE ENTRIES -->',()=>archive);
+    const home = page.slug === 'home';
+    const editorial = home || clubPages.has(page.slug);
+    const body = (await source('pages/' + page.slug + '.html'))
+      .replace('<!-- EDITORIAL HEADER -->', () => editorialHeader
+        .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
+        .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
+      .replace('<!-- HEADER -->', () => header)
+      .replace('<!-- FRIEND ORDER -->', () => orderForm)
+      .replace('<!-- MEMBER FORM -->', () => applicationForm)
+      .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
+      .replace('<!-- FOOTER -->', () => editorial ? homeFooter : footer)
+      .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
+      .replace('<!-- ARCHIVE ENTRIES -->', () => archive);
     const pageBody = prepareConsentDocuments(body);
-    const typeset = page.slug === 'home' ? typesetHomeText(pageBody) : keepProjectNames(pageBody);
+    const typeset = editorial ? typesetHomeText(pageBody) : keepProjectNames(pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')
@@ -123,10 +195,11 @@ export async function build(base = siteBase(process.env.SITE_BASE)) {
       : scriptTags;
     const values = {
       TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug),
+      FORM_ACTION:escape((home ? friend : page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
-    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
+    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
   }
   await writeFile(path.join(output,'.nojekyll'),'');

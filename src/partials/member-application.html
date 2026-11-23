@@ -1,0 +1,55 @@
+<form id="member-form" class="membership-form" data-membership-form="member" aria-labelledby="member-heading" {{formAttributes}}>
+  {{availability}}
+  <!-- MEMBER PROGRAMS -->
+  <div class="membership-field">
+    <label for="member-name">Фамилия и&nbsp;имя, отчество при&nbsp;наличии</label>
+    <input id="member-name" name="name" type="text" autocomplete="name" required aria-describedby="member-name-error">
+    <p id="member-name-error" class="membership-error" data-field-error="name" hidden></p>
+  </div>
+  <div class="membership-field">
+    <label for="member-company">Название компании</label>
+    <input id="member-company" name="company" type="text" autocomplete="organization" required aria-describedby="member-company-error">
+    <p id="member-company-error" class="membership-error" data-field-error="company" hidden></p>
+  </div>
+  <div class="membership-field">
+    <label for="member-phone">Телефон</label>
+    <input id="member-phone" name="phone" type="tel" autocomplete="tel" required aria-describedby="member-phone-error">
+    <p id="member-phone-error" class="membership-error" data-field-error="phone" hidden></p>
+  </div>
+  <div class="membership-field">
+    <label for="member-email">Электронная почта</label>
+    <input id="member-email" name="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" required aria-describedby="member-email-error">
+    <p id="member-email-error" class="membership-error" data-field-error="email" hidden></p>
+  </div>
+  <fieldset class="membership-programs" aria-describedby="member-connect-error">
+    <legend>Как с&nbsp;вами удобнее связаться?</legend>
+    <label><input type="radio" name="connect" value="Email" required aria-describedby="member-connect-error"><span>По&nbsp;почте</span></label>
+    <label><input type="radio" name="connect" value="Telegram" required aria-describedby="member-connect-error"><span>В&nbsp;Telegram</span></label>
+    <p id="member-connect-error" class="membership-error" data-field-error="connect" hidden></p>
+  </fieldset>
+  <details class="membership-extra">
+    <summary><span class="when-closed">Дополнить заявку</span><span class="when-open">Свернуть дополнительные сведения</span> <span class="membership-optional">По&nbsp;желанию</span></summary>
+    <div class="membership-extra-fields">
+      <div class="membership-field">
+        <label for="member-sphere">Сфера деятельности</label>
+        <input id="member-sphere" name="sphere" type="text">
+      </div>
+      <div class="membership-field">
+        <label for="member-profession">Должность</label>
+        <input id="member-profession" name="profession" type="text" autocomplete="organization-title">
+      </div>
+      <div class="membership-field">
+        <label for="member-recommendations">Кто может порекомендовать вас клубу?</label>
+        <input id="member-recommendations" name="recommendations" type="text">
+      </div>
+      <div class="membership-field">
+        <label for="member-comment">Чего вы&nbsp;ждёте от&nbsp;участия в&nbsp;клубе?</label>
+        <textarea id="member-comment" name="comment" rows="3"></textarea>
+      </div>
+    </div>
+  </details>
+  {{agreements}}
+  <div class="membership-send">
+    <button class="membership-action" type="submit"{{submitState}}>Подать заявку</button>
+  </div>
+</form>

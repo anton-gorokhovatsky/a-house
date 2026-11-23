@@ -16,6 +16,16 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      A_FRIEND_ORDER_URL: ${{ vars.A_FRIEND_ORDER_URL }}
+      A_FRIEND_PERIOD: ${{ vars.A_FRIEND_PERIOD }}
+      A_FRIEND_TERMS_URL: ${{ vars.A_FRIEND_TERMS_URL }}
+      A_FRIEND_CONSENT_URL: ${{ vars.A_FRIEND_CONSENT_URL }}
+      A_FRIEND_CONSENT_TEXT: ${{ vars.A_FRIEND_CONSENT_TEXT }}
+      A_MEMBER_APPLICATION_URL: ${{ vars.A_MEMBER_APPLICATION_URL }}
+      A_MEMBER_TERMS_URL: ${{ vars.A_MEMBER_TERMS_URL }}
+      A_MEMBER_CONSENT_URL: ${{ vars.A_MEMBER_CONSENT_URL }}
+      A_MEMBER_CONSENT_TEXT: ${{ vars.A_MEMBER_CONSENT_TEXT }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

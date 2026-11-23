@@ -6,11 +6,9 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page38363349.css",
-      "styles/source/forms-1.0.css",
-      "styles/source/cart-1.0.css",
       "styles/chrome.css",
-      "styles/pages/home.css"
+      "styles/pages/home.css",
+      "styles/pages/membership.css"
     ]
   },
   {
@@ -68,20 +66,13 @@
   {
     "slug": "club",
     "title": "Клуб A–House",
-    "description": "",
+    "description": "Участие в клубе A–House. Возможности A–Member, A–Patron и Patron Platinum, условия посещения Дома и заявки на вступление.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page38381038.css",
-      "styles/source/popup-1.1.css",
-      "styles/source/slds-1.4.css",
-      "styles/source/catalog-1.1.css",
-      "styles/source/forms-1.0.css",
-      "styles/source/catalog-filters-1.0.css",
-      "styles/source/cart-1.0.css",
-      "styles/source/menusub-1.0.css",
-      "styles/pages/club.css",
-      "styles/chrome.css"
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/club.css"
     ]
   },
   {
@@ -130,16 +121,14 @@
   },
   {
     "slug": "member",
-    "title": "Заявка на участие в клубе — A–House",
-    "description": "",
+    "title": "Вступление в клуб A–House",
+    "description": "Заявка на вступление в клуб A–House по программе A–Member, A–Patron или Patron Platinum.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page152711126.css",
-      "styles/source/forms-1.0.css",
-      "styles/source/cart-1.0.css",
-      "styles/pages/member.css",
-      "styles/chrome.css"
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/membership.css"
     ]
   },
   {

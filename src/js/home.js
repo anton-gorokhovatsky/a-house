@@ -1,23 +1,25 @@
 (() => {
   const overview = document.getElementById('overview');
+  const issue = document.querySelector('.home-issue');
   const sections = [...document.querySelectorAll('[data-home-section]')];
   const choices = [...document.querySelectorAll('[data-home-view]')];
   const links = [...document.querySelectorAll('a')];
   let restoreFrame = 0;
 
   function viewFor(target) {
-    if (target?.id === 'services-checkout') return document.getElementById('club');
     return target?.closest('[data-home-section]') || null;
   }
 
   function displayView(target) {
     const selected = viewFor(target);
     overview.dataset.view = selected?.id || 'overview';
+    issue.hidden = target?.id === 'publications';
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
+    const currentSection = selected?.id === 'services-checkout' ? 'club' : selected?.id || 'overview';
     for (const choice of choices) {
-      if (choice.hash === '#' + (selected?.id || 'overview')) choice.setAttribute('aria-current', 'true');
+      if (choice.hash === '#' + currentSection) choice.setAttribute('aria-current', 'true');
       else choice.removeAttribute('aria-current');
     }
     const disclosure = target?.closest('details');
@@ -28,11 +30,27 @@
     return document.getElementById(location.hash.slice(1));
   }
 
+  function scrollToTarget(target) {
+    if (target.id === 'publications') {
+      // Keep the section heading and masthead in view if the first headline fits.
+      // The same margin also applies when the browser follows the initial fragment.
+      const firstHeadline = target.querySelector('h3');
+      const fits = firstHeadline && firstHeadline.getBoundingClientRect().bottom + scrollY <= innerHeight;
+      target.style.scrollMarginBlockStart = fits ? target.getBoundingClientRect().top + scrollY + 'px' : '0px';
+    }
+    // Section entries start with the masthead. A deeper link goes straight to its content.
+    if (target === overview || target.hasAttribute('data-home-section')) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else {
+      target.scrollIntoView({ block: 'start', behavior: 'instant' });
+    }
+  }
+
   function revealLocation() {
     const target = hashTarget();
     displayView(target);
-    if (target && target.id !== 'services-checkout') {
-      target.scrollIntoView({ block: 'start', behavior: 'instant' });
+    if (target) {
+      scrollToTarget(target);
     }
   }
 
@@ -59,7 +77,7 @@
     const link = event.target.closest('a[href^="#"]');
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     const target = document.getElementById(link.hash.slice(1));
-    if (!target || target.id === 'services-checkout' || link.classList.contains('skip-content')) return;
+    if (!target || link.classList.contains('skip-content')) return;
     event.preventDefault();
     if (location.hash !== link.hash) {
       const top = link.closest('.site-header') ? null : link.getBoundingClientRect().top;
@@ -68,7 +86,7 @@
       history.pushState(null, '', link.hash);
     }
     displayView(target);
-    target.scrollIntoView({ block: 'start', behavior: 'instant' });
+    scrollToTarget(target);
     if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
     target.focus({ preventScroll: true });
   });
@@ -115,7 +133,11 @@
   refreshDates();
   displayView(hashTarget());
   if (location.hash && performance.getEntriesByType('navigation')[0]?.type === 'navigate') {
-    requestAnimationFrame(revealLocation);
+    const destination = location.href;
+    // Native fragment scrolling and the final text metrics settle when the page opens.
+    window.addEventListener('pageshow', () => requestAnimationFrame(() => {
+      if (location.href === destination) revealLocation();
+    }), { once: true });
   }
   window.addEventListener('popstate', restoreHistoryEntry);
   window.addEventListener('hashchange', restoreHistoryEntry);
