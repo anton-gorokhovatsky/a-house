@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { keepProjectNames, typesetHomeText } from './typography.mjs';
 import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
 import { loadImageDelivery } from './images.mjs';
+import { renderCalendar } from './calendar.mjs';
+import { renderProgram } from './program.mjs';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const file = (...parts) => path.join(projectRoot, ...parts);
@@ -105,6 +107,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const output = outputDirectory ?? file('dist');
   const delivery = await loadImageDelivery(projectRoot);
   const routes = JSON.parse(await source('routes.json'));
+  const events = JSON.parse(await source('data/events.json'));
+  const program = renderProgram(events, await source('partials/program-feature.html'), base);
   const archive = routes.filter(page => page.slug.startsWith('tpost/'))
     .sort((a,b) => (b.published || '').localeCompare(a.published || '') || a.title.localeCompare(b.title,'ru'))
     .map(page => {
@@ -154,6 +158,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   function scriptsFor(page) {
     if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/membership.js'];
     if (page.slug === 'member') return [...scripts, 'js/membership.js'];
+    if (page.slug === 'calendar') return [...scripts, 'js/calendar.js'];
     return scripts;
   }
   const clubPages = new Set(['club', 'member']);
@@ -174,14 +179,21 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const location = page.slug === 'home' || page.slug === '404' ? output : path.join(output,page.slug);
     await mkdir(location,{ recursive:true });
     const home = page.slug === 'home';
-    const editorial = home || clubPages.has(page.slug);
+    const editorial = home || clubPages.has(page.slug) || page.slug === 'calendar';
     const body = (await source('pages/' + page.slug + '.html'))
       .replace('<!-- EDITORIAL HEADER -->', () => editorialHeader
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
+        .replace('{{programCurrent}}', page.slug === 'calendar' ? ' aria-current="location"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
       .replace('<!-- HEADER -->', () => header)
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
+      .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
+      .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
+      .replace('{{introHidden}}', program.featureIsCurrent ? ' hidden' : '')
+      .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
+      .replace('{{emptyHidden}}', program.hasEvents ? ' hidden' : '')
+      .replace('<!-- EVENT CALENDAR -->', () => renderCalendar(events, base))
       .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
       .replace('<!-- FOOTER -->', () => editorial ? homeFooter : footer)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')

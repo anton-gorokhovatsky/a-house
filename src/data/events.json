@@ -1,0 +1,119 @@
+[
+  {
+    "id": "light-of-time",
+    "title": "Здесь и сейчас. Свет времени",
+    "start": "2026-11-17", "end": "2026-11-29",
+    "kind": "Выставка мобильной фотографии",
+    "venue": "Дом A–House", "address": "Большой Афанасьевский пер., 14",
+    "summary": "A–House посвятил свой раздел выставки городской архитектуре.",
+    "home": "feature",
+    "photos": [
+      { "file": "media/home/exhibition-architecture-602.webp", "width": 602, "height": 800, "alt": "Архитектурный снимок на деревянном стенде с надписью A–House в выставочном зале" },
+      { "file": "media/home/exhibition-light-of-time-602.webp", "width": 602, "height": 800, "alt": "Пейзажные фотографии на соседних стендах" }
+    ],
+    "detail": "Здесь собраны работы участников номинации «Лучшая архитектурная фотография» конкурса restore:mobile photo awards.",
+    "access": "Экскурсия с медиатором длится 40 минут. Вход по записи.",
+    "booking": { "url": "https://ahouse.timepad.ru/event/4293210/", "label": "Записаться на экскурсию" },
+    "links": [
+      { "url": "https://t.me/ahouseproject/10732", "label": "Фотографии выставки", "role": "report" }
+    ]
+  },
+  {
+    "id": "archaeology-of-the-future",
+    "title": "Археология будущего",
+    "start": "2026-11-25", "end": "2026-11-25", "time": "19:30",
+    "kind": "Дискуссия A–School", "venue": "Образовательный центр ММОМА", "shortVenue": "ММОМА", "address": "Ермолаевский пер., 17",
+    "summary": "Дискуссия A–School о том, как уличные художники работают с городскими руинами.",
+    "home": "card", "legacyHeading": "rec2309679131", "price": "Билет 300 ₽",
+    "links": [{ "url": "https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description", "label": "Программа ММОМА" }]
+  },
+  {
+    "id": "marketing-mastermind",
+    "title": "Маркетинг на разбор",
+    "start": "2026-11-26", "end": "2026-11-26", "time": "19:00",
+    "kind": "Мастермайнд", "venue": "Дом предпринимателя", "address": "Зал Строгановых, Малый Каретный пер., 11, стр. 10",
+    "summary": "Встреча с командой Точка Банка о том, как предпринимателям привлекать клиентов.",
+    "home": "card", "price": "Участие 4 000 ₽",
+    "links": [{ "url": "https://dompred.ru/events/marketing-mastermind", "label": "Страница встречи" }]
+  },
+  {
+    "id": "a-forum-2026", "title": "Первый A–Forum о гостиничной индустрии",
+    "start": "2026-11-12", "end": "2026-11-12", "kind": "Форум",
+    "venue": "Дом предпринимателя", "address": "Малый Каретный пер., 11, стр. 10",
+    "summary": "Архитекторы и отельеры обсуждали, как перестраивать действующие гостиницы и что меняется в работе отеля, когда он открывается городу.",
+    "links": [
+      { "url": "https://t.me/ahouseonair/265", "label": "Репортаж A–House On Air" },
+      { "url": "https://t.me/ahouseproject/10590", "label": "Итоги форума" }
+    ]
+  },
+  {
+    "id": "dom-predprinimatelya-opening", "title": "Открытие Дома предпринимателя",
+    "start": "2026-10-21", "end": "2026-10-21", "kind": "Открытие",
+    "venue": "Дом предпринимателя", "address": "Малый Каретный пер., 11, стр. 10",
+    "summary": "A–House и Точка Банк представили новый Дом в Малом Каретном. Вечер открытия прошёл 21 октября, а на следующий день Дом принял первых посетителей.",
+    "links": [{ "url": "https://t.me/ahouseproject/10321", "label": "Фотографии открытия" }, { "url": "https://t.me/ahouseproject/10210", "label": "О новом Доме" }]
+  },
+  {
+    "id": "designing-comfort", "title": "Проектируя удобство",
+    "start": "2026-09-25", "end": "2026-09-25", "kind": "Паблик-ток",
+    "venue": "Дом A–House", "address": "Большой Афанасьевский пер., 14",
+    "summary": "На первой встрече A–House и Т–Бизнеса предприниматели обсуждали, как по привычкам гостей понять, удобно ли им в городе, ресторане или мастерской.",
+    "links": [{ "url": "https://www.youtube.com/watch?v=TR2JV1RXsp4", "label": "Видеозапись разговора" }, { "url": "https://t.me/ahouseproject/9915", "label": "О встрече" }]
+  },
+  {
+    "id": "blazar-kids-workshops", "title": "Детские мастерские на ярмарке blazar",
+    "start": "2026-09-24", "end": "2026-09-27", "audience": "kids",
+    "kind": "Мастерские A–Kids", "venue": "Музей Москвы", "address": "Зубовский бул., 2",
+    "summary": "На программе A–Kids и PIONEER дети строили город будущего с бюро Arch(e)type, создавали сад с FRESH.GLASS и миниатюрную мебель с figura A.",
+    "links": [{ "url": "https://t.me/ahouseproject/9703", "label": "Фотографии и работы детей" }, { "url": "https://t.me/ahouseproject/9564", "label": "Программа мастерских" }]
+  },
+  {
+    "id": "cosmoscow-architecture-run", "title": "Архитектурная пробежка с Cosmoscow",
+    "start": "2026-08-31", "end": "2026-08-31", "kind": "Пробежка",
+    "venue": "Центр Москвы",
+    "summary": "Команды A–House и Cosmoscow пробежали семь километров вместе с Маргаритой Пушкиной и тренерами ProTrener. Маршрут сняла фотограф Диана Вешкурцева.",
+    "links": [{ "url": "https://t.me/ahouseproject/9005", "label": "Фотографии с маршрута" }]
+  },
+  {
+    "id": "afanasievsky-opening", "title": "Открытие Дома в Большом Афанасьевском",
+    "start": "2026-07-23", "end": "2026-07-23", "kind": "Открытие",
+    "venue": "Дом A–House", "address": "Большой Афанасьевский пер., 14",
+    "summary": "A–House открыл пятиэтажный Дом после реконструкции. Редакция A–News рассказала об истории здания, его мастерских и резидентах.",
+    "links": [{ "url": "https://t.me/ahouseproject/8258", "label": "Фотографии открытия" }, { "url": "https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/", "label": "Репортаж о Доме" }]
+  },
+  {
+    "id": "a-fest-2026", "title": "Второй архитектурный A–Fest",
+    "start": "2026-05-21", "end": "2026-06-14", "kind": "Фестиваль",
+    "venue": "Образовательный центр ММОМА и площадки Москвы",
+    "summary": "На фестивале прошли выставка «Архитектура 2.0», дискуссии и экскурсии. В репортаже организаторов — работы участников и встречи на городских площадках.",
+    "links": [{ "url": "https://t.me/ahouseproject/7777", "label": "Как прошёл фестиваль" }, { "url": "https://t.me/ahouseproject/7662", "label": "Итоги A–Fest" }]
+  },
+  {
+    "id": "ergonomics-and-everyday-life", "title": "Эргономика и сценарии жизни",
+    "start": "2026-03-11", "end": "2026-03-11", "time": "19:30", "kind": "Дискуссия A–School",
+    "venue": "Библиотека ММОМА", "address": "Ермолаевский пер., 17, стр. 1",
+    "summary": "Нина Целёва, Влад Обласов и Сергей Колчин обсудили с гостями A–School и ММОМА, как привычки людей влияют на устройство вещей и помещений.",
+    "links": [{ "url": "https://news.ahouseproject.com/a-house-x-mmoma-ergonomika-i-sczenarii-zhizni/", "label": "Разбор дискуссии в A–News" }, { "url": "https://t.me/ahouseproject/6488", "label": "Программа встречи" }]
+  },
+  {
+    "id": "a-kids-family-picnic", "title": "Семейный пикник A–Kids",
+    "start": "2025-06-07", "end": "2025-06-07", "audience": "kids",
+    "kind": "Презентация A–Kids № 3", "venue": "Мещерский парк, Яблоневая роща",
+    "summary": "К выходу третьего номера A–Kids семьи собрались в Мещерском парке. Дети исследовали лес, рисовали полевые цветы и собирали сад на бумаге.",
+    "links": [{ "url": "https://t.me/ahousekids/293", "label": "Фотографии прогулки" }, { "url": "https://t.me/ahouseproject/4118", "label": "Рассказ о пикнике" }]
+  },
+  {
+    "id": "a-kids-city-l", "title": "Квест «История города L»",
+    "start": "2025-03-01", "end": "2025-03-01", "audience": "kids",
+    "kind": "Презентация A–Kids № 2", "venue": "Школа «Алгоритм», Москва",
+    "summary": "На презентации второго выпуска A–Kids дети прошли квест и участвовали в мастер-классах. В это время родители встретились с архитекторами и дизайнерами.",
+    "links": [{ "url": "https://t.me/ahousekids/238", "label": "Как прошёл квест" }]
+  },
+  {
+    "id": "a-kids-first-issue", "title": "Первый номер A–Kids в архитектурном бюро",
+    "start": "2024-11-10", "end": "2024-11-10", "audience": "kids",
+    "kind": "Презентация", "venue": "Бюро Arch(e)type и Saga, Москва",
+    "summary": "A–House и LEGENDA познакомили детей с работой архитектора. Участники прошли квест в двух бюро и собрали макеты собственных проектов.",
+    "links": [{ "url": "https://t.me/ahousekids/143", "label": "Фотографии из мастерской" }, { "url": "https://t.me/ahousekids/134", "label": "Рассказ о встрече" }]
+  }
+]

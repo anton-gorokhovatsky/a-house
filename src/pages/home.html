@@ -7,64 +7,27 @@
         <a href="@@ROOT@@about/">Об институции</a>
       </div>
       <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-label="Программа A–House">
-        <div class="home-house-intro" data-home-intro hidden>
+        <div class="home-house-intro" data-home-intro{{introHidden}}>
           <h2>Дом на&nbsp;Большом Афанасьевском</h2>
           <p>В московском доме A–House проходят выставки и&nbsp;встречи об&nbsp;архитектуре и&nbsp;городе. На&nbsp;первом этаже работает кафе.</p>
           <a class="home-action" href="#visit">Адрес и&nbsp;часы работы</a>
         </div>
-        <div class="home-feature-slot" data-home-now>
-          <article id="light-of-time" class="home-feature" data-event-start="2026-11-17" data-event-end="2026-11-29">
-            <div id="rec619984956" class="home-feature-heading">
-              <p class="home-meta">Выставка мобильной фотографии <span class="home-feature-date"><time datetime="2026-11-17">17</time>–<time datetime="2026-11-29">29&nbsp;ноября<span data-event-year></span></time></span></p>
-              <h2>Здесь и&nbsp;сейчас. <span>Свет времени</span></h2>
-            </div>
-            <div class="home-feature-visit">
-              <p class="home-feature-context">A–House посвятил свой раздел выставки городской архитектуре.<span class="home-detail"> Здесь собраны работы участников номинации «Лучшая архитектурная фотография» конкурса restore:mobile photo awards.</span></p>
-              <p><a class="home-venue-link" href="#visit">Большой Афанасьевский пер.,&nbsp;14</a></p>
-              <p class="home-feature-access">Экскурсия с&nbsp;медиатором длится 40&nbsp;минут. Вход&nbsp;по&nbsp;записи.</p>
-              <a class="home-action" data-event-booking href="https://ahouse.timepad.ru/event/4293210/">Записаться на&nbsp;экскурсию</a>
-              <a class="home-archive-source" href="https://t.me/ahouseproject/10732">Анонс выставки</a>
-            </div>
-            <figure class="home-feature-photo">
-              <div class="home-photo-pair">
-                <img src="@@ROOT@@media/home/exhibition-architecture-602.webp" width="602" height="800" alt="Архитектурный снимок на деревянном стенде с надписью A–House в выставочном зале" fetchpriority="high">
-                <img class="home-photo-detail" src="@@ROOT@@media/home/exhibition-light-of-time-602.webp" width="602" height="800" alt="Пейзажные фотографии на соседних стендах" loading="lazy">
-              </div>
-              <figcaption><a href="https://t.me/ahouseproject/10736">Из&nbsp;фоторепортажа A–House с&nbsp;выставки</a></figcaption>
-            </figure>
-          </article>
+        <div class="home-feature-slot" data-home-now{{featureHidden}}>
+          <!-- PROGRAM FEATURE -->
         </div>
         <div class="home-season">
           <div class="home-program-head">
             <h2>Программа</h2>
+            <a class="home-calendar-link" href="@@ROOT@@calendar/">Весь календарь</a>
           </div>
           <div class="home-events" data-home-events>
-            <article class="home-event" data-event-end="2026-11-25">
-              <a class="home-event-link" href="https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description">
-                <div class="home-event-info">
-                  <p class="home-meta"><time datetime="2026-11-25T19:30:00+03:00">25&nbsp;ноября<span data-event-year></span>, 19:30</time> <span class="home-event-venue">ММОМА</span></p>
-                  <h3 id="rec2309679131">Археология будущего</h3>
-                  <p>Дискуссия A–School о&nbsp;том, как уличные художники работают с&nbsp;городскими руинами.</p>
-                </div>
-                <p class="home-event-price">Билет 300&nbsp;₽</p>
-              </a>
-              <p class="home-detail">Образовательный центр ММОМА, Ермолаевский пер.,&nbsp;17.</p>
-            </article>
-            <article class="home-event" data-event-end="2026-11-26">
-              <a class="home-event-link" href="https://dompred.ru/events/marketing-mastermind">
-                <div class="home-event-info">
-                  <p class="home-meta"><time datetime="2026-11-26T19:00:00+03:00">26&nbsp;ноября<span data-event-year></span>, 19:00</time> <span class="home-event-venue">Дом предпринимателя</span></p>
-                  <h3>Маркетинг на&nbsp;разбор</h3>
-                  <p>Встреча с&nbsp;командой Точка Банка о&nbsp;том, как предпринимателям привлекать клиентов.</p>
-                </div>
-                <p class="home-event-price">Участие 4&#8239;000&nbsp;₽</p>
-              </a>
-              <p class="home-detail">Зал Строгановых, Малый Каретный пер.,&nbsp;11, стр.&nbsp;10.</p>
-            </article>
+            <!-- PROGRAM EVENTS -->
           </div>
-          <p class="home-upcoming-empty" data-events-empty hidden>Новые анонсы&nbsp;— <a href="https://t.me/ahouseproject">в&nbsp;канале A–House</a>.</p>
-          <details class="home-past" data-events-past hidden><summary><span class="when-closed">Показать</span><span class="when-open">Скрыть</span> прошедшие события</summary><div class="home-events"></div></details>
-          <div class="home-links home-detail"><a data-upcoming-channel href="https://t.me/ahouseproject">Анонсы A–House в&nbsp;Telegram</a><a href="@@ROOT@@archive/">Архив публикаций</a></div>
+          <p class="home-upcoming-empty" data-events-empty{{emptyHidden}}>Новые анонсы — <a href="https://t.me/ahouseproject">в канале A–House</a>.</p>
+          <div class="home-links home-program-links">
+            <a data-past-calendar href="@@ROOT@@calendar/#past">Прошедшие события</a>
+            <a href="@@ROOT@@calendar/?audience=kids">Для детей</a>
+          </div>
         </div>
       </section>
       <section id="media" class="home-section home-reading" data-home-section data-overview-section tabindex="-1" aria-labelledby="media-heading">

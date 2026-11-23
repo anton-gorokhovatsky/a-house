@@ -55,6 +55,7 @@
   }
 
   function restoreHistoryEntry() {
+    if (openArchivedEvent(hashTarget())) return;
     displayView(hashTarget());
     cancelAnimationFrame(restoreFrame);
     const entry = history.state?.homeReturn;
@@ -91,33 +92,39 @@
     target.focus({ preventScroll: true });
   });
 
-  // Keep dated entries and their sources together as they pass into the archive.
+  // The calendar keeps the same public event address before and after the last day.
   const events = document.querySelector('[data-home-events]');
-  const past = document.querySelector('[data-events-past]');
-  const pastItems = past.querySelector('.home-events');
   const emptyEvents = document.querySelector('[data-events-empty]');
-  const upcomingChannel = document.querySelector('[data-upcoming-channel]');
+  const archive = document.querySelector('[data-past-calendar]');
   const entries = [...document.querySelectorAll('#program [data-event-end]')];
   const spotlight = document.querySelector('[data-home-now]');
   const featured = spotlight.querySelector('[data-event-end]');
   const calendar = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
   });
+  let displayedDay;
+  function openArchivedEvent(target) {
+    const item = target?.closest('#program [data-event-end]');
+    if (!item || item.dataset.eventEnd >= calendar.format(new Date())) return false;
+    const url = new URL(archive.href);
+    url.hash = item.id;
+    location.replace(url.href);
+    return true;
+  }
   function refreshDates() {
     const today = calendar.format(new Date());
+    if (today === displayedDay) return;
+    displayedDay = today;
     const featureIsCurrent = featured && featured.dataset.eventStart <= today && today <= featured.dataset.eventEnd;
     spotlight.hidden = !featureIsCurrent;
     document.querySelector('[data-home-intro]').hidden = !!featureIsCurrent;
     for (const item of entries) {
       const expired = item.dataset.eventEnd < today;
-      const destination = expired ? pastItems : item === featured && featureIsCurrent ? spotlight : events;
-      if (item.parentElement !== destination) {
-        const dateOf = entry => expired ? entry.dataset.eventEnd : entry.dataset.eventStart || entry.dataset.eventEnd;
-        const next = [...destination.children].find(entry =>
-          expired ? dateOf(entry) < dateOf(item) : dateOf(entry) > dateOf(item)
-        );
+      item.hidden = expired;
+      const destination = item === featured && featureIsCurrent ? spotlight : events;
+      if (!expired && item.parentElement !== destination) {
+        const next = [...destination.children].find(entry => entry.dataset.eventStart > item.dataset.eventStart);
         destination.insertBefore(item, next || null);
-        if (expired && item.contains(hashTarget())) past.open = true;
       }
       const booking = item.querySelector('[data-event-booking]');
       if (booking) booking.hidden = expired;
@@ -125,10 +132,8 @@
       const yearLabel = item.querySelector('[data-event-year]');
       if (yearLabel) yearLabel.textContent = expired || year !== today.slice(0, 4) ? '\u00a0' + year : '';
     }
-    past.hidden = !pastItems.childElementCount;
-    const hasUpcoming = events.childElementCount > 0;
-    emptyEvents.hidden = hasUpcoming;
-    upcomingChannel.hidden = !hasUpcoming;
+    emptyEvents.hidden = [...events.children].some(item => !item.hidden);
+    openArchivedEvent(hashTarget());
   }
   refreshDates();
   displayView(hashTarget());
@@ -145,4 +150,5 @@
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') refreshDates();
   });
+  window.setInterval(() => { if (!document.hidden) refreshDates(); }, 60000);
 })();

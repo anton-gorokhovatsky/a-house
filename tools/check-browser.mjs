@@ -71,10 +71,15 @@ async function checkExpiredProgram(page) {
   await page.reload();
   assert.ok(await page.locator('[data-events-empty]').isVisible(), 'An ended program must point visitors to fresh announcements');
   assert.equal(await page.locator('[data-home-now]').isVisible(), false, 'An expired exhibition cannot be featured as current');
-  const past = page.locator('[data-events-past]');
-  await past.locator('summary').click();
-  assert.equal(await past.locator('[data-event-end]:visible').count(), endDates.length);
-  assert.equal(await past.locator('[data-event-booking]:visible').count(), 0, 'Expired entries must withdraw booking links');
+  const ids = await page.locator('#program [data-event-end]').evaluateAll(items => items.map(item => item.id));
+  await page.locator('[data-past-calendar]').click();
+  await page.waitForURL(url + 'calendar/#past');
+  const past = page.locator('#past');
+  for (const id of ids) assert.ok(await past.locator('[id="' + id + '"]').isVisible());
+  assert.equal(await past.locator('[data-calendar-booking]:visible').count(), 0, 'Expired entries must withdraw booking links');
+  await page.goto(url + '#light-of-time');
+  await page.waitForURL(url + 'calendar/#light-of-time');
+  assert.ok(await past.locator('#light-of-time').isVisible(), 'Earlier home links must reach the archived event');
 }
 
 async function checkReadingReturn(page, mobile) {
@@ -113,6 +118,41 @@ async function checkReadingReturn(page, mobile) {
   assert.equal(new URL(page.url()).hash, '#services-checkout');
 }
 
+async function checkCalendar(page, mobile) {
+  const activate = locator => mobile ? locator.tap() : locator.press('Enter');
+  const kids = page.locator('[data-calendar-audience="kids"]');
+  const months = page.locator('details.calendar-months');
+  const rows = page.locator('[data-calendar-event]:visible');
+  await page.goto(url + '#program');
+  await activate(page.locator('.home-calendar-link'));
+  await page.waitForURL(url + 'calendar/');
+  await activate(kids);
+  assert.equal(new URL(page.url()).searchParams.get('audience'), 'kids');
+  assert.ok(await rows.count() >= 2);
+  assert.deepEqual(await rows.evaluateAll(items => [...new Set(items.map(item => item.dataset.audience))]), ['kids']);
+  await activate(months.locator('summary'));
+  await activate(months.locator('[data-calendar-month="2024-11"]'));
+  const launch = page.locator('#a-kids-first-issue');
+  assert.ok(await launch.isVisible());
+  assert.equal(await launch.locator('a[href="https://t.me/ahousekids/143"]').count(), 1);
+  assert.match(await launch.innerText(), /2024/);
+  await page.reload();
+  assert.ok(await launch.isVisible());
+  await page.goto(url + 'calendar/?month=2000-01&audience=kids');
+  assert.equal(await rows.count(), 0);
+  assert.ok(await page.locator('[data-calendar-empty]').isVisible());
+  await activate(page.locator('[data-calendar-reset]'));
+  assert.ok(await rows.count() > 2);
+  await page.goBack();
+  await page.locator('[data-calendar-empty]').waitFor();
+  for (const month of ['2026-05', '2026-06']) {
+    await page.goto(url + 'calendar/?month=' + month);
+    const festival = page.locator('#a-fest-2026');
+    assert.ok(await festival.isVisible());
+    assert.equal(await festival.locator('h3 a').getAttribute('href'), base + 'calendar/#a-fest-2026');
+  }
+}
+
 async function checkEnlargedMenu(page) {
   await page.goto(url);
   await page.addStyleTag({ content: 'html { font-size: 200%; }' });
@@ -141,8 +181,6 @@ async function checkEditorialGrouping(page) {
   assert.ok(Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em,
     'The issue number must sit beside the upper edge of its cover on the phone and desktop overview');
 
-  const archive = page.locator('[data-events-past]');
-  if (await archive.isVisible()) await archive.locator('summary').click();
   const lists = page.locator('.home-events:visible');
   for (const list of await lists.all()) {
     const entries = await list.locator(':scope > article:visible').evaluateAll(cards => cards.map(card => {
@@ -436,6 +474,7 @@ try {
       await futurePage.close();
     }
     await checkArchiveReading(page);
+    await checkCalendar(page, mobile);
     await checkClubApplication(page);
     await checkConsentReturn(page);
     console.log('Archive reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');

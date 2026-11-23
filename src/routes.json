@@ -12,6 +12,13 @@
     ]
   },
   {
+    "slug": "calendar",
+    "title": "Календарь событий — A–House",
+    "description": "Ближайшие и прошедшие события A–House. Выставки, встречи, фестивали и мастерские для детей. Программа по месяцам, фотографии и записи встреч.",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": ["styles/source/grid-3.0.css", "styles/chrome.css", "styles/pages/home.css", "styles/pages/calendar.css"]
+  },
+  {
     "slug": "a_pass",
     "title": "A–PASS — A–House",
     "description": "",
