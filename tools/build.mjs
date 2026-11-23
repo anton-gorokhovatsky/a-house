@@ -5,8 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { keepProjectNames, typesetHomeText } from './typography.mjs';
 import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
 import { loadImageDelivery } from './images.mjs';
-import { renderCalendar } from './calendar.mjs';
+import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } from './calendar.mjs';
 import { renderProgram } from './program.mjs';
+import { renderJobs } from './jobs.mjs';
+import { collectArchive, renderArchiveEntries, renderArchiveTopics } from './archive.mjs';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const file = (...parts) => path.join(projectRoot, ...parts);
@@ -106,16 +108,15 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const member = membershipSettings('member', env);
   const output = outputDirectory ?? file('dist');
   const delivery = await loadImageDelivery(projectRoot);
-  const routes = JSON.parse(await source('routes.json'));
   const events = JSON.parse(await source('data/events.json'));
+  const jobs = renderJobs(JSON.parse(await source('data/jobs.json')));
+  const sportPhoto = (await source('partials/a-sport-print.html')).trim();
+  const pages = JSON.parse(await source('routes.json'));
+  const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));
+  const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
   const program = renderProgram(events, await source('partials/program-feature.html'), base);
+  const comfort = events.find(event => event.id === 'designing-comfort');
   const themeControl = await source('partials/theme-control.html');
-  const archive = routes.filter(page => page.slug.startsWith('tpost/'))
-    .sort((a,b) => (b.published || '').localeCompare(a.published || '') || a.title.localeCompare(b.title,'ru'))
-    .map(page => {
-      const date=(page.published || '').split('-').reverse().join('.');
-      return '<li><time datetime="'+escape(page.published || '')+'">'+date+'</time><div><a href="'+base+page.slug+'/">'+escape(page.title)+'</a><small>'+escape(page.section || '')+'</small></div></li>';
-    }).join('\n');
   const [shell, header, editorialHeader, footerTemplate, homeFooterTemplate, memberPrograms, friendTemplate, memberTemplate, agreements] = await Promise.all([
     'layout.html', 'partials/header.html', 'partials/editorial-header.html', 'partials/footer.html',
     'partials/home-footer.html', 'partials/member-programs.html', 'partials/friend-order.html',
@@ -160,6 +161,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/membership.js'];
     if (page.slug === 'member') return [...scripts, 'js/membership.js'];
     if (page.slug === 'calendar') return [...scripts, 'js/calendar.js'];
+    if (page.event) return [...scripts, 'js/event.js'];
     return scripts;
   }
   const clubPages = new Set(['club', 'member']);
@@ -180,25 +182,38 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const location = page.slug === 'home' || page.slug === '404' ? output : path.join(output,page.slug);
     await mkdir(location,{ recursive:true });
     const home = page.slug === 'home';
-    const editorial = home || clubPages.has(page.slug) || page.slug === 'calendar';
-    const body = (await source('pages/' + page.slug + '.html'))
+    const programPage = page.slug === 'calendar' || Boolean(page.event);
+    const editorial = home || clubPages.has(page.slug) || programPage;
+    const template = page.event ? 'event' : page.archiveTopic ? 'archive' : page.slug;
+    const markup = archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
+    const body = markup
       .replace('<!-- EDITORIAL HEADER -->', () => editorialHeader
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
-        .replace('{{programCurrent}}', page.slug === 'calendar' ? ' aria-current="location"' : '')
+        .replace('{{programCurrent}}', programPage ? ' aria-current="location"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
       .replace('<!-- HEADER -->', () => header)
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
+      .replace('<!-- A-HOUSE JOBS -->', () => jobs)
+      .replace('<!-- A-SPORT PRINT -->', () => sportPhoto)
       .replace('{{introHidden}}', program.featureIsCurrent ? ' hidden' : '')
       .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
       .replace('{{emptyHidden}}', program.hasEvents ? ' hidden' : '')
       .replace('<!-- EVENT CALENDAR -->', () => renderCalendar(events, base))
+      .replace('<!-- EVENT PAGE -->', () => renderEventPage(page.event, base))
+      .replaceAll('{{comfortURL}}', () => escape(eventDestination(comfort, base + 'calendar/')))
+      .replace('{{comfortDate}}', () => escape(comfort.start.slice(5).split('-').reverse().join('.')))
+      .replace('{{comfortTitle}}', () => escape(comfort.title))
       .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
       .replace('<!-- FOOTER -->', () => editorial ? homeFooter : footer)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
-      .replace('<!-- ARCHIVE ENTRIES -->', () => archive);
+      .replace('{{archiveParentURL}}', () => page.archiveTopic ? base + 'archive/' : base)
+      .replace('{{archiveParent}}', () => page.archiveTopic ? 'Все публикации' : 'A–House')
+      .replace('{{archiveHeading}}', () => page.archiveTopic ? escape(page.archiveTopic.title) : 'Архив публикаций')
+      .replace('<!-- ARCHIVE TOPICS -->', () => page.archiveTopic ? '' : renderArchiveTopics(archive, base))
+      .replace('<!-- ARCHIVE ENTRIES -->', () => renderArchiveEntries(archive, page.archiveTopic, base));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => themeControl);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');

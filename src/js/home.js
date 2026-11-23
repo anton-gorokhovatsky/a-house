@@ -23,8 +23,9 @@
       if (choice.hash === '#' + currentSection) choice.setAttribute('aria-current', 'true');
       else choice.removeAttribute('aria-current');
     }
-    const disclosure = target?.closest('details');
-    if (disclosure) disclosure.open = true;
+    for (let disclosure = target?.closest('details'); disclosure; disclosure = disclosure.parentElement.closest('details')) {
+      disclosure.open = true;
+    }
   }
 
   function hashTarget() {

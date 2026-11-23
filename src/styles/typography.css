@@ -105,6 +105,14 @@
 .archive-index time { padding-top: .25em; white-space: nowrap; }
 .archive-index li { grid-template-columns: max-content minmax(0,1fr); gap: 1rem; }
 .archive-index li a { overflow-wrap: break-word; }
+.archive-index { container: publications / inline-size; }
+.archive-index > a { display: inline-flex; align-items: center; min-block-size: 44px; }
+.archive-topics { display: flex; flex-wrap: wrap; column-gap: 1.2em; margin: 1rem 0; }
+.archive-topics a { display: inline-flex; align-items: center; min-block-size: 44px; }
+@container publications (max-width: 17em) {
+  .archive-index li { grid-template-columns: minmax(0,1fr); gap: .15em; }
+  .archive-index time { padding-top: 0; }
+}
 .archive-article figcaption { font-size: var(--type-caption); line-height: 1.4; }
 
 .services-dialog, .services-product-description, .services-offer, .services-result { font-size: var(--type-body); }

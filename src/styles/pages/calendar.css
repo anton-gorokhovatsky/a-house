@@ -116,3 +116,41 @@
 @media (forced-colors: active) {
   .calendar-kids::before { border: 1px solid currentColor; }
 }
+
+.event-page { max-inline-size: 77rem; }
+.home-page .event-page a:not(.home-action) {
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em;
+  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+}
+.event-calendar-link, .event-reading a, .event-photos figcaption a {
+  display: inline-flex; align-items: center; min-block-size: 44px;
+}
+.event-calendar-link { font-size: var(--note-size); }
+.event-opening { margin-block: clamp(1.25rem, 4vw, 3.5rem) 1.25rem; }
+.event-kind { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1em; color: var(--quiet); font-size: var(--note-size); }
+.home-page .event-opening h1 {
+  margin: .15em 0 0; max-inline-size: 24ch;
+  font: 400 var(--lead-size)/1.08 var(--display); letter-spacing: normal; text-wrap: balance; hyphens: auto; overflow-wrap: break-word;
+}
+.event-body { display: grid; gap: var(--group); }
+.event-when, .event-story { min-inline-size: 0; }
+.event-venue, .event-ended { color: var(--quiet); }
+.home-page .event-when p + p, .event-admission { margin-top: .35em; }
+.event-when .event-ended { font-size: var(--note-size); }
+.event-story > p { max-inline-size: 59ch; text-wrap: pretty; overflow-wrap: anywhere; }
+.home-page .event-story > p + p { margin-block-start: .7em; }
+.event-reading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1.3rem; margin-block-start: .7em; }
+.home-page .event-article .event-photos { margin-block-start: var(--group); }
+.event-photos > div { display: grid; align-items: start; gap: .85rem; }
+.event-photos img { display: block; width: 100%; height: auto; }
+.event-photos figcaption { color: var(--quiet); }
+@media (min-width: 49em) {
+  .event-body { grid-template-columns: minmax(0, .8fr) minmax(0, 1.35fr); align-items: start; }
+  .event-opening { margin-block-end: var(--group); }
+  .event-photos > div { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .event-photos img:only-child { grid-column: 1 / -1; max-inline-size: 50rem; }
+}
+@container event-calendar (max-width: 12em) {
+  .home-page .event-opening h1 { font-size: min(var(--chapter-size), 15cqi); text-wrap: balance; hyphens: manual; }
+  .event-article .project-name { white-space: normal; overflow-wrap: anywhere; }
+}

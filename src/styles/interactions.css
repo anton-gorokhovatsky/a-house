@@ -1,11 +1,12 @@
 /* Behavioural styles only. The imported compositions and artwork stay intact. */
 .ah-legacy-dialog[hidden],.ah-authored-dialog[hidden],.ah-accordion-panel[hidden],.ah-image-slide[hidden],[data-interaction-hidden][hidden]{display:none!important}
-.ah-legacy-dialog.ah-interaction-open{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;overflow-y:auto;overscroll-behavior:contain;z-index:100000}
+.ah-legacy-dialog.ah-interaction-open{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;overflow-y:auto;overscroll-behavior:contain}
 .ah-legacy-dialog.ah-nonmodal-panel{pointer-events:none!important}
 .ah-legacy-dialog.ah-nonmodal-panel:before{content:"";position:fixed;inset:0 0 0 50%;pointer-events:auto}
 .ah-legacy-dialog .ah-popup-record{display:block!important;opacity:1!important}
 .ah-legacy-dialog .t-popup__container{max-width:100%;box-sizing:border-box}
 .ah-legacy-dialog .t-popup__close{z-index:100001}
+.ah-bank-status{font-size:max(13px,.8125rem);text-transform:none}
 .ah-legacy-dialog .t-popup__close-wrapper:focus-visible{outline:2px solid currentColor;outline-offset:5px}
 .ah-legacy-dialog .t868__code-wrap{display:block!important;min-height:100%;overflow:auto}
 .ah-accordion-heading{cursor:pointer}

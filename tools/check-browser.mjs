@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
 import { membershipSettings, projectRoot, siteBase } from './build.mjs';
@@ -12,6 +13,7 @@ const server = previewServer(path.resolve(process.argv[2] ?? path.join(projectRo
 server.listen(0, '127.0.0.1');
 await once(server, 'listening');
 const url = 'http://127.0.0.1:' + server.address().port + base;
+const jobCatalog = JSON.parse(await readFile(path.join(projectRoot, 'src/data/jobs.json'), 'utf8')).jobs;
 
 async function checkHouseVisit(page, requested) {
   // The House page retains the original multi-breakpoint composition. Six of
@@ -139,6 +141,16 @@ async function checkCalendar(page, mobile) {
   assert.match(await launch.innerText(), /2024/);
   await page.reload();
   assert.ok(await launch.isVisible());
+  const filtered = page.url();
+  await activate(launch.getByRole('heading').getByRole('link'));
+  await page.waitForURL(url + 'calendar/a-kids-first-issue/');
+  assert.ok(await page.locator('h1').isVisible());
+  assert.ok(await page.getByRole('main').locator('a[href="https://t.me/ahousekids/143"]').isVisible());
+  assert.equal(await page.locator('.event-admission:visible').count(), 0);
+  await page.goBack();
+  await page.waitForURL(filtered);
+  assert.equal(await rows.count(), 1);
+  assert.ok(await launch.isVisible());
   await page.goto(url + 'calendar/?month=2000-01&audience=kids');
   assert.equal(await rows.count(), 0);
   assert.ok(await page.locator('[data-calendar-empty]').isVisible());
@@ -150,8 +162,88 @@ async function checkCalendar(page, mobile) {
     await page.goto(url + 'calendar/?month=' + month);
     const festival = page.locator('#a-fest-2026');
     assert.ok(await festival.isVisible());
-    assert.equal(await festival.locator('h3 a').getAttribute('href'), base + 'calendar/#a-fest-2026');
+    assert.equal(await festival.locator('h3 a').getAttribute('href'), base + 'calendar/a-fest-2026/');
   }
+  await page.goto(url + 'calendar/');
+  assert.equal(await page.locator('h3 a[href="https://dompred.ru/events/marketing-mastermind"]').count(), 1);
+}
+
+async function checkVisitorLinks(page, mobile) {
+  const activate = link => mobile ? link.tap() : link.press('Enter');
+  await page.goto(url + '#industry');
+  const jobs = page.locator('#jobs');
+  const openings = jobs.locator('.home-job-group .home-job');
+  const openingLinks = openings.locator('.home-job-apply');
+  const addresses = await openingLinks.evaluateAll(links => links.map(link => link.href));
+  const expected = jobCatalog.filter(job => job.status === 'open').map(job => job.url);
+  assert.deepEqual(addresses.sort(), expected.sort(), 'The site must list every confirmed opening');
+  assert.equal(new Set(addresses).size, addresses.length, 'Each role must open its own application');
+  if (expected.length) {
+    await activate(openings.first().locator('summary'));
+    assert.ok(await openingLinks.first().isVisible());
+  }
+  const firstEarlier = jobCatalog.find(job => job.status === 'published');
+  if (firstEarlier) {
+    const earlier = jobs.locator('.home-jobs-earlier');
+    assert.ok(!await earlier.evaluate(el => el.open));
+    await activate(earlier.locator(':scope > summary'));
+    await activate(earlier.locator('.home-job-summary').first());
+    assert.equal(await earlier.locator('.home-job-apply:visible').getAttribute('href'), firstEarlier.url);
+    await page.goto(url + '#job-' + firstEarlier.id);
+    await page.reload();
+    assert.ok(await earlier.locator('.home-job-apply:visible').first().isVisible(), 'A shared earlier job must open both disclosure levels');
+  }
+  await page.goto(url + '#projects');
+  await activate(page.locator('.home-imprints').getByRole('link', { name: /Sport/ }));
+  assert.equal(new URL(page.url()).hash, '#issue-a-sport');
+  const photo = page.locator('#issue-a-sport img');
+  await photo.evaluate(image => image.decode());
+  assert.deepEqual(await photo.evaluate(image => [image.naturalWidth, image.naturalHeight]), [645, 800]);
+  await page.goto(url + '#publications');
+  await activate(page.locator('.home-publication-archive a'));
+  await page.waitForURL(url + 'archive/');
+  assert.ok(await page.getByRole('heading', {name: 'Архив публикаций'}).isVisible());
+  await page.goto(url + '#t-footer');
+  const documents = page.locator('#footer-documents');
+  await activate(documents.locator('summary'));
+  const agreement = documents.getByRole('link', {name: /пользовательское соглашение/i}).first();
+  await activate(agreement);
+  await page.waitForURL(url + 'agreement/');
+  await page.goBack();
+  await page.waitForFunction(() => document.querySelector('#footer-documents').open && document.activeElement?.closest('#footer-documents'));
+}
+
+async function checkSpecialProjectPrograms(page, mobile) {
+  const activate = element => mobile ? element.tap() : element.press('Enter');
+  await page.goto(url + 't_private/');
+  if (mobile) {
+    assert.equal(await page.locator('.ah-interaction-open:visible').count(), 0,
+      'A mobile visitor must reach the program before choosing an event');
+  }
+
+  await page.goto(url + 't_bank/');
+  const gift = page.locator('a[href="#second"]').filter({ hasText: /Искусство дарить/i }).first();
+  await activate(gift);
+  const panel = page.locator('[data-tooltip-hook="#second"]');
+  await panel.waitFor();
+  assert.match(await panel.innerText(), /Искусство дарить/i);
+  // The painted backdrop can hide the whole card even when its text passes hit testing.
+  assert.ok(await panel.evaluate(dialog => {
+    const backdrop = dialog.nextElementSibling;
+    if (!backdrop?.matches('.t-popup__bg-active') || !backdrop.getClientRects().length) return true;
+    return Number(getComputedStyle(dialog).zIndex) > Number(getComputedStyle(backdrop).zIndex);
+  }), 'An open program card must paint above its backdrop');
+  await activate(panel.getByRole('button', { name: /закрыть/i }).first());
+  await panel.waitFor({state: 'hidden'});
+
+  await page.goto(url + 'mts/');
+  await activate(page.getByRole('link', {name: 'Контакты организаторов', exact: true}));
+  const email = page.getByRole('dialog').getByRole('link', {name: 'aindex@ahouseproject.com'});
+  await email.waitFor();
+  assert.ok(await email.evaluate(link => {
+    const box = link.getBoundingClientRect();
+    return box.top >= 0 && box.bottom <= innerHeight;
+  }), 'Opening organizer contacts must reveal the email on the first screen');
 }
 
 async function checkEnlargedMenu(page) {
@@ -476,6 +568,8 @@ try {
     }
     await checkArchiveReading(page);
     await checkCalendar(page, mobile);
+    await checkVisitorLinks(page, mobile);
+    await checkSpecialProjectPrograms(page, mobile);
     await checkClubApplication(page);
     await checkConsentReturn(page);
     console.log('Archive reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');

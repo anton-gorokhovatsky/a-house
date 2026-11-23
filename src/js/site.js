@@ -93,23 +93,6 @@ if (header) {
     openMenu(false);
   });
   window.addEventListener('pageshow', event => { if (event.persisted) openMenu(false); });
-  if (header.classList.contains('home-masthead')) {
-    header.addEventListener('click', event => {
-      const link = event.target.closest('a[href]');
-      if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      if (link.origin === location.origin && link.pathname !== location.pathname && !link.target) {
-        history.replaceState({ ...history.state, editorialNavReturn: headerLinks.indexOf(link) }, '');
-      }
-    });
-    window.addEventListener('pageshow', event => {
-      const link = headerLinks[history.state?.editorialNavReturn];
-      if (!link || !(event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) return;
-      const state = { ...history.state };
-      delete state.editorialNavReturn;
-      history.replaceState(state, '');
-      requestAnimationFrame(() => (link.closest('.site-navigation[hidden]') ? toggle : link).focus({ preventScroll: true }));
-    });
-  }
   toggle.addEventListener('click', () => openMenu(menu.hidden));
   trigger?.addEventListener('click', () => openSubmenu(submenu.hidden));
   trigger?.addEventListener('keydown', event => {
@@ -151,8 +134,46 @@ if (header) {
   }
 }
 
-if (['archive', 'special_projects'].includes(document.body.dataset.page)) {
-  const list = document.querySelector('main');
+const archiveList = document.querySelector('main.archive-index, [data-page="special_projects"] main');
+
+// Browsers restore the URL on Back. Restore the place to continue reading or tabbing as well.
+document.addEventListener('click', event => {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const link = event.target.closest('a[href]');
+  if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self') || !/^https?:$/.test(link.protocol)) return;
+  if (link.origin === location.origin && link.pathname === location.pathname && link.search === location.search) return;
+  // The responsive archive separately restores the corresponding visible occurrence of an article.
+  if (archiveList?.contains(link) && link.origin === location.origin && /\/tpost\//.test(link.pathname)) {
+    if (history.state?.visitorReturn) {
+      const state = { ...history.state };
+      delete state.visitorReturn;
+      history.replaceState(state, '');
+    }
+    return;
+  }
+  const matches = [...document.links].filter(item => item.href === link.href);
+  const visitorReturn = { href: link.href, occurrence: matches.indexOf(link), top: link.getBoundingClientRect().top };
+  history.replaceState({ ...history.state, visitorReturn }, '');
+});
+
+window.addEventListener('pageshow', event => {
+  const entry = history.state?.visitorReturn;
+  if (!entry || !(event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) return;
+  const link = [...document.links].filter(item => item.href === entry.href)[entry.occurrence];
+  if (!link) return;
+  for (let details = link.closest('details'); details; details = details.parentElement.closest('details')) details.open = true;
+  requestAnimationFrame(() => {
+    let target = link;
+    if (link.closest('.site-navigation[hidden]')) target = header?.querySelector('.site-menu-toggle');
+    else if (link.closest('.site-submenu[hidden]')) target = header?.querySelector('.site-presence-toggle');
+    if (!target?.getClientRects().length) return;
+    target.focus({ preventScroll: true });
+    if (target === link) window.scrollBy({ top: link.getBoundingClientRect().top - entry.top, behavior: 'instant' });
+  });
+});
+
+if (archiveList) {
+  const list = archiveList;
   const articles = [...list.querySelectorAll('a[href]')].filter(link =>
     link.origin === location.origin && /\/tpost\/[^/]+\/?$/.test(link.pathname));
   const matchingLinks = path => articles.filter(link => link.pathname === path);

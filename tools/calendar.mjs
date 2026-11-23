@@ -11,11 +11,37 @@ function escape(value) {
 function eventDate({ start, end = start }) {
   const full = day => dateFormat.format(new Date(day + 'T12:00:00Z'));
   const year = day => day.slice(0, 4);
-  const time = (date, label) => '<time datetime="' + escape(date) + '">' + escape(label) + '</time>';
-  if (start === end) return time(start, full(start) + ' ' + year(start));
+  const time = (date, label, withYear = false) => '<time datetime="' + escape(date) + '">' + escape(label) +
+    (withYear ? ' <wbr>' + escape(year(date)) : '') + '</time>';
+  if (start === end) return time(start, full(start), true);
   const sameMonth = start.slice(0, 7) === end.slice(0, 7);
-  const first = sameMonth ? String(Number(start.slice(-2))) : full(start) + (year(start) === year(end) ? '' : ' ' + year(start));
-  return time(start, first) + (sameMonth ? '–' : ' — ') + time(end, full(end) + ' ' + year(end));
+  const first = sameMonth ? String(Number(start.slice(-2))) : full(start);
+  return time(start, first, year(start) !== year(end)) + (sameMonth ? '–' : ' — ') + time(end, full(end), true);
+}
+
+function eventPageLink(event) {
+  return event.links?.find(link => link.role === 'event-page');
+}
+
+export function eventDestination(event, calendar) {
+  return eventPageLink(event)?.url || calendar + event.id + '/';
+}
+
+export function routesWithEvents(routes, events) {
+  const calendar = routes.find(page => page.slug === 'calendar');
+  const pages = [];
+  const ids = new Set();
+  for (const event of events) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(event.id) || ids.has(event.id)) {
+      throw new Error('Invalid or repeated event ID: ' + event.id);
+    }
+    ids.add(event.id);
+    if (!eventPageLink(event)) {
+      pages.push({ ...calendar, slug: calendar.slug + '/' + event.id, event,
+        title: event.title + ' — A–House', description: event.summary });
+    }
+  }
+  return [...routes, ...pages];
 }
 
 function monthsInProgram(events) {
@@ -66,7 +92,8 @@ function renderEvent(event, calendar) {
   const children = event.audience === 'kids'
     ? '<span class="calendar-kids">Для детей' + (event.age ? ' · ' + escape(event.age) : '') + '</span>' : '';
   const venue = [event.venue, event.address].filter(Boolean).map(escape).join(', ');
-  const links = (event.links || []).map(link =>
+  const destination = eventDestination(event, calendar);
+  const links = (event.links || []).filter(link => link.url !== destination).map(link =>
     '<a href="' + escape(link.url) + '"' + (link.url === event.booking?.url ? ' data-booking-source' : '') + '>' + escape(link.label) + '</a>'
   );
   if (event.booking) links.unshift('<a data-calendar-booking href="' + escape(event.booking.url) + '" hidden>' + escape(event.booking.label) + '</a>');
@@ -75,11 +102,55 @@ function renderEvent(event, calendar) {
     <div class="calendar-date">${eventDate(event)}${time}</div>
     <div class="calendar-event-copy">
       <div class="calendar-event-meta">${event.kind ? '<span>' + escape(event.kind) + '</span>' : ''}${children}</div>
-      <h3 id="${escape(event.id)}-title"><a href="${calendar}#${escape(event.id)}">${name}</a></h3>
+      <h3 id="${escape(event.id)}-title"><a href="${escape(destination)}"${eventPageLink(event) ? '' : ' referrerpolicy="same-origin"'}>${name}</a></h3>
       ${venue ? '<p class="calendar-venue">' + venue + '</p>' : ''}
       ${event.summary ? '<p class="calendar-description">' + escape(event.summary) + '</p>' : ''}
       ${price}<div class="calendar-event-links">${links.join('')}</div>
     </div>
+  </article>`;
+}
+
+export function renderEventPage(event, base, now = new Date()) {
+  const end = event.end || event.start;
+  const past = end < moscowDate.format(now);
+  const calendar = base + 'calendar/';
+  const venue = [event.venue, event.address].filter(Boolean).join(', ');
+  const clock = event.time ? ' <time datetime="' + escape(event.start + 'T' + event.time + ':00+03:00') + '">' +
+    escape(event.time) + (event.endTime ? '–' + escape(event.endTime) : '') + '</time>' : '';
+  const audience = event.audience === 'kids' ? '<span class="calendar-kids">Для детей' +
+    (event.age ? ' · ' + escape(event.age) : '') + '</span>' : '';
+  const photos = event.photos?.map(photo => '<img src="' + escape(base + photo.file) + '" alt="' + escape(photo.alt) +
+    '" width="' + escape(photo.width) + '" height="' + escape(photo.height) + '" loading="lazy">').join('');
+  const report = photos && event.links?.find(link => link.role === 'report');
+  const reference = link => '<a href="' + escape(link.url) + '">' + escape(link.label) + '</a>';
+  const links = (event.links || []).filter(link => link !== report && link.url !== event.booking?.url).map(reference);
+  const access = [];
+  if (event.price) access.push('<p class="event-price">' + escape(event.price) + '</p>');
+  if (event.access) access.push('<p>' + escape(event.access) + '</p>');
+  const fallback = !past && (access.length || event.booking)
+    ? '<noscript>' + access.join('') + (event.booking ? '<a href="' + escape(event.booking.url) + '">Расписание у организатора</a>' : '') + '</noscript>' : '';
+  if (event.booking) access.push('<a class="home-action" href="' + escape(event.booking.url) + '">' + escape(event.booking.label) + '</a>');
+  return `<article class="event-article" data-event-detail data-end="${escape(end)}">
+    <a class="event-calendar-link" data-event-calendar href="${escape(calendar + '#' + event.id)}">Календарь событий</a>
+    <header class="event-opening">
+      <p class="event-kind"><span>${escape(event.kind || '')}</span>${audience}</p>
+      <h1>${escape(event.title)}</h1>
+    </header>
+    <div class="event-body">
+      <div class="event-when">
+        <p class="event-date">${eventDate(event)}${clock}</p>
+        <p class="event-venue">${escape(venue)}</p>
+        <p class="event-ended" data-event-ended${past ? '' : ' hidden'}>Событие завершилось</p>
+        ${access.length ? '<div class="event-admission" data-event-admission hidden>' + access.join('') + '</div>' : ''}
+        ${fallback}
+      </div>
+      <div class="event-story">
+        <p class="event-summary">${escape(event.summary)}</p>
+        ${event.detail ? '<p>' + escape(event.detail) + '</p>' : ''}
+        ${links.length ? '<div class="event-reading">' + links.join('') + '</div>' : ''}
+      </div>
+    </div>
+    ${photos ? '<figure class="event-photos"><div>' + photos + '</div>' + (report ? '<figcaption>' + reference(report) + '</figcaption>' : '') + '</figure>' : ''}
   </article>`;
 }
 

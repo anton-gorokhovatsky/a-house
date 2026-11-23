@@ -62,7 +62,7 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0 clamp(.75rem, 2.85vw, 2.75rem);
+  gap: 0 clamp(.6rem, 1.4vw, 1.6rem);
 }
 .site-nav-house { grid-column: 3; justify-content: flex-end; }
 .site-navigation a, .site-presence-toggle {
@@ -135,11 +135,13 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
   .site-header[data-nav-ready] .site-navigation {
     position: absolute;
     inset: 100% 0 auto;
-    max-block-size: calc(100dvh - var(--site-header-height));
+    block-size: calc(100dvh - var(--site-header-height));
     overflow-y: auto;
     overscroll-behavior: contain;
   }
   .site-nav-projects, .site-nav-house { display: block; text-align: center; }
+  .site-header:has(.site-menu-toggle[aria-expanded="true"]) { position: sticky; inset-block-start: 0; }
+  html:has(.site-menu-toggle[aria-expanded="true"]) { overflow: hidden; }
   .site-navigation :is(a, .site-presence-toggle) { max-width: 100%; }
   #t-header .site-submenu { position: static; width: auto; max-width: 100%; padding: 0; transform: none; }
   .site-submenu a { text-transform: none; }

@@ -3,7 +3,7 @@
   <main id="site-content" tabindex="-1">
     <div id="overview" class="home-editorial" tabindex="-1">
       <div class="home-introduction home-overview-only">
-        <p>A–House — независимая институция архитектуры и дизайна в Москве. Мы собираем архитекторов, дизайнеров и горожан на выставках и встречах в нашем Доме, издаём книги и журналы.</p>
+        <p>A–House — независимая институция в Москве. Мы проводим выставки и встречи об архитектуре и дизайне, издаём книги и журналы.</p>
         <a href="@@ROOT@@about/">Об институции</a>
       </div>
       <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-label="Программа A–House">
@@ -16,18 +16,18 @@
           <!-- PROGRAM FEATURE -->
         </div>
         <div class="home-season">
-          <div class="home-program-head">
-            <h2>Программа</h2>
-            <a class="home-calendar-link" href="@@ROOT@@calendar/">Весь календарь</a>
-          </div>
+          <header class="home-program-head">
+            <h2 id="home-program-heading">Программа</h2>
+            <nav class="home-program-links" aria-labelledby="home-program-heading">
+              <a class="home-calendar-link" href="@@ROOT@@calendar/">Весь календарь</a>
+              <a data-past-calendar href="@@ROOT@@calendar/#past">Архив событий</a>
+              <a href="@@ROOT@@calendar/?audience=kids">Для детей</a>
+            </nav>
+          </header>
           <div class="home-events" data-home-events>
             <!-- PROGRAM EVENTS -->
           </div>
           <p class="home-upcoming-empty" data-events-empty{{emptyHidden}}>Новые анонсы — <a href="https://t.me/ahouseproject">в канале A–House</a>.</p>
-          <div class="home-links home-program-links">
-            <a data-past-calendar href="@@ROOT@@calendar/#past">Прошедшие события</a>
-            <a href="@@ROOT@@calendar/?audience=kids">Для детей</a>
-          </div>
         </div>
       </section>
       <section id="media" class="home-section home-reading" data-home-section data-overview-section tabindex="-1" aria-labelledby="media-heading">
@@ -35,17 +35,21 @@
           <h2 id="media-heading">Издания и&nbsp;статьи</h2>
           <a class="home-detail" href="@@ROOT@@press/">Издательство A–Press</a>
         </div>
-        <article class="home-issue">
+        <article class="home-issue" id="issue-a-sport" tabindex="-1">
           <figure class="home-issue-cover">
-            <img src="@@ROOT@@media/home/a-sport-02-dvizhenie-77b0882f66d0.webp" width="433" height="865" alt="Обложка выпуска A–Sport № 2 «Движение»" loading="lazy">
+            <!-- A-SPORT PRINT -->
           </figure>
           <div class="home-issue-copy">
-            <p class="home-kicker">A–Sport №&#8239;2</p>
-            <h3>Движение</h3>
-            <p>Зачем велотуфлям шипы и&nbsp;что такое бибсы? Команда Velopraktika отвечает в&nbsp;весеннем выпуске 2025&nbsp;года.<span class="home-detail"> Партнёр выпуска&nbsp;— Upside Development.</span></p>
-            <div class="home-links">
-              <a class="home-primary" href="https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/">Как выбрать велосипед и&nbsp;экипировку</a>
-              <a href="#friend">Полный выпуск по&nbsp;подписке A–Friend</a>
+            <div class="home-issue-title">
+              <p class="home-kicker">A–Sport №&#8239;2</p>
+              <h3>Движение</h3>
+            </div>
+            <div class="home-issue-story">
+              <p>Зачем велотуфлям шипы и&nbsp;что такое бибсы? Команда Velopraktika отвечает в&nbsp;весеннем выпуске 2025&nbsp;года.<span class="home-detail"> Партнёр выпуска&nbsp;— Upside Development.</span></p>
+              <div class="home-links">
+                <a class="home-primary" href="https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/">Как выбрать велосипед и&nbsp;экипировку</a>
+                <a href="#friend">Полный выпуск по&nbsp;подписке A–Friend</a>
+              </div>
             </div>
           </div>
         </article>
@@ -61,6 +65,7 @@
             <h3><a href="https://news.ahouseproject.com/alina-kryukova-o-budushhem-yarmarki-catalog/">Алина Крюкова о&nbsp;будущем ярмарки |catalog|</a></h3>
             <p>Соосновательница ярмарки рассказывает, зачем открыли конкурс для галерей и&nbsp;как знакомиться с&nbsp;современным искусством.</p><a href="https://news.ahouseproject.com/">Другие статьи A–News</a>
           </article>
+          <nav class="home-publication-archive home-links" aria-label="Архив изданий и статей"><a href="@@ROOT@@archive/">Архив публикаций A–House</a></nav>
         </div>
       </section>
       <section id="visit" class="home-section home-visit" data-home-section tabindex="-1" aria-labelledby="visit-heading">
@@ -97,24 +102,17 @@
       </section>
       <section id="industry" class="home-section home-industry" data-home-section tabindex="-1" aria-labelledby="industry-heading">
         <div class="home-section-head">
-          <h2 id="industry-heading">Бюро и&nbsp;вакансии</h2><a href="https://aindexproject.com/">Каталог A–Index</a>
+          <h2 id="industry-heading">Бюро и&nbsp;вакансии</h2><a class="home-bureaus-shortcut" href="#architecture-bureaus">К архитектурным бюро</a>
         </div>
-        <div class="home-pair">
-          <article>
+        <div class="home-industry-layout">
+          <!-- A-HOUSE JOBS -->
+          <article id="architecture-bureaus" tabindex="-1">
             <h3>Архитектурные бюро</h3>
             <p>По&nbsp;портфолио и&nbsp;контактам в&nbsp;A–Index можно подобрать бюро для своего проекта.</p>
             <div class="home-links">
               <a href="https://aindexproject.com/services/architecture/">Найти бюро в&nbsp;A–Index</a>
               <a href="https://aindexproject.com/submit-organisation/">Представить своё бюро</a>
-            </div>
-          </article>
-          <article>
-            <p class="home-kicker">Вакансия от&nbsp;9&nbsp;ноября 2026</p>
-            <h3>PR-лид Дома предпри&shy;ни&shy;мателя</h3>
-            <p>Задача руководителя коммуникаций&nbsp;— работать с&nbsp;редакциями и&nbsp;рассказывать о&nbsp;программе Дома. Для отклика понадобятся резюме и&nbsp;два-три кейса.</p>
-            <div class="home-links">
-              <a href="https://aindexproject.com/vacancies/pr-lid-doma-predprinimatelya/">Описание вакансии</a>
-              <a href="https://aindexproject.com/vacancies/">Все вакансии отрасли</a>
+              <a href="https://aindexproject.com/vacancies/">Вакансии бюро в A–Index</a>
             </div>
           </article>
         </div>
@@ -187,7 +185,7 @@
             <ul>
               <li><a href="https://news.ahouseproject.com/">A–News · онлайн-медиа</a></li>
               <li><a href="@@ROOT@@press/">A–Press · издательство</a></li>
-              <li class="home-imprints"><span>Периодика</span> <a href="@@ROOT@@press/#a-news">A–News</a>, <a href="@@ROOT@@press/#a-kids">A–Kids</a>, <a href="@@ROOT@@press/#a-sport">A–Sport</a>, <a href="@@ROOT@@press/#a-state">A–State</a></li>
+              <li class="home-imprints"><span>Периодика</span> <a href="@@ROOT@@press/#a-news">A–News</a>, <a href="@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/">A–Kids</a>, <a href="#issue-a-sport">A–Sport</a>, <a href="@@ROOT@@press/#a-state">A–State</a></li>
               <li><a href="@@ROOT@@press/#a-focus">A–Focus · партнёрская газета</a></li>
               <li><a href="https://news.ahouseproject.com/a-guide-rajon-aeroport-ot-dari-belyakovoj/">A–Guide · гид по Аэропорту</a></li>
               <li><a href="https://t.me/ahouseonair">A–House On Air · репортажи</a></li>

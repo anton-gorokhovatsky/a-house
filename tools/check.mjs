@@ -1,6 +1,8 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { membershipSettings, projectRoot, siteBase } from './build.mjs';
+import { eventDestination, routesWithEvents } from './calendar.mjs';
+import { collectArchive } from './archive.mjs';
 import { keepProjectNames, typesetHomeText } from './typography.mjs';
 
 const dist = path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist'));
@@ -26,7 +28,10 @@ async function inventory(directory) {
   }
 }
 await inventory('');
-const routes = JSON.parse(await readFile(path.join(projectRoot,'src/routes.json'),'utf8'));
+const [pages, events] = await Promise.all(['routes.json', 'data/events.json'].map(async file =>
+  JSON.parse(await readFile(path.join(projectRoot, 'src', file), 'utf8'))));
+const archive = await collectArchive(pages, slug => readFile(path.join(projectRoot, 'src/pages', slug + '.html'), 'utf8'));
+const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
 const membershipPages = new Map([
   ['index.html', { kind: 'friend', settings: membershipSettings('friend') }],
   ['member/index.html', { kind: 'member', settings: membershipSettings('member') }]
@@ -55,6 +60,20 @@ for (const file of htmlFiles) {
   if (!/<meta\b[^>]*\bname="robots"[^>]*\bcontent="[^"]*\bnoindex\b/i.test(source)) errors.push(file+' lacks noindex');
   if (!/<h1\b|role="heading" aria-level="1"/i.test(source)) errors.push(file+' lacks its page heading');
   if (source.includes('@@ROOT@@') || source.includes('{{BODY}}')) errors.push(file+' has an unresolved template');
+  if (file === 'calendar/index.html') {
+    for (const event of events) {
+      const destination = eventDestination(event, base + 'calendar/').replaceAll('&', '&amp;');
+      if (!source.includes('id="' + event.id + '-title"><a href="' + destination + '"')) {
+        errors.push('The calendar title for ' + event.id + ' must open its event');
+      }
+    }
+  }
+  const topic = archive.topicRoutes.find(page => page.slug + '/index.html' === file)?.archiveTopic;
+  if (topic) {
+    const articles = [...source.matchAll(/<li>\s*(?:<time\b[^>]*>[\s\S]*?<\/time>\s*)?<div><a href="([^"]+)"/g)].map(([, url]) => url);
+    const expected = topic.articles.map(slug => base + slug + '/');
+    if (JSON.stringify(articles) !== JSON.stringify(expected)) errors.push(file + ' has an incorrect selection of publications');
+  }
   const head = source.slice(0, source.indexOf('</head>'));
   const styles = [...head.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)];
   const themeLoader = [...head.matchAll(/<script src="[^"]*\/js\/theme\.js(?:\?[^"]*)?"><\/script>/g)];

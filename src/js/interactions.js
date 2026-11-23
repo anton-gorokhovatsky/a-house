@@ -86,16 +86,17 @@
 
   const popupMap = new Map();
   function setupPopups() {
-    const autoPopups = [];
+    const widePanel = matchMedia('(min-width: 960px)');
+    let desktopDefault;
     $$('.t-popup[data-tooltip-hook]').forEach(popup => {
       if (initialized.has(popup) || popup.closest('.t776,.t-store,.t706') || $('form', popup)) return;
       initialized.add(popup);
       const hook = popup.dataset.tooltipHook;
+      const hooks = hook.startsWith('#') ? [hook] : [hook, '#' + hook, '#popup:' + hook];
       const bankPanel = popup.dataset.popupDisabledBg === 'y';
-      const widePanel = matchMedia('(min-width: 960px)');
       const background = popup.nextElementSibling?.classList.contains('t-popup__bg') ? popup.nextElementSibling : null;
-      let opened = false, nonModal = false, currentOrigin = null, previousOverflow = '';
-      const triggers = () => $$('a[href]').filter(link => link.getAttribute('href') === hook);
+      let opened = false, nonModal = false, openedByDefault = false, currentOrigin = null, previousOverflow = '';
+      const triggers = () => $$('a[href]').filter(link => hooks.includes(link.dataset.popupTrigger || link.getAttribute('href')));
       const triggerState = on => triggers().forEach(link => {
         link.setAttribute('aria-expanded', String(on));
         link.setAttribute('aria-controls', id(popup, 'ah-program-panel'));
@@ -130,11 +131,17 @@
         popup.hidden = true;
         opened = false;
         triggerState(false);
+        if (returnFocus && bankPanel && hooks.includes(location.hash)) {
+          history.replaceState(history.state, '', location.pathname + location.search);
+          if (visible(currentOrigin)) currentOrigin.scrollIntoView({block:'nearest', behavior:'instant'});
+        }
       };
-      const open = origin => {
+      const open = (origin, byDefault = false) => {
         if (opened) return;
         if (bankPanel) [...new Set(popupMap.values())].filter(other => other.popup !== popup && other.bankPanel).forEach(other => other.close(false));
-        currentOrigin = origin || triggers()[0] || null;
+        const controls = triggers();
+        currentOrigin = origin || controls.find(link => link.hasAttribute('data-panel-title')) || controls[0] || null;
+        openedByDefault = byDefault;
         nonModal = bankPanel && widePanel.matches;
         popup.hidden = false;
         popup.classList.add('t-popup_show', 'ah-interaction-open');
@@ -152,13 +159,14 @@
         layoutChanged(popup);
       };
       const entry = { popup, open, close, bankPanel, isOpen: () => opened };
-      if (bankPanel) widePanel.addEventListener('change', () => { if (opened) { const origin = currentOrigin; close(false); open(origin); } });
-      if (popup.dataset.popupOpenOnPageLoad === 'y') autoPopups.push(entry);
-      popupMap.set(hook, entry);
-      if (!hook.startsWith('#')) {
-        popupMap.set(`#${hook}`, entry);
-        popupMap.set(`#popup:${hook}`, entry);
-      }
+      if (bankPanel) widePanel.addEventListener('change', () => {
+        if (!opened) return;
+        const origin = currentOrigin;
+        close(false);
+        if (!openedByDefault || widePanel.matches) open(origin, openedByDefault);
+      });
+      if (bankPanel && popup.dataset.popupOpenOnPageLoad === 'y') desktopDefault ??= entry;
+      for (const key of hooks) popupMap.set(key, entry);
       $$('.t-popup__close-wrapper,.t-popup__close', popup).forEach(control => {
         if (control.tagName !== 'BUTTON' && !control.querySelector('button')) {
           control.tabIndex = 0;
@@ -202,7 +210,7 @@
       });
       hashOpen();
     }
-    if (!location.hash && autoPopups.length) autoPopups[0].open(null);
+    if (!location.hash && widePanel.matches) desktopDefault?.open(null, true);
   }
 
   function setupAccordions() {

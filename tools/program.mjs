@@ -1,3 +1,5 @@
+import { eventDestination } from './calendar.mjs';
+
 const dates = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 const moscow = new Intl.DateTimeFormat('sv-SE', {
   year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Moscow'
@@ -26,7 +28,7 @@ function attributes(event, today) {
 }
 
 function eventCard(event, today, base) {
-  const href = event.booking?.url || event.links[0]?.url || base + 'calendar/#' + event.id;
+  const href = eventDestination(event, base + 'calendar/');
   return `<article class="home-event" ${attributes(event, today)}>
     <a class="home-event-link" href="${esc(href)}">
       <div class="home-event-info">
@@ -59,6 +61,7 @@ export function renderProgram(events, featureTemplate, base, today = moscow.form
   const fields = spotlight && {
     attrs: attributes(spotlight, today), date: dateLine(spotlight, today), kind: esc(spotlight.kind),
     title: esc(spotlight.title).replace(/^(.*?\. )(.+)$/, '$1<span>$2</span>'),
+    url: esc(eventDestination(spotlight, base + 'calendar/')),
     summary: esc(spotlight.summary),
     detail: spotlight.detail ? '<span class="home-detail"> ' + esc(spotlight.detail) + '</span>' : '',
     access: spotlight.access ? '<p class="home-feature-access">' + esc(spotlight.access) + '</p>' : '',
