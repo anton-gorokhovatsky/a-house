@@ -93,7 +93,7 @@
     calendar.querySelector('[data-no-upcoming]').hidden = visibleCurrent > 0;
     document.getElementById('upcoming').hidden = filtered && !visibleCurrent;
     document.getElementById('past').hidden = !visiblePast;
-    document.querySelector('[data-jump-past]').hidden = !visibleCurrent || !visiblePast;
+    document.querySelector('[data-jump-past]').hidden = !pastEvents.length;
     calendar.querySelector('[data-family-source]').hidden = !kids;
     const familyShortcut = calendar.querySelector('[data-family-shortcut]');
     familyShortcut.href = filterURL(month, true).href;

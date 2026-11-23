@@ -1,0 +1,57 @@
+.editorial-document, .press-page, .partnership-stories, .editorial-missing {
+  padding: var(--group) var(--edge) var(--chapter);
+}
+.editorial-document .document-inner, .press-inner, .partnership-inner, .editorial-missing > div {
+  max-width: 72rem; margin-inline: auto;
+}
+.editorial-document .document-inner { max-width: 76ch; }
+.home-page :is(.editorial-document,.press-page,.partnership-stories,.editorial-missing) h1 {
+  max-inline-size: 26ch; margin: 0 0 .6em; font: 400 var(--chapter-size)/1.12 var(--display);
+  overflow-wrap: anywhere; text-wrap: balance;
+}
+.home-page :is(.press-page,.partnership-stories) h1 { font-size: var(--lead-size); }
+.document-copy { line-height: 1.55; overflow-wrap: anywhere; }
+.document-copy + .document-copy, .document-table { margin-block: 1.6em; }
+.home-page .document-copy :is(ul,ol) { margin-block: .7em; padding-inline-start: 1.5em; }
+.home-page .document-copy ul { list-style: disc; }
+.document-table { max-width: 100%; overflow-x: auto; }
+.document-table table { width: 100%; border-collapse: collapse; font: inherit; }
+.document-table :is(th,td) { min-width: 8em; padding: .65em; text-align: start; vertical-align: top; border: 1px solid var(--ah-rule); }
+.document-table th { background: var(--ah-surface); }
+.home-page .home-editorial :is(.document-copy,.press-page-links,.partnership-inner,.editorial-missing-inner) a {
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em;
+  text-decoration-color: color-mix(in srgb,currentColor 54%,transparent);
+}
+.home-page .home-editorial :is(.document-copy,.press-page-links,.partnership-inner,.editorial-missing-inner) a:is(:hover,:focus-visible) { text-decoration-color: currentColor; }
+.home-page :is(.press-page,.partnership-stories) header > p, .editorial-missing p { max-width: 64ch; font-size: var(--type-lead); }
+.press-page section, .partnership-stories section { margin-block-start: var(--chapter); }
+.home-page :is(.press-page,.partnership-stories) section h2 { margin-bottom: .65em; }
+.press-page picture, .press-page img { display: block; width: 100%; height: auto; }
+.press-opening-image { margin-block-start: var(--group); max-width: 50rem; }
+.home-page .press-editions { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap: var(--group); }
+.press-editions article { min-width: 0; }
+.home-page .press-editions h3 { margin: .65em 0 .3em; }
+.press-editions article :is(picture,img) { aspect-ratio: 1; object-fit: contain; background-color: transparent; }
+.home-page .press-page-links { display: flex; flex-wrap: wrap; gap: .2em 1.3em; align-items: baseline; margin-top: .65em; }
+.press-page-links a { display: inline-block; max-width: 100%; padding-block: max(.35em,calc((44px - 1.46em) / 2)); }
+.press-distribution { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--group); align-items: start; overflow-wrap: anywhere; }
+.press-distribution img { width: 100%; max-block-size: 28rem; object-fit: contain; object-position: left top; }
+.press-page p, .partnership-stories p { max-inline-size: 68ch; }
+.home-page .press-page blockquote { margin: var(--chapter) 0 0; max-inline-size: 59ch; }
+.press-page blockquote footer { margin-top: .65em; color: var(--quiet); }
+.partner-photos { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: clamp(.45rem,1.3vw,1rem); align-items: start; }
+.partner-photos img { width: 100%; height: auto; }
+.home-page .partner-client-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,10.5rem),1fr)); gap: 1em; margin-top: 1em; }
+.partner-client-list img { width: 100%; height: auto; aspect-ratio: 8 / 5; object-fit: contain; background: white; }
+.partner-client-list a { display: block; }
+.partner-client-list a span { display: inline-block; margin-block: .45em; }
+.editorial-missing-inner p + p { margin-top: 1em; }
+@media (min-width: 48em) {
+  .press-distribution { grid-template-columns: minmax(0,1.25fr) minmax(0,.75fr); }
+  .partner-photos { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+@media print {
+  .editorial-document { padding: 0; }
+  .document-table { overflow: visible; }
+  .document-table :is(th,td) { min-width: 0; }
+}

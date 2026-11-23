@@ -15,53 +15,17 @@ await once(server, 'listening');
 const url = 'http://127.0.0.1:' + server.address().port + base;
 const jobCatalog = JSON.parse(await readFile(path.join(projectRoot, 'src/data/jobs.json'), 'utf8')).jobs;
 
-async function checkHouseVisit(page, requested) {
-  // The House page retains the original multi-breakpoint composition. Six of
-  // its desktop photos are outside the cropped mobile artboard.
-  const house = page.locator('#rec4578583101 .t396__artboard');
-  const clippedURLs = await house.evaluate(board => {
-    const frame = board.getBoundingClientRect();
-    const style = getComputedStyle(board);
-    const clips = value => value === 'hidden' || value === 'clip';
-    const hidden = new Set([...board.querySelectorAll('[data-original]')].filter(el => {
-      const r = el.getBoundingClientRect();
-      return (clips(style.overflowY) && (r.top >= frame.bottom || r.bottom <= frame.top))
-        || (clips(style.overflowX) && (r.left >= frame.right || r.right <= frame.left));
-    }));
-    function sources(el) {
-      const css = getComputedStyle(el);
-      const background = css.backgroundImage + ' ' + css.getPropertyValue('--scene-image');
-      const urls = [...background.matchAll(/url\(["']?([^"')]+)["']?\)/g)].map(match => match[1]);
-      return [el.dataset.original, el.currentSrc, ...urls].filter(Boolean).map(src => new URL(src, document.baseURI).href);
-    }
-    // A photograph reused elsewhere can legitimately be requested for that placement.
-    const elsewhere = new Set([...document.querySelectorAll('img, [data-original]')].filter(el => !hidden.has(el)).flatMap(sources));
-    return [...new Set([...hidden].flatMap(sources))].filter(src => !elsewhere.has(src));
-  });
-
-  assert.ok(clippedURLs.length, 'Expected clipped desktop photographs in the mobile House artboard');
-  const facade = page.locator('main img[src*="/ill-"]').first();
-  await facade.scrollIntoViewIfNeeded();
-  await page.waitForFunction(img => img.complete && img.naturalWidth > 0, await facade.elementHandle(), { timeout: 10000 });
-  const view = await facade.evaluate(async img => {
-    await img.decode();
-    return new Promise(resolve => {
-      const observer = new IntersectionObserver(([entry]) => {
-        observer.disconnect();
-        resolve({
-          visible: entry.intersectionRect.width > 0 && entry.intersectionRect.height > 0
-            && img.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
-          received: performance.getEntriesByName(img.currentSrc).some(r => r.responseStatus === 200)
-        });
-      });
-      observer.observe(img);
-    });
-  });
-  assert.ok(view.received && view.visible, 'Opening the House must reveal its loaded illustration');
-  await house.scrollIntoViewIfNeeded();
-  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  assert.deepEqual(clippedURLs.filter(src => requested.has(src)), [], 'Photos clipped by the mobile House scene were requested');
-  console.log('The House page showed the facade without fetching its clipped photographs.');
+async function checkHouseVisit(page) {
+  const pageBody = page.getByRole('main');
+  const photo = pageBody.locator('.institution-opening img');
+  await photo.scrollIntoViewIfNeeded();
+  await photo.evaluate(image => image.decode());
+  assert.ok(await photo.isVisible());
+  assert.match(await pageBody.innerText(), /Большой\s+Афанасьевский/);
+  await pageBody.getByRole('link', {name: 'Резиденты Дома', exact: true}).click();
+  const residents = pageBody.locator('#residents');
+  await residents.getByRole('heading').waitFor();
+  assert.ok(await residents.getByRole('link').count() >= 5, 'The House names its residents and links to them');
 }
 
 async function checkMobileExhibition(page) {
@@ -153,13 +117,26 @@ async function checkReadingReturn(page, mobile) {
 
 async function checkCalendar(page, mobile) {
   const activate = locator => mobile ? locator.tap() : locator.press('Enter');
+  const all = page.locator('[data-calendar-audience=""]');
   const kids = page.locator('[data-calendar-audience="kids"]');
   const months = page.locator('details.calendar-months');
   const rows = page.locator('[data-calendar-event]:visible');
+  const controlsAndResults = () => page.locator('.calendar-opening h1, [data-calendar-audience], .calendar-months summary, .calendar-stream').evaluateAll(elements =>
+    elements.map(element => {
+      const { left, top } = element.getBoundingClientRect();
+      return [left, top];
+    })
+  );
   await page.goto(url + '#program');
   await activate(page.locator('.home-calendar-link'));
   await page.waitForURL(url + 'calendar/');
-  await activate(kids);
+  await kids.waitFor();
+  await page.evaluate(() => document.fonts.ready);
+  const positions = await controlsAndResults();
+  for (const choice of [kids, all, kids]) {
+    await activate(choice);
+    assert.deepEqual(await controlsAndResults(), positions, 'Changing the audience must keep the filters and results in place');
+  }
   assert.equal(new URL(page.url()).searchParams.get('audience'), 'kids');
   assert.ok(await rows.count() >= 2);
   assert.deepEqual(await rows.evaluateAll(items => [...new Set(items.map(item => item.dataset.audience))]), ['kids']);
@@ -184,6 +161,11 @@ async function checkCalendar(page, mobile) {
   await page.goto(url + 'calendar/?month=2000-01&audience=kids');
   assert.equal(await rows.count(), 0);
   assert.ok(await page.locator('[data-calendar-empty]').isVisible());
+  await activate(page.locator('[data-jump-past]'));
+  await page.waitForURL(url + 'calendar/#past');
+  assert.ok(await page.locator('#past [data-calendar-event]:visible').count() > 0);
+  await page.goBack();
+  await page.locator('[data-calendar-empty]').waitFor();
   await activate(page.locator('[data-calendar-reset]'));
   assert.ok(await rows.count() > 2);
   await page.goBack();
@@ -202,29 +184,51 @@ async function checkVisitorLinks(page, mobile) {
   const activate = link => mobile ? link.tap() : link.press('Enter');
   await page.goto(url + '#industry');
   const jobs = page.locator('#jobs');
-  const openings = jobs.locator('.home-job-group .home-job');
+  const openings = jobs.locator('.home-job');
   const openingLinks = openings.locator('.home-job-apply');
   const addresses = await openingLinks.evaluateAll(links => links.map(link => link.href));
   const expected = jobCatalog.filter(job => job.status === 'open').map(job => job.url);
   assert.deepEqual(addresses.sort(), expected.sort(), 'The site must list every confirmed opening');
   assert.equal(new Set(addresses).size, addresses.length, 'Each role must open its own application');
   if (expected.length) {
-    await activate(openings.first().locator('summary'));
+    const summary = openings.first().locator('summary');
+    if (!mobile) {
+      await page.mouse.move(0, 0);
+      const rest = await summary.evaluate(el => getComputedStyle(el).backgroundColor);
+      await summary.hover({ position: { x: 10, y: 10 } });
+      assert.notEqual(await summary.evaluate(el => getComputedStyle(el).backgroundColor), rest);
+    }
+    await activate(summary);
     assert.ok(await openingLinks.first().isVisible());
+    await activate(summary);
+    assert.ok(!await openingLinks.first().isVisible());
+    await page.goto(url + '#' + await openings.first().getAttribute('id'));
+    await openingLinks.first().waitFor();
   }
   const firstEarlier = jobCatalog.find(job => job.status === 'published');
   if (firstEarlier) {
-    const earlier = jobs.locator('.home-jobs-earlier');
-    assert.ok(!await earlier.evaluate(el => el.open));
-    await activate(earlier.locator(':scope > summary'));
-    await activate(earlier.locator('.home-job-summary').first());
-    assert.equal(await earlier.locator('.home-job-apply:visible').getAttribute('href'), firstEarlier.url);
+    assert.equal(await jobs.locator('#job-' + firstEarlier.id).count(), 0);
     await page.goto(url + '#job-' + firstEarlier.id);
-    await page.reload();
-    assert.ok(await earlier.locator('.home-job-apply:visible').first().isVisible(), 'A shared earlier job must open both disclosure levels');
+    await page.waitForURL(url + '#jobs');
+    assert.ok(await jobs.getByRole('heading', { name: 'Работа в A–House' }).isVisible());
   }
-  await page.goto(url + '#projects');
-  await activate(page.locator('.home-imprints').getByRole('link', { name: /Sport/ }));
+  await page.goto(url);
+  const about = page.getByRole('main').getByRole('link', {name: 'Об институции', exact: true});
+  await about.scrollIntoViewIfNeeded();
+  await activate(about);
+  await page.waitForURL(url + 'about/');
+  const destination = page.getByRole('main');
+  assert.ok(await page.locator('.home-masthead').isVisible());
+  assert.match(await destination.getByRole('heading', {level: 1}).innerText(), /A–House/);
+  assert.match(await destination.innerText(), /Architectural Association/);
+  assert.ok(await destination.locator('#patrons img').count() > 15);
+  await page.goBack();
+  await page.waitForFunction(() => document.activeElement?.pathname.endsWith('/about/'));
+  await activate(page.locator('#projects .home-direction-link[href="#a-media"]'));
+  await page.waitForURL(url + '#a-media');
+  const register = page.locator('#a-media .home-project-entries');
+  assert.ok(await register.isVisible());
+  await activate(register.getByRole('link', { name: /Газета\s+A–Sport/ }));
   assert.equal(new URL(page.url()).hash, '#issue-a-sport');
   const photo = page.locator('#issue-a-sport img');
   await photo.evaluate(image => image.decode());
@@ -239,6 +243,9 @@ async function checkVisitorLinks(page, mobile) {
   const agreement = documents.getByRole('link', {name: /пользовательское соглашение/i}).first();
   await activate(agreement);
   await page.waitForURL(url + 'agreement/');
+  assert.ok(await page.getByRole('main').getByRole('heading', { name: /Пользовательское соглашение/ }).isVisible());
+  assert.ok((await page.getByRole('main').innerText()).length > 20000);
+  assert.ok(await page.locator('.home-masthead').isVisible());
   await page.goBack();
   await page.waitForFunction(() => document.querySelector('#footer-documents').open && document.activeElement?.closest('#footer-documents'));
 }
@@ -410,7 +417,7 @@ async function checkArchiveReading(page) {
     'The archive must contain the same article on return');
 
   await page.goto(url + 'special_projects/');
-  const clients = page.locator('main .t594__container');
+  const clients = page.locator('main .partner-client-list');
   assert.ok(await clients.locator('img').evaluateAll(images => images.length > 0 && images.every(image =>
     Number(image.getAttribute('width')) > 0 && Number(image.getAttribute('height')) > 0)),
     'Project logos must reserve their area before the lazy files arrive');
@@ -595,9 +602,7 @@ try {
       requested.add(request.url());
     });
     await checkHomeRoutes(page, mobile);
-    const menu = page.locator('.site-menu-toggle');
-    if (await menu.isVisible()) await menu.click();
-    const link = page.locator('.site-navigation').getByRole('link', { name: /^Дом A[–‑-]House$/i });
+    const link = page.getByRole('main').getByRole('heading', { name: /^Дом\s+A[–‑-]House$/i, level: 1 });
     const gap = await link.evaluate(async element => {
       await document.fonts.ready;
       // Measure the two letters themselves, including when markup splits the label.
@@ -616,20 +621,20 @@ try {
       return letters[a].left - letters[m].right;
     });
     assert.ok(gap > 1, 'Missing visible space in «Дом A–House» at ' + width + ' px');
+    await checkHouseVisit(page);
     if (mobile) {
-      await menu.click();
-      await checkHouseVisit(page, requested);
       requested.clear();
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.goto(url + 'press/');
-      const cover = await page.locator('.reading-cover').evaluate(el => getComputedStyle(el).backgroundImage);
-      assert.match(cover, /\/stills\//, 'Reduced motion must show a still on the press cover');
-      const photo = page.locator('main .t1241__cover[data-scene-image]').first();
-      const source = await photo.evaluate(el => getComputedStyle(el).getPropertyValue('--scene-image').match(/url\(["']?([^"')]+)/)[1]);
-      const photoURL = new URL(source, url).href;
+      const cover = page.locator('.press-opening-image img');
+      await cover.evaluate(image => image.decode());
+      assert.match(await cover.evaluate(image => image.currentSrc), /\/stills\//, 'Reduced motion shows a still on the press cover');
+      const photo = page.locator('#distribution img');
+      const photoURL = await photo.evaluate(image => image.src);
       assert.equal(requested.has(photoURL), false, 'A distant photo loaded before scrolling');
       await photo.scrollIntoViewIfNeeded();
-      await page.waitForFunction(src => performance.getEntriesByName(src).some(r => r.responseEnd > 0), photoURL);
+      await photo.evaluate(image => image.decode());
+      assert.ok(requested.has(photoURL), 'The distribution map loads when the reader reaches it');
       assert.ok(![...requested].some(src => /\.gif(?:\?|$)/i.test(src)), 'An animated GIF loaded in reduced motion');
       const futurePage = await browser.newPage({ ...pageOptions, reducedMotion: 'reduce' });
       await checkExpiredProgram(futurePage);

@@ -51,7 +51,7 @@ function featurePhoto(event, base) {
     return '<img class="' + classes.join(' ') + '" ' + priority + ' src="' + esc(base + photo.file) +
       '" width="' + esc(photo.width) + '" height="' + esc(photo.height) + '" alt="' + esc(photo.alt) + '">';
   }).join('');
-  const report = event.links.find(link => link.role === 'report');
+  const report = event.links?.find(link => link.role === 'report');
   const caption = report ? '<figcaption><a href="' + esc(report.url) + '">' + esc(report.label) + '</a></figcaption>' : '';
   return '<figure class="home-feature-photo"><div class="home-photo-pair">' + images + '</div>' + caption + '</figure>';
 }

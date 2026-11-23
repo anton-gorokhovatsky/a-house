@@ -173,23 +173,6 @@
     return true;
   }
 
-  function requestDialog(trigger) {
-    let dialog = $('#services-request');
-    if (!dialog) {
-      dialog = document.createElement('dialog');
-      dialog.id = 'services-request';
-      dialog.className = 'services-dialog services-request';
-      dialog.setAttribute('aria-labelledby', 'services-request-title');
-      dialog.innerHTML = '<button class="services-close" type="button" data-service-close aria-label="Закрыть">Закрыть ×</button><p class="services-eyebrow">Демонстрация</p><h2 id="services-request-title"></h2><p>В этой версии регистрация не проводится. Посмотрите условия и доступную запись на действующей странице A-House.</p><p>Персональные данные здесь не запрашиваются и не передаются.</p><a class="services-primary" data-service-live target="_blank" rel="noopener noreferrer">Открыть страницу A-House ↗</a>';
-      document.body.append(dialog);
-    }
-    $('#services-request-title', dialog).textContent = trigger.dataset.serviceRequest || 'Регистрация на событие';
-    const source = trigger.dataset.serviceSource || 'https://ahouseproject.com/';
-    const url = new URL(source, 'https://ahouseproject.com/');
-    $('[data-service-live]', dialog).href = ['http:', 'https:'].includes(url.protocol) ? url.href : 'https://ahouseproject.com/';
-    openDialog(dialog, trigger);
-  }
-
   function openHash() {
     if (location.hash.startsWith('#services-product-')) {
       const id = location.hash.slice(1);
@@ -216,11 +199,6 @@
         event.preventDefault();
         openDialog(document.getElementById(product.dataset.catalogOpen), product);
         return;
-      }
-      const request = event.target.closest('[data-service-request]');
-      if (request) {
-        event.preventDefault();
-        requestDialog(request);
       }
     });
     window.addEventListener('hashchange', openHash);

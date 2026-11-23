@@ -10,6 +10,7 @@ function luminance(color) {
 const group = page => page.getByRole('group', { name: 'Оформление' });
 const choice = (page, name) => group(page).getByRole('radio', { name, exact: true });
 const canvas = page => page.locator('body').evaluate(body => getComputedStyle(body).backgroundColor);
+const contacts = page => page.locator('.home-footer').evaluate(footer => getComputedStyle(footer).backgroundColor);
 
 async function checkReadable(locator) {
   const pair = await locator.evaluate(element => {
@@ -32,18 +33,24 @@ export async function checkTheme(browser, url) {
     await page.goto(url);
     assert.ok(await choice(page, 'Как в системе').isChecked());
     const light = await canvas(page);
+    const lightContacts = await contacts(page);
+    assert.ok(luminance(lightContacts) < .15, 'Contacts keep their dark background on a light page');
     const cover = page.locator('.home-issue img').first();
     const image = () => cover.evaluate(img => [img.currentSrc, getComputedStyle(img).filter]);
     const original = await image();
     await page.emulateMedia({ colorScheme: 'dark' });
     const dark = await canvas(page);
     assert.ok(luminance(light) > .75 && luminance(dark) < .15, 'A first visit follows the device');
+    assert.equal(await contacts(page), dark, 'In system dark mode the page continues through contacts');
     assert.deepEqual(await image(), original, 'The printed issue keeps its artwork');
     await checkReadable(page.locator('.home-introduction p').first());
+    await checkReadable(page.locator('.home-footer-contacts a').first());
+    await checkReadable(group(page).locator('legend'));
     const targets = await group(page).locator('label').evaluateAll(labels => labels.map(label => label.getBoundingClientRect().height));
     assert.ok(targets.length === 3 && targets.every(height => height >= 44), 'All three choices have mobile hit areas');
     await group(page).getByText('Светлая', { exact: true }).tap();
     assert.equal(await canvas(page), light);
+    assert.equal(await contacts(page), lightContacts);
     await page.reload();
     assert.ok(await choice(page, 'Светлая').isChecked());
     assert.equal(await canvas(page), light);
@@ -59,14 +66,17 @@ export async function checkTheme(browser, url) {
     await page.goBack();
     await page.waitForURL(url + '#services-checkout');
     assert.equal(await page.locator('#friend-name').inputValue(), 'Анна');
-    for (const path of ['calendar/', 'member/', 'agreement/', 'archive/', '404.html']) {
+    for (const path of ['calendar/', 'calendar/light-of-time/', 'club/', 'member/', 'agreement/', 'archive/', '404.html']) {
       await page.goto(url + path);
       assert.ok(await choice(page, 'Тёмная').isChecked(), path + ' keeps the manual theme');
       assert.equal(await canvas(page), dark);
+      if (await page.locator('.home-footer').count()) {
+        assert.equal(await contacts(page), dark, path + ' uses one dark surface for content and contacts');
+      }
     }
     await page.goto(url + 'archive/');
     await page.locator('.archive-index li a').first().tap();
-    await checkReadable(page.locator('.t-feed__post-popup__title').first());
+    await checkReadable(page.getByRole('main').getByRole('heading', {level: 1}));
     const other = await context.newPage();
     await other.goto(url + 'member/');
     await checkReadable(other.locator('#member-form input[name="name"]'));
@@ -92,6 +102,7 @@ export async function checkTheme(browser, url) {
     const page = await noScript.newPage();
     await page.goto(url + 'calendar/');
     assert.ok(luminance(await canvas(page)) < .15, 'System dark mode also works without JavaScript');
+    assert.equal(await contacts(page), await canvas(page));
     assert.equal(await page.locator('[data-site-theme]').isVisible(), false);
     await page.emulateMedia({ colorScheme: 'light' });
     assert.ok(luminance(await canvas(page)) > .75);

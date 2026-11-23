@@ -345,11 +345,6 @@
       const target = $('#ah-m-img');
       target.replaceChildren();
       if (image) { const copy = image.cloneNode(); copy.loading = 'eager'; target.append(copy); }
-      const register = $('.modal-foot button', modal);
-      if (register) {
-        register.dataset.serviceRequest = $('#ah-m-title').textContent;
-        register.dataset.serviceSource = 'https://ahouseproject.com/moscow_business';
-      }
       clearVisualTimers();
       modal.hidden = false;
       modal.classList.remove('drawn', 'split');
@@ -367,7 +362,6 @@
       openDialog(modal, origin, close, overlay);
     }
     grid.addEventListener('click', event => {
-      if (event.target.closest('[data-reg],[data-service-request]')) return;
       const card = event.target.closest('[data-event-card]');
       if (card) open(card, event.target.closest('button') || $('[data-event-open]', card));
     });

@@ -37,6 +37,7 @@ const membershipPages = new Map([
   ['member/index.html', { kind: 'member', settings: membershipSettings('member') }]
 ]);
 const htmlFiles = routes.map(({slug}) => slug==='home' ? 'index.html' : slug==='404' ? '404.html' : slug+'/index.html');
+const documents = new Map();
 const routeTitles = new Map(routes.map(({slug, title}) => [base + slug + '/', title]));
 function validateURL(source, value, asset) {
   value=value.trim().replaceAll('&amp;','&');
@@ -57,9 +58,10 @@ function validateURL(source, value, asset) {
 for (const file of htmlFiles) {
   if (!files.has(file)) { errors.push('Missing page '+file);continue; }
   const source=await readFile(path.join(dist,file),'utf8');
+  documents.set(file, source);
   if (!/<meta\b[^>]*\bname="robots"[^>]*\bcontent="[^"]*\bnoindex\b/i.test(source)) errors.push(file+' lacks noindex');
   if (!/<h1\b|role="heading" aria-level="1"/i.test(source)) errors.push(file+' lacks its page heading');
-  if (source.includes('@@ROOT@@') || source.includes('{{BODY}}')) errors.push(file+' has an unresolved template');
+  if (source.includes('@@ROOT@@') || /\{\{[\w.]+\}\}/.test(source)) errors.push(file+' has an unresolved template');
   if (file === 'calendar/index.html') {
     for (const event of events) {
       const destination = eventDestination(event, base + 'calendar/').replaceAll('&', '&amp;');
@@ -123,6 +125,34 @@ for (const file of htmlFiles) {
   if (/\son(?:click|submit|error|load|change)\s*=/i.test(source) || /data-tilda-formskey|formservices\[\]/i.test(source)) errors.push(file+' contains a live integration');
   for (const ref of source.matchAll(/url\(\s*['"]?([^)'"]+)/g)) validateURL(file,ref[1],true);
 }
+
+// A 200 from a preserved route does not tell us whether the visitor has left
+// the new site for an imported layout. Follow the actual editorial link graph.
+const reachable = new Set(['index.html']);
+for (const file of reachable) {
+  const html = documents.get(file);
+  if (!html) continue;
+  const main = html.match(/<main\b[^>]*\bid="site-content"[^>]*>[\s\S]*?<\/main>/i)?.[0];
+  if (!main || !html.includes('class="site-header home-masthead"') || !html.includes('class="home-footer"') ||
+      /\bclass="[^"]*\b(?:t-rec|t396__artboard)\b/.test(main)) {
+    errors.push('An internal link from the editorial site opens the old layout at ' + file);
+  }
+  for (const [,href] of html.matchAll(/<a\b[^>]*?\shref="([^"]+)"/gi)) {
+    const address = new URL(href.replaceAll('&amp;', '&'), 'https://preview.invalid' + base + file);
+    if (/^(?:www\.)?ahouseproject\.com$/i.test(address.hostname)) {
+      errors.push(file + ' sends the visitor to the old A–House website: ' + address.href);
+    }
+    if (address.origin !== 'https://preview.invalid' || !address.pathname.startsWith(base)) continue;
+    let target = decodeURIComponent(address.pathname.slice(base.length));
+    if (!target || target.endsWith('/')) target += 'index.html';
+    if (!documents.has(target)) continue;
+    reachable.add(target);
+    if (target !== file && address.hash) {
+      const id = decodeURIComponent(address.hash.slice(1));
+      if (!documents.get(target).includes('id="' + id + '"')) errors.push(file + ' links to missing #' + id + ' in ' + target);
+    }
+  }
+}
 for (const file of files) {
   if (!file.endsWith('.css')) continue;
   const css=await readFile(path.join(dist,file),'utf8');
@@ -135,4 +165,4 @@ if (errors.length) {
   console.error(unique.slice(0,35).join('\n'));
   throw new Error(unique.length+' site checks failed');
 }
-console.log('Verified '+htmlFiles.length+' noindex documents and their assets in '+files.size+' files for '+base);
+console.log('Verified '+htmlFiles.length+' noindex documents, '+reachable.size+' connected editorial pages and their assets in '+files.size+' files for '+base);

@@ -2,7 +2,7 @@
   <!-- EDITORIAL HEADER -->
   <main id="site-content" tabindex="-1">
     <div id="overview" class="home-editorial" tabindex="-1">
-      <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-label="Программа A–House">
+      <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-labelledby="home-program-heading">
         <div class="home-feature-slot" data-home-now{{featureHidden}}>
           <!-- PROGRAM FEATURE -->
         </div>
@@ -17,7 +17,7 @@
         </div>
         <div class="home-season">
           <header class="home-program-head">
-            <h2 id="home-program-heading">Программа</h2>
+            <h2 id="home-program-heading">{{eventsLabel}}</h2>
             <nav class="home-program-links" aria-labelledby="home-program-heading">
               <a class="home-calendar-link" href="@@ROOT@@calendar/">Весь календарь</a>
               <a data-past-calendar href="@@ROOT@@calendar/#past">Архив событий</a>
@@ -78,7 +78,7 @@
             <p class="home-address">Москва, Большой Афанасьевский пер.,&nbsp;14 <a class="home-map-link" href="https://yandex.ru/maps/?text=Москва%2C+Большой+Афанасьевский+переулок%2C+14" aria-label="На карте — Дом A–House">На&nbsp;карте</a></p>
             <p>Дом открыт с&nbsp;10:00 до&nbsp;20:00, кафе A–House Cafe × Finch&nbsp;— с&nbsp;9:00 до&nbsp;22:00. Условия входа на&nbsp;выставки и&nbsp;встречи указаны в&nbsp;программе.</p>
             <div class="home-links">
-              <a href="#program">Программа событий</a>
+              <a href="#program">{{eventsLabel}} A–House</a>
               <a href="@@ROOT@@residents/">О&nbsp;Доме и&nbsp;резидентах</a>
             </div>
             <figure class="home-place-media">
@@ -164,50 +164,17 @@
         </div>
         <div class="home-section-tail"><a href="mailto:partners@ahouseproject.com">Предложить партнёрский проект</a></div>
       </section>
-      <section id="projects" class="home-section home-directory" data-home-section tabindex="-1" aria-labelledby="projects-heading">
+      <section id="projects" class="home-section home-directory" data-home-section data-overview-section tabindex="-1" aria-labelledby="projects-heading">
         <div class="home-section-head">
-          <h2 id="projects-heading">Все проекты</h2><a href="@@ROOT@@about/">Об&nbsp;A–House</a>
+          <h2 id="projects-heading">Проекты A–House</h2>
+          <a class="home-overview-only" href="#projects">Все проекты</a>
+          <a class="home-detail" href="@@ROOT@@about/">Об&nbsp;A–House</a>
         </div>
+        <nav class="home-project-navigation home-detail" aria-label="Направления A–House">
+          <!-- PROJECT NAVIGATION -->
+        </nav>
         <div class="home-project-list">
-          <div>
-            <h3>A–Industry</h3>
-            <p>Бюро, образование и фестиваль</p>
-            <ul>
-              <li><a href="https://aindexproject.com/">A–Index · каталог</a></li>
-              <li><a href="@@ROOT@@education/">A–School · образование</a></li>
-              <li><a href="https://aindexproject.com/fest/">A–Fest · фестиваль</a></li>
-              <li><a href="https://news.ahouseproject.com/forum/">A–Forum · форум</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3>A–Media</h3>
-            <p>Редакция и издательство</p>
-            <ul>
-              <li><a href="https://news.ahouseproject.com/">A–News · онлайн-медиа</a></li>
-              <li><a href="@@ROOT@@press/">A–Press · издательство</a></li>
-              <li class="home-imprints"><span>Периодика</span> <a href="@@ROOT@@press/#a-news">A–News</a>, <a href="@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/">A–Kids</a>, <a href="#issue-a-sport">A–Sport</a>, <a href="@@ROOT@@press/#a-state">A–State</a></li>
-              <li><a href="@@ROOT@@press/#a-focus">A–Focus · партнёрская газета</a></li>
-              <li><a href="https://news.ahouseproject.com/a-guide-rajon-aeroport-ot-dari-belyakovoj/">A–Guide · гид по Аэропорту</a></li>
-              <li><a href="https://t.me/ahouseonair">A–House On Air · репортажи</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3>A–Membership</h3>
-            <p>Клуб и подписка</p>
-            <ul>
-              <li><a href="@@ROOT@@club/">Уровни участия в клубе</a></li>
-              <li><a href="#friend">A–Friend · подписка на&nbsp;издания</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3>A–Presence</h3>
-            <p>Дома и городские проекты</p>
-            <ul>
-              <li><a href="@@ROOT@@residents/">Дом A–House</a></li>
-              <li><a href="@@ROOT@@dompredprinimatelya/">Дом предпринимателя</a></li>
-              <li><a href="@@ROOT@@presence/">О направлении</a></li>
-            </ul>
-          </div>
+          <!-- PROJECT DIRECTIONS -->
         </div>
       </section>
       <section id="services-checkout" class="home-section membership-page" data-home-section tabindex="-1" aria-labelledby="friend-heading">
@@ -231,7 +198,6 @@
           <li><a href="#industry">Найти бюро или вакансию</a></li>
           <li><a href="#club">Условия участия в&nbsp;клубе</a></li>
           <li><a href="#partnership">Предложить проект</a></li>
-          <li><a href="#projects">Все проекты A–House</a></li>
         </ul>
       </nav>
     </div>

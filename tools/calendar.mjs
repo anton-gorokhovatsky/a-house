@@ -122,6 +122,7 @@ export function renderEventPage(event, base, now = new Date()) {
   const photos = event.photos?.map(photo => '<img src="' + escape(base + photo.file) + '" alt="' + escape(photo.alt) +
     '" width="' + escape(photo.width) + '" height="' + escape(photo.height) + '" loading="lazy">').join('');
   const report = photos && event.links?.find(link => link.role === 'report');
+  const paragraphs = event.paragraphs?.length ? event.paragraphs : [event.summary, event.detail].filter(Boolean);
   const reference = link => '<a href="' + escape(link.url) + '">' + escape(link.label) + '</a>';
   const links = (event.links || []).filter(link => link !== report && link.url !== event.booking?.url).map(reference);
   const access = [];
@@ -145,8 +146,7 @@ export function renderEventPage(event, base, now = new Date()) {
         ${fallback}
       </div>
       <div class="event-story">
-        <p class="event-summary">${escape(event.summary)}</p>
-        ${event.detail ? '<p>' + escape(event.detail) + '</p>' : ''}
+        ${paragraphs.map((paragraph, index) => '<p' + (index ? '' : ' class="event-summary"') + '>' + escape(paragraph) + '</p>').join('\n        ')}
         ${links.length ? '<div class="event-reading">' + links.join('') + '</div>' : ''}
       </div>
     </div>
@@ -165,7 +165,7 @@ export function renderCalendar(events, base, now = new Date()) {
   const entries = list => list.map(event => renderEvent(event, calendar)).join('\n');
   return `<header class="calendar-opening">
     <h1>Календарь событий</h1>
-    <a href="#past" data-jump-past${current.length && past.length ? '' : ' hidden'}>К прошедшим событиям</a>
+    <a href="${calendar}#past" data-jump-past${past.length ? '' : ' hidden'}>Весь архив событий</a>
   </header>
   <div class="calendar-layout" data-calendar>
     ${renderFilters(events, calendar)}

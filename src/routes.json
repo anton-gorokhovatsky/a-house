@@ -2,7 +2,7 @@
   {
     "slug": "home",
     "title": "A–House",
-    "description": "События, пространства и издания A–House. Программа Дома, каталог архитектурных бюро, клуб и сотрудничество.",
+    "description": "Выставки и встречи A–House в Москве, журналы и книги об архитектуре, каталог архитектурных бюро и клуб A–House.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
@@ -33,8 +33,8 @@
   },
   {
     "slug": "about",
-    "title": "О проекте — A–House",
-    "description": "",
+    "title": "Об A–House",
+    "description": "Московская архитектурная институция A–House. История, направления работы и патроны.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
@@ -235,8 +235,8 @@
   },
   {
     "slug": "press",
-    "title": "Пресса — A–House",
-    "description": "",
+    "title": "Издательство A–Press — A–House",
+    "description": "Журналы, газеты и книги A–House. Что почитать онлайн и где найти печатные выпуски.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",

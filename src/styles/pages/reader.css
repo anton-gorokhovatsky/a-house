@@ -1,0 +1,107 @@
+.home-page :is(.publication-reader, .archive-index) {
+  inline-size: 100%;
+  max-inline-size: 67rem;
+  min-block-size: 0;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 3.3vw, 3.5rem) var(--edge) var(--chapter);
+  font: 400 var(--copy-size)/1.48 var(--text);
+}
+.home-page .publication-heading h1 {
+  margin: .3em 0 0;
+  color: var(--ink);
+  font: 400 var(--chapter-size)/1.12 var(--display);
+  letter-spacing: normal;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  hyphens: manual;
+}
+.publication-reader > article { max-inline-size: 65ch; margin-inline: auto; }
+.publication-reader .publication-heading { container: reader-title / inline-size; margin: 1.2rem 0 var(--group); }
+@container reader-title (max-width: 12em) {
+  .publication-heading h1 .project-name { white-space: normal; overflow-wrap: anywhere; letter-spacing: -.01em; }
+}
+.publication-meta, .archive-index .archive-topics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 1em;
+  color: var(--quiet);
+  font: 400 var(--note-size)/1.4 var(--text);
+}
+.home-page :is(.publication-reader, .archive-index) a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+  text-decoration-thickness: .06em;
+  text-underline-offset: .2em;
+}
+.home-page :is(.publication-reader, .archive-index) a:hover { text-decoration-color: currentColor; }
+.publication-back, .publication-meta a, .archive-index .archive-topics a, .publication-issue a {
+  display: inline-block;
+  max-inline-size: 100%;
+  min-block-size: 44px;
+  padding-block: max(.22em, calc((44px - 1.4em) / 2));
+  overflow-wrap: anywhere;
+}
+.publication-back { font-size: var(--note-size); }
+.publication-reader :is(.publication-cover, .publication-body, .publication-issue) {
+  max-inline-size: 65ch;
+  margin-inline: auto;
+}
+.publication-cover { margin-block-end: var(--group); }
+.publication-cover > img, .publication-body figure img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  max-inline-size: 100%;
+  max-block-size: 67svh;
+  margin-inline: auto;
+  object-fit: contain;
+}
+.publication-body figure img { max-block-size: none; }
+.publication-reader .publication-guide { display: block; cursor: zoom-in; }
+.publication-guide span { display: inline-block; padding-block: .5em; font-size: var(--note-size); }
+.publication-reader .publication-body figcaption { margin-block-start: .45rem; font-size: var(--note-size); }
+.publication-cover .archive-gallery-track { align-items: center; }
+.publication-cover .archive-gallery-track img {
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: min(65svh, 35rem);
+  object-fit: contain;
+}
+.publication-reader .archive-gallery-controls { gap: .65rem; font-family: var(--text); }
+.publication-reader .archive-gallery-controls button { color: var(--ink); background: transparent; border-color: var(--quiet); }
+.publication-reader .archive-gallery-controls button:disabled { opacity: .4; }
+.publication-body { overflow-wrap: anywhere; }
+.publication-reader .publication-body > :is(p, figure, blockquote) { margin: 0; }
+.home-page .publication-reader .publication-body > * + * { margin-block-start: 1em; }
+.publication-body blockquote { padding-inline-start: 1em; border-inline-start: 2px solid var(--ah-rule); }
+.home-page .publication-reader .publication-issue { margin: 1.25rem auto 0; }
+.home-page .archive-index .publication-heading { margin-block-end: var(--group); }
+.home-page .archive-index .archive-topics { gap: 0 1.15em; margin-block: 1rem 0; font-size: var(--copy-size); }
+.archive-index .archive-topics [aria-current] { color: var(--ink); font-weight: 600; }
+.home-page .archive-index .publication-list { margin: 0; padding: 0; list-style: none; }
+.home-page .archive-index .publication-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .15rem;
+  padding-block: .8rem;
+  border-block-start: 1px solid var(--ah-rule);
+}
+.archive-index .publication-list :is(time, small) {
+  margin: 0;
+  padding: 0;
+  color: var(--quiet);
+  font: 400 var(--note-size)/1.4 var(--text);
+}
+.home-page .archive-index .publication-list a {
+  display: block;
+  min-block-size: 44px;
+  padding-block: .28rem;
+  font: 400 var(--type-card)/1.32 var(--display);
+  text-decoration: none;
+}
+.home-page .archive-index .publication-list a:is(:hover, :focus-visible) { text-decoration: underline; }
+@media (min-width: 45em) {
+  .home-page .archive-index .publication-list li { grid-template-columns: 10rem minmax(0, 1fr); align-items: baseline; gap: 1.5rem; }
+}

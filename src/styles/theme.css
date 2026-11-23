@@ -8,12 +8,15 @@
   --ah-error: light-dark(#86241c, #ffafa4);
   --ah-action-hover: light-dark(#373737, #d4d1ca);
   --ah-footer: light-dark(#141414, #101112);
+  --ah-contacts: var(--ah-footer);
   --wordmark-inversion: 1;
 }
 :root[data-theme="light"] { color-scheme: only light; }
-:root[data-theme="dark"] { color-scheme: only dark; --wordmark-inversion: 0; }
+:root[data-theme="dark"] {
+  color-scheme: only dark; --wordmark-inversion: 0; --ah-contacts: var(--ah-paper);
+}
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --wordmark-inversion: 0; }
+  :root:not([data-theme="light"]) { --wordmark-inversion: 0; --ah-contacts: var(--ah-paper); }
 }
 /* Older mobile browsers can follow the selected scheme through their native palette. */
 @supports not (color: light-dark(white, black)) {
@@ -32,7 +35,11 @@
 body { background-color: var(--ah-paper); color: var(--ah-ink); }
 .home-page { --ink: var(--ah-ink); --quiet: var(--ah-quiet); --paper: var(--ah-paper); }
 .home-wordmark img { filter: invert(var(--wordmark-inversion)); }
-.home-page #t-footer.home-footer { background-color: var(--ah-footer); }
+.home-page #t-footer.home-footer { background-color: var(--ah-contacts); }
+#t-footer.t-records:has(.footer-wordmark) :is(.site-theme,.footer-wordmark),
+#t-footer.t-records:has(.footer-wordmark) > [data-bg-color="#000000"] {
+  background-color: var(--ah-contacts) !important;
+}
 .membership-request :is(input:not([type="radio"], [type="checkbox"]), textarea) {
   background-color: var(--ah-paper);
   border-color: var(--ah-rule);
@@ -201,5 +208,6 @@ body:is([data-page="longevity"], [data-page="mts"], [data-page="t_private"], [da
 .services-hint { color: var(--ah-quiet); }
 @media print {
   :root, :root[data-theme] { color-scheme: only light; --wordmark-inversion: 1; }
+  .home-page #t-footer.home-footer { background-color: var(--ah-footer); }
   .site-theme, .theme-footer, .theme-menu-link { display: none !important; }
 }

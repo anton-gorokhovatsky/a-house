@@ -29,7 +29,13 @@
   }
 
   function hashTarget() {
-    return document.getElementById(location.hash.slice(1));
+    const id = location.hash.slice(1);
+    const target = document.getElementById(id);
+    if (!target && id.startsWith('job-')) {
+      history.replaceState(history.state, '', '#jobs');
+      return document.getElementById('jobs');
+    }
+    return target;
   }
 
   function scrollToTarget(target) {

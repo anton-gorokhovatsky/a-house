@@ -9,6 +9,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram } from './program.mjs';
 import { renderJobs } from './jobs.mjs';
 import { collectArchive, renderArchiveEntries, renderArchiveTopics } from './archive.mjs';
+import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const file = (...parts) => path.join(projectRoot, ...parts);
@@ -110,6 +111,28 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const delivery = await loadImageDelivery(projectRoot);
   const events = JSON.parse(await source('data/events.json'));
   const jobs = renderJobs(JSON.parse(await source('data/jobs.json')));
+  const directions = JSON.parse(await source('data/projects.json'));
+  const projectNavigation = directions.map(group =>
+    `<a href="#${escape(group.id)}">${escape(group.name)}</a>`
+  ).join('\n');
+  const projectGroups = directions.map(group => {
+    const {id, name, intro, photo} = group;
+    const rows = group.projects.map(project => `<li>
+      <a class="home-project-row" href="${escape(project.href)}">
+        <span class="home-project-name">${escape(project.name)}</span>
+        <span class="home-project-description">${escape(project.description)}</span>
+      </a>
+    </li>`).join('\n');
+    return `<article class="home-direction" id="${escape(id)}" tabindex="-1" aria-labelledby="title-${escape(id)}">
+      <header class="home-direction-head">
+        <img class="home-overview-only" src="@@ROOT@@${escape(photo.src)}" width="${photo.width}" height="${photo.height}" alt="${escape(photo.alt)}" loading="lazy" decoding="async">
+        <h3 id="title-${escape(id)}">${escape(name)}</h3>
+        <p>${escape(intro)}</p>
+        <a class="home-direction-link home-overview-only" href="#${escape(id)}">Проекты ${escape(name)}</a>
+      </header>
+      <ul class="home-project-entries home-detail">${rows}</ul>
+    </article>`;
+  }).join('\n');
   const sportPhoto = (await source('partials/a-sport-print.html')).trim();
   const pages = JSON.parse(await source('routes.json'));
   const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));
@@ -126,10 +149,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const footer = footerTemplate.replace(/<!-- footer:(\w+) -->([\s\S]*?)<!-- \/footer -->/g, (_, name, content) => {
     footerContent.set(name, content);
     return content;
-  });
-  const homeFooter = homeFooterTemplate.replace(/\{\{footer\.(\w+)\}\}/g, (_, name) => {
-    if (!footerContent.has(name)) throw new Error('Missing shared footer content: ' + name);
-    return footerContent.get(name);
   });
   const friendPrice = 12000;
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
@@ -165,10 +184,22 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     return scripts;
   }
   const clubPages = new Set(['club', 'member']);
+  const documents = new Set(['agreement', 'agreement2', 'rules', 'politic_a-com', 'mts_docs']);
+  const features = new Set(['press', 'special_projects', '404']);
+  const readerPage = page => page.slug === 'archive' || Boolean(page.archiveTopic) || archive.articles.has(page.slug);
+  function pageStyles(page) {
+    const {slug} = page;
+    let style;
+    if (isInstitutionPage(slug)) style = 'institution';
+    else if (readerPage(page)) style = 'reader';
+    else if (documents.has(slug) || features.has(slug)) style = 'publications';
+    if (style) return ['styles/source/grid-3.0.css', 'styles/chrome.css', 'styles/pages/home.css', 'styles/pages/' + style + '.css'];
+    return page.styles;
+  }
   const cssFor = page => [...new Set([
     'media/fonts/ahouse-fonts.css',
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
-    ...page.styles, ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
+    ...pageStyles(page), ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
     'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
@@ -183,20 +214,26 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     await mkdir(location,{ recursive:true });
     const home = page.slug === 'home';
     const programPage = page.slug === 'calendar' || Boolean(page.event);
-    const editorial = home || clubPages.has(page.slug) || programPage;
+    const wrapped = documents.has(page.slug) || features.has(page.slug);
+    const editorial = home || clubPages.has(page.slug) || programPage || wrapped || isInstitutionPage(page.slug) || readerPage(page);
     const template = page.event ? 'event' : page.archiveTopic ? 'archive' : page.slug;
-    const markup = archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
+    const pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug)
+      : archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
+    const markup = wrapped ? '<div id="allrecords" class="t-records home-page">\n<!-- EDITORIAL HEADER -->\n' + pageContent + '\n<!-- FOOTER -->\n</div>' : pageContent;
     const body = markup
       .replace('<!-- EDITORIAL HEADER -->', () => editorialHeader
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
         .replace('{{programCurrent}}', programPage ? ' aria-current="location"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
       .replace('<!-- HEADER -->', () => header)
+      .replaceAll('{{eventsLabel}}', 'События')
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
+      .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
+      .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- A-SPORT PRINT -->', () => sportPhoto)
       .replace('{{introHidden}}', program.featureIsCurrent ? ' hidden' : '')
       .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
@@ -207,19 +244,21 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('{{comfortDate}}', () => escape(comfort.start.slice(5).split('-').reverse().join('.')))
       .replace('{{comfortTitle}}', () => escape(comfort.title))
       .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
-      .replace('<!-- FOOTER -->', () => editorial ? homeFooter : footer)
+      .replace('<!-- FOOTER -->', () => editorial ? homeFooterTemplate : footer)
+      .replace(/\{\{footer\.(\w+)\}\}/g, (_, name) => {
+        if (!footerContent.has(name)) throw new Error('Missing shared footer content: ' + name);
+        return footerContent.get(name);
+      })
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
-      .replace('{{archiveParentURL}}', () => page.archiveTopic ? base + 'archive/' : base)
-      .replace('{{archiveParent}}', () => page.archiveTopic ? 'Все публикации' : 'A–House')
       .replace('{{archiveHeading}}', () => page.archiveTopic ? escape(page.archiveTopic.title) : 'Архив публикаций')
-      .replace('<!-- ARCHIVE TOPICS -->', () => page.archiveTopic ? '' : renderArchiveTopics(archive, base))
+      .replace('<!-- ARCHIVE TOPICS -->', () => renderArchiveTopics(archive, base, page.archiveTopic))
       .replace('<!-- ARCHIVE ENTRIES -->', () => renderArchiveEntries(archive, page.archiveTopic, base));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => themeControl);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');
     else themedBody = body + '<footer class="theme-footer">' + themeControl + '</footer>';
     const pageBody = prepareConsentDocuments(themedBody);
-    const typeset = editorial ? typesetHomeText(pageBody) : keepProjectNames(pageBody);
+    const typeset = editorial && !documents.has(page.slug) ? typesetHomeText(pageBody) : keepProjectNames(pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')
