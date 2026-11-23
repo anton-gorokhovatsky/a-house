@@ -2,48 +2,58 @@
   {
     "id": "a-industry",
     "name": "A–Industry",
-    "photo": { "src": "media/delivery/Festival_50-1fec5914f145-640w-1d734bf72642.webp", "width": 640, "height": 427, "large": "media/delivery/Festival_50-1fec5914f145-1280w-28710605dfb3.webp", "largeWidth": 1280, "alt": "Посетители рассматривают работы на архитектурном фестивале A–House" },
     "intro": "В A–Index бюро показывают свои проекты и ищут сотрудников. На лекциях A–School и экскурсиях A–Fest можно познакомиться с работой архитекторов.",
     "projects": [
       {
         "name": "A–Index",
-        "overviewLabel": "Каталог бюро A–Index",
         "description": "Справочник архитектурных бюро, дизайнеров и подрядчиков. Здесь можно посмотреть портфолио, найти контакты команды или вакансию.",
-        "href": "https://aindexproject.com/"
+        "href": "https://aindexproject.com/",
+        "feature": {
+          "order": 1, "action": "Открыть справочник A–Index",
+          "photo": { "src": "media/home/a-index-architecture-640-1829071a6379.webp", "width": 640, "height": 388, "large": "media/home/a-index-architecture-1200-ed303e7c3a35.webp", "largeWidth": 1200, "alt": "Изгиб белой лестницы на обложке раздела «Архитектура» в A–Index" }
+        }
       },
       {
         "name": "A–School",
-        "overviewLabel": "Дискуссии A–School",
         "description": "Открытые дискуссии об архитектуре в ММОМА. На встречах говорят о жилье, общественных пространствах и о том, как художники работают с городскими руинами.",
         "href": "@@ROOT@@education/"
       },
       {
         "name": "A–Fest",
-        "description": "Московский фестиваль архитектуры. В программу 2026 года вошли выставка «Архитектура 2.0» и экскурсии по стройплощадкам.",
-        "href": "https://aindexproject.com/fest/"
+        "description": "Московский фестиваль архитектуры. В программу 2026 года вошли выставка «Архитектура 2.0» и экскурсии по стройплощадкам.",
+        "href": "https://aindexproject.com/fest/",
+        "feature": {
+          "order": 4, "action": "Программа A–Fest",
+          "photo": { "src": "media/home/a-fest-architecture-640-902584bfa723.webp", "width": 640, "height": 640, "large": "media/home/a-fest-architecture-1200-a9a9cab29e25.webp", "largeWidth": 1200, "alt": "Макет со стеклянными сферами у стенда Manuel Herz Architects", "caption": "Работа Manuel Herz Architects на выставке «Архитектура 2.0»." }
+        }
       },
       {
         "name": "A–Forum",
         "description": "На первом форуме архитекторы и отельеры обсуждали, как меняются гостиницы. Гости увидели выставочный номер A–Room с мебелью и светом от участников A–Index.",
-        "href": "https://news.ahouseproject.com/forum/"
+        "href": "https://news.ahouseproject.com/forum/",
+        "feature": {
+          "order": 5, "action": "О первом A–Forum",
+          "photo": { "src": "media/home/a-forum-room-640-ce1dc67ffdaa.webp", "width": 640, "height": 336, "large": "media/home/a-forum-room-1200-3729d151a092.webp", "largeWidth": 1200, "alt": "Кровать, зеркало и фиолетовый диван в выставочном номере A–Room" }
+        }
       }
     ]
   },
   {
     "id": "a-media",
     "name": "A–Media",
-    "photo": { "src": "media/delivery/image-36f89c243f35-640w-91894a99e900.webp", "width": 640, "height": 423, "large": "media/delivery/image-36f89c243f35-1280w-bcfa00e5226a.webp", "largeWidth": 1280, "alt": "Выставочный зал в Копенгагене из репортажа A–House о фестивале дизайна" },
     "intro": "Редакция A–News пишет об архитектуре и дизайне, а издательство A–Press выпускает книги, газеты и журналы. В первом номере A–Kids — прогулка по Петербургу для всей семьи.",
     "projects": [
       {
-        "name": "A–News онлайн",
-        "overviewLabel": "Читать A–News",
-        "description": "Редакция показывает новые здания и интерьеры, беседует с их авторами и рассказывает, какие выставки стоит увидеть.",
-        "href": "https://news.ahouseproject.com/"
+        "name": "A–News",
+        "description": "Онлайн-журнал об архитектуре и дизайне. Редакция показывает новые здания и интерьеры, беседует с их авторами и рассказывает, какие выставки стоит увидеть.",
+        "href": "https://news.ahouseproject.com/",
+        "feature": {
+          "order": 2, "action": "Читать A–News",
+          "photo": { "src": "media/home/a-news-ibiza-640-1e4170bc3dc0.webp", "width": 640, "height": 422, "large": "media/home/a-news-ibiza-1200-146d877d0d56.webp", "largeWidth": 1200, "alt": "Синие стулья и полосатые столики в кафе на Ибице", "caption": "Кафе Seth & Manni’s на Ибице. Фото Nacho Dorado." }
+        }
       },
       {
         "name": "A–Press",
-        "overviewLabel": "Издания A–Press",
         "description": "Издательство A–House выпускает книги, каталоги и периодику. На его странице можно посмотреть издания и найти места, где есть печатные номера.",
         "href": "@@ROOT@@press/"
       },
@@ -97,18 +107,15 @@
   {
     "id": "a-membership",
     "name": "A–Membership",
-    "photo": { "src": "media/Rectangle_1632-821596167e4c.webp", "width": 1385, "height": 1646, "alt": "Гости клуба смотрят презентацию в гостиной Дома" },
     "intro": "Участники клуба приходят в Дом на закрытые встречи и лекции. Для тех, кто хочет читать издания A–House, есть отдельная подписка A–Friend.",
     "projects": [
       {
         "name": "Клуб A–House",
-        "overviewLabel": "Программы клуба",
         "description": "Три программы участия — A–Member, A–Patron и Patron Platinum. Участники могут приглашать в Дом гостей, а патроны — проводить собственные мероприятия.",
         "href": "@@ROOT@@club/"
       },
       {
         "name": "A–Friend",
-        "overviewLabel": "Подписка A–Friend",
         "description": "Подписка на полные выпуски A–News, A–Kids, A–Sport и A–State. Их можно читать в PDF в приложении A–House.",
         "href": "#services-checkout"
       }
@@ -117,20 +124,21 @@
   {
     "id": "a-presence",
     "name": "A–Presence",
-    "photo": { "src": "media/home/house-facade-800.webp", "width": 800, "height": 600, "large": "media/home/house-facade-1600.webp", "largeWidth": 1600, "alt": "Фасад Дома A–House в Большом Афанасьевском переулке" },
     "intro": "Команда открывает городские пространства и готовит для них программу. Дом предпринимателя в Москве — совместный проект A–House и Точка Банка.",
     "projects": [
       {
         "name": "Дом A–House",
-        "overviewLabel": "Резиденты Дома A–House",
         "description": "Особняк в Большом Афанасьевском переулке, где проходят выставки и клубные встречи. В Доме работают резиденты и кафе A–House × FINCH.",
         "href": "@@ROOT@@residents/"
       },
       {
         "name": "Дом предпринимателя",
-        "overviewLabel": "Дом предпринимателя",
-        "description": "На встречах в Малом Каретном переулке предприниматели разбирают задачи своего бизнеса. Программа открыта для всех.",
-        "href": "@@ROOT@@dompredprinimatelya/"
+        "description": "Площадка A–House и Точка Банка в Малом Каретном переулке. Здесь проходят открытые лекции и разборы бизнес-задач. На сайте Дома можно выбрать встречу и записаться.",
+        "href": "https://dompred.ru/",
+        "feature": {
+          "order": 3, "action": "Перейти на сайт Дома",
+          "photo": { "src": "media/home/dompred-hall-640-2152e6630cb9.webp", "width": 640, "height": 427, "large": "media/home/dompred-hall-1200-2ab57f411a0d.webp", "largeWidth": 1200, "alt": "Светлый лекционный зал с рядами стульев в Доме предпринимателя" }
+        }
       }
     ]
   }

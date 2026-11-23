@@ -63,11 +63,18 @@
   }
 
   function restoreHistoryEntry() {
-    if (openArchivedEvent(hashTarget())) return;
-    displayView(hashTarget());
+    const target = hashTarget();
+    if (openArchivedEvent(target)) return;
+    const previousView = overview.dataset.view;
+    const wasHidden = target && !target.getClientRects().length;
+    displayView(target);
     cancelAnimationFrame(restoreFrame);
     const entry = history.state?.homeReturn;
-    if (!entry) return;
+    if (!entry) {
+      // A pasted fragment can point into a view that was hidden during native scrolling.
+      if (target && (wasHidden || previousView !== overview.dataset.view)) scrollToTarget(target);
+      return;
+    }
     const destination = location.href;
     // Chrome can focus the URL fragment after popstate, displacing the link
     // used to leave a longer article. Restore its place after native traversal.

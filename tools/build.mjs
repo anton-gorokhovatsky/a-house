@@ -116,14 +116,28 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const projectNavigation = directions.map(group =>
     `<a href="#${escape(group.id)}">${escape(group.name)}</a>`
   ).join('\n');
+  const featuredProjects = directions.flatMap(group => group.projects)
+    .filter(project => project.feature)
+    .sort((a, b) => a.feature.order - b.feature.order)
+    .map(project => {
+      const {photo, action} = project.feature;
+      return `<article class="home-project-feature">
+        <h3>${escape(project.name)}</h3>
+        <figure style="--photo-ratio: ${photo.width} / ${photo.height}">
+          <img src="@@ROOT@@${escape(photo.src)}"
+            srcset="@@ROOT@@${escape(photo.src)} ${photo.width}w, @@ROOT@@${escape(photo.large)} ${photo.largeWidth}w"
+            sizes="(min-width: 52rem) min(44vw, 37rem), 90vw"
+            width="${photo.width}" height="${photo.height}" alt="${escape(photo.alt)}" loading="lazy" decoding="async">
+          ${photo.caption ? '<figcaption>' + escape(photo.caption) + '</figcaption>' : ''}
+        </figure>
+        <div class="home-project-feature-copy">
+          <p>${escape(project.description)}</p>
+          <a class="home-project-action" href="${escape(project.href)}">${escape(action)}</a>
+        </div>
+      </article>`;
+    }).join('\n');
   const projectGroups = directions.map(group => {
-    const {id, name, intro, photo} = group;
-    const pictureSources = photo.large
-      ? ` srcset="@@ROOT@@${escape(photo.src)} ${photo.width}w, @@ROOT@@${escape(photo.large)} ${photo.largeWidth}w" sizes="(min-width: 52rem) min(48vw, 43rem), 90vw"`
-      : '';
-    const features = group.projects.filter(project => project.overviewLabel).map(project =>
-      `<a href="${escape(project.href)}">${escape(project.overviewLabel)}</a>`
-    ).join('\n');
+    const {id, name, intro} = group;
     const rows = group.projects.map(project => `<li>
       <a class="home-project-row" href="${escape(project.href)}">
         <span class="home-project-name">${escape(project.name)}</span>
@@ -132,12 +146,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     </li>`).join('\n');
     return `<section class="home-direction" id="${escape(id)}" tabindex="-1" aria-labelledby="title-${escape(id)}">
       <h3 id="title-${escape(id)}">${escape(name)}</h3>
-      <img class="home-direction-photo home-overview-only" src="@@ROOT@@${escape(photo.src)}"${pictureSources} width="${photo.width}" height="${photo.height}" alt="${escape(photo.alt)}" loading="lazy" decoding="async">
       <div class="home-direction-copy">
         <p>${escape(intro)}</p>
-        <div class="home-direction-links home-overview-only">${features}</div>
       </div>
-      <ul class="home-project-entries home-detail">${rows}</ul>
+      <ul class="home-project-entries">${rows}</ul>
     </section>`;
   }).join('\n');
   const sportPhoto = (await source('partials/a-sport-print.html')).trim();
@@ -237,6 +249,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
       .replace('<!-- HEADER -->', () => header)
       .replaceAll('{{eventsLabel}}', 'События')
+      .replaceAll('{{projectsLabel}}', 'Все проекты')
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
@@ -244,6 +257,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
+      .replace('<!-- FEATURED PROJECTS -->', () => featuredProjects)
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- A-SPORT PRINT -->', () => sportPhoto)
       .replace('{{introHidden}}', program.featureIsCurrent ? ' hidden' : '')

@@ -66,10 +66,9 @@
             <p>Соосновательница ярмарки рассказывает, зачем открыли конкурс для галерей и&nbsp;как знакомиться с&nbsp;современным искусством.</p><a href="https://news.ahouseproject.com/">Другие статьи A–News</a>
           </article>
         </div>
-        <section id="publication-archive" class="home-publication-archive" aria-labelledby="archive-heading" tabindex="-1">
+        <section id="publication-archive" class="home-publication-archive home-detail" aria-labelledby="archive-heading" tabindex="-1">
           <h3 id="archive-heading">Архив публикаций</h3>
           <!-- PUBLICATION CATALOG -->
-          <div class="archive-preview-more home-section-tail home-overview-only"><a href="#publication-archive">Все публикации архива</a></div>
         </section>
       </section>
       <section id="visit" class="home-section home-visit" data-home-section tabindex="-1" aria-labelledby="visit-heading">
@@ -176,14 +175,17 @@
       </section>
       <section id="projects" class="home-section home-directory" data-home-section data-overview-section tabindex="-1" aria-labelledby="projects-heading">
         <div class="home-section-head">
-          <h2 id="projects-heading">Направления A–House</h2>
-          <a class="home-overview-only" href="#projects">Весь каталог</a>
+          <h2 id="projects-heading"><span class="home-overview-only">Чем занимается A–House</span><span class="home-detail">{{projectsLabel}}</span></h2>
+          <a class="home-overview-only" href="#projects">{{projectsLabel}}</a>
           <a class="home-detail" href="@@ROOT@@about/">Об&nbsp;A–House</a>
+        </div>
+        <div class="home-project-features home-overview-only">
+          <!-- FEATURED PROJECTS -->
         </div>
         <nav class="home-project-navigation home-detail" aria-label="Направления A–House">
           <!-- PROJECT NAVIGATION -->
         </nav>
-        <div class="home-project-list">
+        <div class="home-project-list home-detail">
           <!-- PROJECT DIRECTIONS -->
         </div>
       </section>

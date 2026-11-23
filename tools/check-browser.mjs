@@ -14,6 +14,7 @@ server.listen(0, '127.0.0.1');
 await once(server, 'listening');
 const url = 'http://127.0.0.1:' + server.address().port + base;
 const jobCatalog = JSON.parse(await readFile(path.join(projectRoot, 'src/data/jobs.json'), 'utf8')).jobs;
+const projectGroups = JSON.parse(await readFile(path.join(projectRoot, 'src/data/projects.json'), 'utf8'));
 
 async function checkHouseVisit(page) {
   const pageBody = page.getByRole('main');
@@ -248,22 +249,35 @@ async function checkVisitorLinks(page, mobile) {
   assert.ok(await destination.locator('#patrons img').count() > 15);
   await page.goBack();
   await page.waitForFunction(() => document.activeElement?.pathname.endsWith('/about/'));
-  const directions = page.locator('#projects .home-direction');
-  const floors = await directions.evaluateAll(elements => elements.map(element => {
-    const {top, bottom} = element.getBoundingClientRect();
-    return {top, bottom, entrances: element.querySelectorAll('.home-direction-links a').length};
-  }));
-  assert.equal(floors.length, 4);
-  assert.ok(floors.every((floor, i) => floor.entrances >= 2 && (!i || floor.top >= floors[i - 1].bottom)));
-  const press = page.locator('#a-media .home-direction-links a[href$="/press/"]');
+  assert.equal(await page.locator('#publication-archive').isVisible(), false);
+  assert.equal(await page.locator('#projects .home-direction:visible').count(), 0);
+  const projects = projectGroups.flatMap(group => group.projects);
+  const selected = projects.filter(project => project.feature).sort((a, b) => a.feature.order - b.feature.order);
+  const features = page.locator('#projects .home-project-feature');
+  assert.deepEqual(await features.locator('h3').allInnerTexts(), selected.map(project => project.name));
+  assert.deepEqual(await features.locator('a').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
+  for (const feature of await features.all()) {
+    const image = await feature.locator('img').boundingBox();
+    const title = await feature.locator('h3').boundingBox();
+    assert.ok(image.width > 0 && image.height > 0, 'Reserve the space for each photograph before scrolling to it');
+    assert.ok(mobile ? title.y + title.height <= image.y + 1 : Math.abs(title.y - image.y) < 2);
+  }
+  await features.last().scrollIntoViewIfNeeded();
+  await page.goto(url + '#a-industry');
+  await page.waitForFunction(() => {
+    const { top } = document.getElementById('a-industry').getBoundingClientRect();
+    return top >= 0 && top < innerHeight / 2;
+  });
+  await page.goto(url);
+  await activate(page.getByRole('main').getByRole('link', { name: 'Все проекты', exact: true }));
+  await page.waitForURL(url + '#projects');
+  assert.equal(await page.locator('#projects .home-project-row:visible').count(), projects.length);
+  const press = page.locator('#a-media .home-project-row[href$="/press/"]');
   await activate(press);
   await page.waitForURL(url + 'press/');
   assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
   await page.goBack();
-  await page.waitForFunction(() => document.activeElement?.closest('#a-media .home-direction-links'));
-  await activate(page.locator('#projects .home-section-head a[href="#projects"]'));
-  await page.waitForURL(url + '#projects');
-  assert.equal(await page.locator('#projects .home-project-row').count(), 19);
+  await page.waitForFunction(() => document.activeElement?.matches('#a-media .home-project-row[href$="/press/"]'));
   await activate(page.locator('.home-project-navigation a[href="#a-media"]'));
   await page.waitForURL(url + '#a-media');
   const register = page.locator('#a-media .home-project-entries');

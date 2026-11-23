@@ -68,10 +68,7 @@
   text-decoration-thickness: 1px;
   text-underline-offset: .17em;
 }
-.home-editorial[data-view="overview"] .home-publication-archive :is(.archive-topics, .publication-list li:nth-child(n + 4)),
-.home-editorial:not([data-view]) .archive-preview-more { display: none; }
-.home-editorial[data-view="overview"] .home-publication-archive h3 { margin-block-end: .8em; }
-.home-page .archive-preview-more a { min-block-size: 44px; }
+.home-editorial:not([data-view]) #media:not(:target):not(:has(:target)) .home-publication-archive { display: none; }
 
 @container home-reading (max-width: 12em) {
   .home-page .home-publication-archive > h3 { font-size: var(--type-card); }
