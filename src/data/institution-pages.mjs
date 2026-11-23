@@ -6,6 +6,18 @@ const houseStory = 'https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-a
 const museumProgram = 'https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description';
 const partners = 'mailto:partners@ahouseproject.com';
 
+export const venues = {
+  house: {
+    address: 'Москва, Большой Афанасьевский пер., 14',
+    map: 'https://yandex.ru/maps/213/moscow/house/bolshoy_afanasyevskiy_pereulok_14/Z04Ycw5nTE0CQFtvfXt1dnxmYA==/',
+    hours: '10:00–20:00', cafeHours: '9:00–22:00'
+  },
+  entrepreneur: {
+    address: 'Москва, Малый Каретный пер., 11, стр. 10',
+    map: 'https://yandex.ru/maps/213/moscow/house/maly_karetny_pereulok_11s10/Z04YcAZkTEECQFtvfXt2cHtnYw==/'
+  }
+};
+
 export const institutionPages = {
   about: {
     title: 'Об A–House',
@@ -73,9 +85,9 @@ export const institutionPages = {
   residents: {
     title: 'Дом A–House',
     lead: 'В пятиэтажном Доме в Большом Афанасьевском переулке проходят выставки, лекции и встречи клуба. Здесь работают резиденты, открыты архитектурная библиотека и кафе A–House × Finch.',
-    intro: 'Москва, Большой Афанасьевский пер., 14. Дом открыт с 10:00 до 20:00. У кафе своё расписание — с 9:00 до 22:00. Условия входа на выставки и встречи указаны в программе.',
+    intro: `${venues.house.address}. Часы работы Дома — ${venues.house.hours}, кафе A–House Cafe × Finch — ${venues.house.cafeHours}. Условия входа указаны на странице каждой выставки или встречи.`,
     photo: photo('home/house-facade-800.webp', 800, 600, 'Красный фасад Дома A–House с двумя чёрными маркизами', 'Фото Дианы Вешкурцевой'),
-    links: [link('Афиша A–House', '@@ROOT@@calendar/'), link('На карте', 'https://yandex.ru/maps/?text=Москва%2C+Большой+Афанасьевский+переулок%2C+14'), link('Резиденты Дома', '#residents')],
+    links: [link('Афиша A–House', '@@ROOT@@calendar/'), link('На карте', venues.house.map), link('Резиденты Дома', '#residents')],
     sections: [
       {
         id: 'inside', title: 'Внутри Дома',
@@ -126,9 +138,9 @@ export const institutionPages = {
   dompredprinimatelya: {
     title: 'Дом предпринимателя',
     lead: 'A–House и Точка Банк открыли Дом в Малом Каретном переулке для предпринимателей. Здесь можно провести рабочую встречу, прийти на лекцию или открыть собственный цикл событий.',
-    intro: 'Москва, Малый Каретный пер., 11, стр. 10. Открытую программу может посетить любой желающий. Для этого не требуется быть клиентом Точка Банка или владельцем Ключа от Дома.',
+    intro: `${venues.entrepreneur.address}. Открытую программу может посетить любой желающий. Для этого не требуется быть клиентом Точка Банка или владельцем Ключа от Дома.`,
     photo: photo('DI_09068-2_1-fe7d19b5f983.webp', 3000, 2000, 'Светлый зал Дома предпринимателя с рядами кресел'),
-    links: [link('Расписание встреч и регистрация', 'https://dompred.ru/events'), link('На карте', 'https://yandex.ru/maps/?text=Москва%2C+Малый+Каретный+переулок%2C+11%2C+строение+10')],
+    links: [link('Расписание встреч и регистрация', 'https://dompred.ru/events'), link('На карте', venues.entrepreneur.map)],
     sections: [
       {
         id: 'house', title: 'Как устроен Дом',

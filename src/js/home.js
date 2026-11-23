@@ -38,7 +38,7 @@
     return target;
   }
 
-  function scrollToTarget(target) {
+  function scrollToTarget(target, behavior = 'instant') {
     if (target.id === 'publications') {
       // Keep the section heading and masthead in view if the first headline fits.
       // The same margin also applies when the browser follows the initial fragment.
@@ -48,9 +48,9 @@
     }
     // Section entries start with the masthead. A deeper link goes straight to its content.
     if (target === overview || target.hasAttribute('data-home-section')) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.scrollTo({ top: 0, behavior });
     } else {
-      target.scrollIntoView({ block: 'start', behavior: 'instant' });
+      target.scrollIntoView({ block: 'start', behavior });
     }
   }
 
@@ -88,6 +88,7 @@
     const target = document.getElementById(link.hash.slice(1));
     if (!target || link.classList.contains('skip-content')) return;
     event.preventDefault();
+    const previousView = overview.dataset.view;
     if (location.hash !== link.hash) {
       const top = link.closest('.site-header') ? null : link.getBoundingClientRect().top;
       const homeReturn = { index: links.indexOf(link), top, scrollY };
@@ -96,7 +97,9 @@
       history.pushState(state, '', link.hash);
     }
     displayView(target);
-    scrollToTarget(target);
+    if (!link.matches('#publication-archive [data-archive-topic]')) {
+      scrollToTarget(target, previousView === overview.dataset.view ? 'auto' : 'instant');
+    }
     if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
     target.focus({ preventScroll: true });
   });
@@ -109,14 +112,14 @@
   const spotlight = document.querySelector('[data-home-now]');
   const featured = spotlight.querySelector('[data-event-end]');
   const program = spotlight.parentElement;
-  const introduction = program.querySelector('.home-introduction');
+  const introduction = overview.querySelector('.home-introduction');
   const compact = matchMedia('(max-width: 48em)');
   // Keep the About link in visual reading order when the two opening sections swap places.
   function orderIntroduction() {
-    const before = compact.matches ? spotlight.nextElementSibling : program.firstElementChild;
-    if (before === introduction) return;
+    const before = compact.matches ? program.nextElementSibling : program;
+    if (before === introduction || introduction.nextElementSibling === before) return;
     const focused = introduction.contains(document.activeElement) ? document.activeElement : null;
-    program.insertBefore(introduction, before);
+    overview.insertBefore(introduction, before);
     focused?.focus({preventScroll: true});
   }
   orderIntroduction();

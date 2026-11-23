@@ -3,33 +3,33 @@
   <main id="site-content" tabindex="-1">
     <div id="overview" class="home-editorial" tabindex="-1">
       <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-labelledby="home-program-heading">
+        <header class="home-section-head home-program-head">
+          <h2 id="home-program-heading">{{eventsLabel}}</h2>
+          <a class="home-calendar-link" href="@@ROOT@@calendar/">Весь календарь</a>
+        </header>
         <div class="home-feature-slot" data-home-now{{featureHidden}}>
           <!-- PROGRAM FEATURE -->
         </div>
-        <div class="home-introduction home-overview-only">
-          <p>A–House — независимая институция в Москве. Мы проводим выставки и встречи об архитектуре и дизайне, издаём книги и журналы.</p>
-          <a href="@@ROOT@@about/">Об институции</a>
-        </div>
-        <div class="home-house-intro" data-home-intro{{introHidden}}>
-          <h2>Дом на&nbsp;Большом Афанасьевском</h2>
-          <p>В московском доме A–House проходят выставки и&nbsp;встречи об&nbsp;архитектуре и&nbsp;городе. На&nbsp;первом этаже работает кафе.</p>
-          <a class="home-action" href="#visit">Адрес и&nbsp;часы работы</a>
-        </div>
         <div class="home-season">
-          <header class="home-program-head">
-            <h2 id="home-program-heading">{{eventsLabel}}</h2>
-            <nav class="home-program-links" aria-labelledby="home-program-heading">
-              <a class="home-calendar-link" href="@@ROOT@@calendar/">Весь календарь</a>
-              <a data-past-calendar href="@@ROOT@@calendar/#past">Архив событий</a>
-              <a href="@@ROOT@@calendar/?audience=kids">Для детей</a>
-            </nav>
-          </header>
           <div class="home-events" data-home-events>
             <!-- PROGRAM EVENTS -->
           </div>
           <p class="home-upcoming-empty" data-events-empty{{emptyHidden}}>Новые анонсы — <a href="https://t.me/ahouseproject">в канале A–House</a>.</p>
+          <nav class="home-program-links" aria-labelledby="home-program-heading">
+            <a data-past-calendar href="@@ROOT@@calendar/#past">Архив событий</a>
+            <a href="@@ROOT@@calendar/?audience=kids">Для детей</a>
+          </nav>
+        </div>
+        <div class="home-house-intro" data-home-intro{{introHidden}}>
+          <h3>Дом на&nbsp;Большом Афанасьевском</h3>
+          <p>В московском доме A–House проходят выставки и&nbsp;встречи об&nbsp;архитектуре и&nbsp;городе. На&nbsp;первом этаже работает кафе.</p>
+          <a class="home-action" href="#visit">Адрес и&nbsp;часы работы</a>
         </div>
       </section>
+      <div class="home-introduction home-overview-only">
+        <p>A–House — независимая институция в Москве. Мы проводим выставки и встречи об архитектуре и дизайне, издаём книги и журналы.</p>
+        <a href="@@ROOT@@about/">Об институции</a>
+      </div>
       <section id="media" class="home-section home-reading" data-home-section data-overview-section tabindex="-1" aria-labelledby="media-heading">
         <div class="home-section-head">
           <h2 id="media-heading">Издания и&nbsp;статьи</h2>
@@ -65,8 +65,12 @@
             <h3><a href="https://news.ahouseproject.com/alina-kryukova-o-budushhem-yarmarki-catalog/">Алина Крюкова о&nbsp;будущем ярмарки |catalog|</a></h3>
             <p>Соосновательница ярмарки рассказывает, зачем открыли конкурс для галерей и&nbsp;как знакомиться с&nbsp;современным искусством.</p><a href="https://news.ahouseproject.com/">Другие статьи A–News</a>
           </article>
-          <nav class="home-publication-archive home-links" aria-label="Архив изданий и статей"><a href="@@ROOT@@archive/">Архив публикаций A–House</a></nav>
         </div>
+        <section id="publication-archive" class="home-publication-archive" aria-labelledby="archive-heading" tabindex="-1">
+          <h3 id="archive-heading">Архив публикаций</h3>
+          <!-- PUBLICATION CATALOG -->
+          <div class="archive-preview-more home-section-tail home-overview-only"><a href="#publication-archive">Все публикации архива</a></div>
+        </section>
       </section>
       <section id="visit" class="home-section home-visit" data-home-section tabindex="-1" aria-labelledby="visit-heading">
         <div class="home-section-head">
@@ -75,8 +79,14 @@
         <div class="home-places">
           <article id="rec2340799251">
             <h3>Дом A–House</h3>
-            <p class="home-address">Москва, Большой Афанасьевский пер.,&nbsp;14 <a class="home-map-link" href="https://yandex.ru/maps/?text=Москва%2C+Большой+Афанасьевский+переулок%2C+14" aria-label="На карте — Дом A–House">На&nbsp;карте</a></p>
-            <p>Дом открыт с&nbsp;10:00 до&nbsp;20:00, кафе A–House Cafe × Finch&nbsp;— с&nbsp;9:00 до&nbsp;22:00. Условия входа на&nbsp;выставки и&nbsp;встречи указаны в&nbsp;программе.</p>
+            <p class="home-address"><a class="home-map-link" href="{{venue.house.map}}">{{venue.house.address}}<span class="screen-reader-only"> на Яндекс Картах</span></a></p>
+            <div class="home-visit-info">
+              <dl class="home-venue-hours">
+                <div><dt>Дом</dt><dd>{{venue.house.hours}}</dd></div>
+                <div><dt>A–House Cafe × Finch</dt><dd>{{venue.house.cafeHours}}</dd></div>
+              </dl>
+              <p>Условия входа указаны на странице каждой выставки или встречи.</p>
+            </div>
             <div class="home-links">
               <a href="#program">{{eventsLabel}} A–House</a>
               <a href="@@ROOT@@residents/">О&nbsp;Доме и&nbsp;резидентах</a>
@@ -88,8 +98,8 @@
           </article>
           <article>
             <h3>Дом предпри&shy;ни&shy;мателя</h3>
-            <p class="home-address">Москва, Малый Каретный пер.,&nbsp;11, стр.&nbsp;10 <a class="home-map-link" href="https://yandex.ru/maps/?text=Москва%2C+Малый+Каретный+переулок%2C+11%2C+строение+10" aria-label="На карте — Дом предпринимателя">На&nbsp;карте</a></p>
-            <p>На лекции и&nbsp;встречи A–House и&nbsp;Точка Банка может прийти каждый. Билеты и&nbsp;регистрация&nbsp;— на&nbsp;сайте Дома предпринимателя.</p>
+            <p class="home-address"><a class="home-map-link" href="{{venue.entrepreneur.map}}">{{venue.entrepreneur.address}}<span class="screen-reader-only"> на Яндекс Картах</span></a></p>
+            <div class="home-visit-info"><p>На лекции и&nbsp;встречи A–House и&nbsp;Точка Банка может прийти каждый. Билеты и&nbsp;регистрация&nbsp;— на&nbsp;сайте Дома предпринимателя.</p></div>
             <div class="home-links">
               <a href="https://dompred.ru/events">Расписание встреч</a>
               <a href="@@ROOT@@dompredprinimatelya/">О&nbsp;Доме предпринимателя</a>
@@ -166,8 +176,8 @@
       </section>
       <section id="projects" class="home-section home-directory" data-home-section data-overview-section tabindex="-1" aria-labelledby="projects-heading">
         <div class="home-section-head">
-          <h2 id="projects-heading">Проекты A–House</h2>
-          <a class="home-overview-only" href="#projects">Все проекты</a>
+          <h2 id="projects-heading">Направления A–House</h2>
+          <a class="home-overview-only" href="#projects">Весь каталог</a>
           <a class="home-detail" href="@@ROOT@@about/">Об&nbsp;A–House</a>
         </div>
         <nav class="home-project-navigation home-detail" aria-label="Направления A–House">

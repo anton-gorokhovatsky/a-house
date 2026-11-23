@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { appendFile, cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,8 +8,9 @@ import { loadImageDelivery } from './images.mjs';
 import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } from './calendar.mjs';
 import { renderProgram } from './program.mjs';
 import { renderJobs } from './jobs.mjs';
-import { collectArchive, renderArchiveEntries, renderArchiveTopics } from './archive.mjs';
+import { archiveFragment, archiveFragmentStyles, collectArchive, renderArchiveCatalog } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
+import { venues } from '../src/data/institution-pages.mjs';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const file = (...parts) => path.join(projectRoot, ...parts);
@@ -117,21 +118,27 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   ).join('\n');
   const projectGroups = directions.map(group => {
     const {id, name, intro, photo} = group;
+    const pictureSources = photo.large
+      ? ` srcset="@@ROOT@@${escape(photo.src)} ${photo.width}w, @@ROOT@@${escape(photo.large)} ${photo.largeWidth}w" sizes="(min-width: 52rem) min(48vw, 43rem), 90vw"`
+      : '';
+    const features = group.projects.filter(project => project.overviewLabel).map(project =>
+      `<a href="${escape(project.href)}">${escape(project.overviewLabel)}</a>`
+    ).join('\n');
     const rows = group.projects.map(project => `<li>
       <a class="home-project-row" href="${escape(project.href)}">
         <span class="home-project-name">${escape(project.name)}</span>
         <span class="home-project-description">${escape(project.description)}</span>
       </a>
     </li>`).join('\n');
-    return `<article class="home-direction" id="${escape(id)}" tabindex="-1" aria-labelledby="title-${escape(id)}">
-      <header class="home-direction-head">
-        <img class="home-overview-only" src="@@ROOT@@${escape(photo.src)}" width="${photo.width}" height="${photo.height}" alt="${escape(photo.alt)}" loading="lazy" decoding="async">
-        <h3 id="title-${escape(id)}">${escape(name)}</h3>
+    return `<section class="home-direction" id="${escape(id)}" tabindex="-1" aria-labelledby="title-${escape(id)}">
+      <h3 id="title-${escape(id)}">${escape(name)}</h3>
+      <img class="home-direction-photo home-overview-only" src="@@ROOT@@${escape(photo.src)}"${pictureSources} width="${photo.width}" height="${photo.height}" alt="${escape(photo.alt)}" loading="lazy" decoding="async">
+      <div class="home-direction-copy">
         <p>${escape(intro)}</p>
-        <a class="home-direction-link home-overview-only" href="#${escape(id)}">Проекты ${escape(name)}</a>
-      </header>
+        <div class="home-direction-links home-overview-only">${features}</div>
+      </div>
       <ul class="home-project-entries home-detail">${rows}</ul>
-    </article>`;
+    </section>`;
   }).join('\n');
   const sportPhoto = (await source('partials/a-sport-print.html')).trim();
   const pages = JSON.parse(await source('routes.json'));
@@ -175,9 +182,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     }
   }
   await styles('styles');
+  await appendFile(path.join(output, 'styles/pages/archive-list.css'), '\n' + archiveFragmentStyles(archive) + '\n');
   const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
   function scriptsFor(page) {
-    if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/membership.js'];
+    if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/publication-archive.js', 'js/membership.js'];
     if (page.slug === 'member') return [...scripts, 'js/membership.js'];
     if (page.slug === 'calendar') return [...scripts, 'js/calendar.js'];
     if (page.event) return [...scripts, 'js/event.js'];
@@ -200,10 +208,12 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     'media/fonts/ahouse-fonts.css',
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
     ...pageStyles(page), ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
+    ...(page.slug === 'home' || page.slug === 'archive' || page.archiveTopic ? ['styles/pages/archive-list.css'] : []),
     'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
-  const references = new Set([nearbyImages, 'js/theme.js', ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
+  const archiveEntry = 'js/archive-entry.js';
+  const references = new Set([nearbyImages, archiveEntry, 'js/theme.js', ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
     const bytes = await readFile(path.join(output, name));
     const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
@@ -227,6 +237,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
       .replace('<!-- HEADER -->', () => header)
       .replaceAll('{{eventsLabel}}', 'События')
+      .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
@@ -251,8 +262,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       })
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
       .replace('{{archiveHeading}}', () => page.archiveTopic ? escape(page.archiveTopic.title) : 'Архив публикаций')
-      .replace('<!-- ARCHIVE TOPICS -->', () => renderArchiveTopics(archive, base, page.archiveTopic))
-      .replace('<!-- ARCHIVE ENTRIES -->', () => renderArchiveEntries(archive, page.archiveTopic, base));
+      .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic, home));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => themeControl);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');
@@ -266,11 +276,14 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       : scriptTags;
     const values = {
       TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug), THEME_SCRIPT:urls.get('js/theme.js'),
+      ARCHIVE_ENTRY:page.slug === 'archive' || page.archiveTopic
+        ? '<script src="' + urls.get(archiveEntry) + '" data-destination="' + escape(base + '#' + archiveFragment(page.archiveTopic)) + '"></script>'
+        : '',
       FORM_ACTION:escape((home ? friend : page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
-    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
+    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION|THEME_SCRIPT|ARCHIVE_ENTRY)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
   }
   await writeFile(path.join(output,'.nojekyll'),'');

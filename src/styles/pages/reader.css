@@ -20,7 +20,7 @@
 @container reader-title (max-width: 12em) {
   .publication-heading h1 .project-name { white-space: normal; overflow-wrap: anywhere; letter-spacing: -.01em; }
 }
-.publication-meta, .archive-index .archive-topics {
+.publication-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -36,7 +36,7 @@
   text-underline-offset: .2em;
 }
 .home-page :is(.publication-reader, .archive-index) a:hover { text-decoration-color: currentColor; }
-.publication-back, .publication-meta a, .archive-index .archive-topics a, .publication-issue a {
+.publication-back, .publication-meta a, .publication-issue a {
   display: inline-block;
   max-inline-size: 100%;
   min-block-size: 44px;
@@ -77,31 +77,3 @@
 .home-page .publication-reader .publication-body > * + * { margin-block-start: 1em; }
 .publication-body blockquote { padding-inline-start: 1em; border-inline-start: 2px solid var(--ah-rule); }
 .home-page .publication-reader .publication-issue { margin: 1.25rem auto 0; }
-.home-page .archive-index .publication-heading { margin-block-end: var(--group); }
-.home-page .archive-index .archive-topics { gap: 0 1.15em; margin-block: 1rem 0; font-size: var(--copy-size); }
-.archive-index .archive-topics [aria-current] { color: var(--ink); font-weight: 600; }
-.home-page .archive-index .publication-list { margin: 0; padding: 0; list-style: none; }
-.home-page .archive-index .publication-list li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: .15rem;
-  padding-block: .8rem;
-  border-block-start: 1px solid var(--ah-rule);
-}
-.archive-index .publication-list :is(time, small) {
-  margin: 0;
-  padding: 0;
-  color: var(--quiet);
-  font: 400 var(--note-size)/1.4 var(--text);
-}
-.home-page .archive-index .publication-list a {
-  display: block;
-  min-block-size: 44px;
-  padding-block: .28rem;
-  font: 400 var(--type-card)/1.32 var(--display);
-  text-decoration: none;
-}
-.home-page .archive-index .publication-list a:is(:hover, :focus-visible) { text-decoration: underline; }
-@media (min-width: 45em) {
-  .home-page .archive-index .publication-list li { grid-template-columns: 10rem minmax(0, 1fr); align-items: baseline; gap: 1.5rem; }
-}

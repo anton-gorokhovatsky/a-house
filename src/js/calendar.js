@@ -130,7 +130,7 @@
     if (location.hash !== '#calendar-filters') history.pushState(null, '', '#calendar-filters');
     months.open = true;
     summary.focus({ preventScroll: true });
-    filters.scrollIntoView({ block: 'start', behavior: 'instant' });
+    filters.scrollIntoView({ block: 'start' });
   });
   showSelection();
   window.addEventListener('popstate', showSelection);

@@ -71,9 +71,9 @@ for (const file of htmlFiles) {
     }
   }
   const topic = archive.topicRoutes.find(page => page.slug + '/index.html' === file)?.archiveTopic;
-  if (topic) {
-    const articles = [...source.matchAll(/<li>\s*(?:<time\b[^>]*>[\s\S]*?<\/time>\s*)?<div><a href="([^"]+)"/g)].map(([, url]) => url);
-    const expected = topic.articles.map(slug => base + slug + '/');
+  if (topic || file === 'index.html' || file === 'archive/index.html') {
+    const articles = [...source.matchAll(/<li data-archive-topics="[^"]*">\s*(?:<time\b[^>]*>[\s\S]*?<\/time>\s*)?<div><a href="([^"]+)"/g)].map(([, url]) => url);
+    const expected = (topic ? topic.articles : [...archive.articles.keys()]).map(slug => base + slug + '/');
     if (JSON.stringify(articles) !== JSON.stringify(expected)) errors.push(file + ' has an incorrect selection of publications');
   }
   const head = source.slice(0, source.indexOf('</head>'));

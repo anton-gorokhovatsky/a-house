@@ -58,6 +58,30 @@ async function checkMobileExhibition(page) {
   }
 }
 
+async function checkProjectMotion(page) {
+  await page.goto(url + '#projects');
+  await page.evaluate(() => document.fonts.ready);
+  const link = page.locator('.home-project-navigation a[href="#a-presence"]');
+  const destination = page.locator('#a-presence');
+  for (const reducedMotion of ['no-preference', 'reduce']) {
+    await page.emulateMedia({ reducedMotion });
+    const start = await destination.evaluate(el => el.getBoundingClientRect().top);
+    await link.click();
+    if (reducedMotion === 'no-preference') {
+      await page.waitForFunction(y => {
+        const top = document.getElementById('a-presence').getBoundingClientRect().top;
+        return top < y - 5 && top > innerHeight;
+      }, start);
+    } else {
+      assert.ok((await destination.boundingBox()).y < 60, 'Reduced motion must arrive immediately');
+    }
+    await page.waitForFunction(() => document.activeElement?.id === 'a-presence' &&
+      document.getElementById('a-presence').getBoundingClientRect().top < 60);
+    await page.goBack();
+    await page.waitForFunction(() => document.activeElement?.matches('.home-project-navigation a[href="#a-presence"]'));
+  }
+}
+
 async function checkExpiredProgram(page) {
   await page.goto(url + '#program');
   const endDates = await page.locator('#program [data-event-end]').evaluateAll(items => items.map(item => item.dataset.eventEnd));
@@ -224,7 +248,23 @@ async function checkVisitorLinks(page, mobile) {
   assert.ok(await destination.locator('#patrons img').count() > 15);
   await page.goBack();
   await page.waitForFunction(() => document.activeElement?.pathname.endsWith('/about/'));
-  await activate(page.locator('#projects .home-direction-link[href="#a-media"]'));
+  const directions = page.locator('#projects .home-direction');
+  const floors = await directions.evaluateAll(elements => elements.map(element => {
+    const {top, bottom} = element.getBoundingClientRect();
+    return {top, bottom, entrances: element.querySelectorAll('.home-direction-links a').length};
+  }));
+  assert.equal(floors.length, 4);
+  assert.ok(floors.every((floor, i) => floor.entrances >= 2 && (!i || floor.top >= floors[i - 1].bottom)));
+  const press = page.locator('#a-media .home-direction-links a[href$="/press/"]');
+  await activate(press);
+  await page.waitForURL(url + 'press/');
+  assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
+  await page.goBack();
+  await page.waitForFunction(() => document.activeElement?.closest('#a-media .home-direction-links'));
+  await activate(page.locator('#projects .home-section-head a[href="#projects"]'));
+  await page.waitForURL(url + '#projects');
+  assert.equal(await page.locator('#projects .home-project-row').count(), 19);
+  await activate(page.locator('.home-project-navigation a[href="#a-media"]'));
   await page.waitForURL(url + '#a-media');
   const register = page.locator('#a-media .home-project-entries');
   assert.ok(await register.isVisible());
@@ -234,20 +274,54 @@ async function checkVisitorLinks(page, mobile) {
   await photo.evaluate(image => image.decode());
   assert.deepEqual(await photo.evaluate(image => [image.naturalWidth, image.naturalHeight]), [645, 800]);
   await page.goto(url + '#publications');
-  await activate(page.locator('.home-publication-archive a'));
-  await page.waitForURL(url + 'archive/');
-  assert.ok(await page.getByRole('heading', {name: 'Архив публикаций'}).isVisible());
-  await page.goto(url + '#t-footer');
-  const documents = page.locator('#footer-documents');
-  await activate(documents.locator('summary'));
-  const agreement = documents.getByRole('link', {name: /пользовательское соглашение/i}).first();
-  await activate(agreement);
-  await page.waitForURL(url + 'agreement/');
-  assert.ok(await page.getByRole('main').getByRole('heading', { name: /Пользовательское соглашение/ }).isVisible());
-  assert.ok((await page.getByRole('main').innerText()).length > 20000);
-  assert.ok(await page.locator('.home-masthead').isVisible());
+  const archive = page.getByRole('region', {name: 'Архив публикаций'});
+  assert.ok(await archive.getByRole('heading', {name: 'Архив публикаций'}).isVisible());
+  const design = archive.getByRole('link', {name: 'Дизайн', exact: true});
+  await activate(design);
+  await page.waitForURL(url + '#publication-archive-design');
+  const rows = archive.locator('.publication-list li:visible');
+  assert.ok(await rows.count() > 0);
+  assert.ok(await rows.evaluateAll(items => items.every(item => item.dataset.archiveTopics.split(' ').includes('design'))));
   await page.goBack();
-  await page.waitForFunction(() => document.querySelector('#footer-documents').open && document.activeElement?.closest('#footer-documents'));
+  await page.waitForURL(url + '#publications');
+  await page.waitForFunction(() => !document.querySelector('#publication-archive .publication-list [hidden]'));
+}
+
+async function checkFooterDocuments(page, mobile) {
+  const cases = [
+    ['', 'agreement', /Пользовательское соглашение/],
+    ['calendar/archaeology-of-the-future/', 'politic_a-com', /Политика в отношении обработки персональных данных/i],
+    ['agreement/', 'rules', /Правила пользования клубным пространством/i],
+    ['a_pass/', 'agreement2', /согласие пользователя на обработку персональных данных/i]
+  ];
+  for (const [from, slug, title] of cases) {
+    const origin = url + from + '#footer-documents';
+    await page.goto(origin);
+    const footer = page.locator('#t-footer');
+    const documents = footer.getByRole('navigation', { name: 'Документы' });
+    const links = documents.getByRole('link');
+    assert.equal(await links.count(), 4);
+    for (const link of await links.all()) assert.ok(await link.isVisible());
+    assert.ok(await footer.getByRole('heading', {name: 'Реквизиты'}).isVisible());
+    assert.equal(await footer.locator('.footer-channels a').count(), 3);
+    assert.ok(await footer.locator('.footer-wordmark img').isVisible());
+    assert.ok(await footer.getByRole('radio', {name: 'Как в системе'}).isVisible());
+    const opener = documents.locator('a[href$="/' + slug + '/"]');
+    await opener.scrollIntoViewIfNeeded();
+    const previousTop = (await opener.boundingBox()).y;
+    if (mobile) await opener.tap();
+    else await opener.press('Enter');
+    await page.waitForURL(url + slug + '/');
+    const main = page.getByRole('main');
+    assert.match((await main.getByRole('heading', { level: 1 }).innerText()).replace(/\s+/g, ' '), title);
+    if (slug === 'agreement') assert.ok((await main.innerText()).length > 20000);
+    await page.goBack();
+    await page.waitForURL(origin);
+    const href = await opener.evaluate(link => link.href);
+    await page.waitForFunction(href => document.activeElement?.href === href &&
+      document.activeElement.closest('#footer-documents'), href);
+    assert.ok(Math.abs((await opener.boundingBox()).y - previousTop) < 4, 'Back restores the originating document link');
+  }
 }
 
 async function checkSpecialProjectPrograms(page, mobile) {
@@ -313,8 +387,9 @@ async function checkEnlargedMenu(page) {
   assert.ok(await menu.evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'All menu columns must fit on the enlarged narrow screen');
   assert.equal(await wordmark.evaluate(el => el.getBoundingClientRect().width), originalWidth);
   await menu.getByRole('link', { name: 'Контакты' }).press('Enter');
-  await page.locator('.home-footer summary').press('Enter');
-  assert.ok(await page.locator('.home-footer details[open] a').first().isVisible());
+  const documents = page.getByRole('navigation', { name: 'Документы' });
+  assert.equal(await documents.getByRole('link').count(), 4);
+  assert.ok(await documents.getByRole('link').last().isVisible());
 }
 
 async function checkEditorialGrouping(page) {
@@ -331,13 +406,22 @@ async function checkEditorialGrouping(page) {
 
   const lists = page.locator('.home-season:visible .home-events');
   for (const list of await lists.all()) {
+    const section = page.locator('#program');
+    const title = await section.getByRole('heading', {name: 'События', level: 2}).boundingBox();
+    const feature = section.locator('[data-home-now]');
+    if (await feature.isVisible()) {
+      const poster = await feature.boundingBox();
+      assert.ok(title.y + title.height <= poster.y, 'The section title must introduce the featured event');
+      const secondary = list.locator('article:visible').first();
+      if (await secondary.count()) assert.ok(poster.y + poster.height <= (await secondary.boundingBox()).y,
+        'The smaller events must follow the featured event');
+    }
     const baselines = await list.evaluate(el => {
       if (!matchMedia('(min-width:48.001em)').matches) return [];
       const pair = [...el.children].filter(card => !card.hidden).slice(0, 2);
       if (!pair.length) return [];
-      const sectionTitle = el.closest('.home-season').querySelector('.home-program-head h2');
       const metrics = document.createElement('canvas').getContext('2d');
-      return [sectionTitle, ...pair.map(card => card.querySelector('h2,h3'))].map(heading => {
+      return pair.map(card => card.querySelector('h3')).map(heading => {
         const text = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT).nextNode();
         const firstLetter = document.createRange();
         firstLetter.setStart(text, 0);
@@ -348,7 +432,7 @@ async function checkEditorialGrouping(page) {
       });
     });
     assert.ok(baselines.every(y => Math.abs(y - baselines[0]) < 1),
-      'The program heading and the first lines of the two event titles must share a text baseline');
+      'The first lines of the two smaller event titles must share a text baseline');
     const entries = await list.locator(':scope > article:visible').evaluateAll(cards => cards.map(card => {
       const link = card.querySelector('.home-event-link');
       const entry = { top: card.getBoundingClientRect().top, paid: Boolean(link?.innerText.includes('₽')) };
@@ -381,8 +465,8 @@ async function checkArchiveReading(page) {
   const missing = await page.goto(url + 'missing-publication-for-browser-check/');
   assert.equal(missing.status(), 404);
   await page.getByRole('main').getByRole('link', { name: /в архив публикаций/i }).click();
-  await page.waitForURL(url + 'archive/');
-  const listing = page.getByRole('main').getByRole('list');
+  await page.waitForURL(url + '#publication-archive');
+  const listing = page.getByRole('main').getByRole('list', {name: 'Публикации', exact:true});
   const articles = listing.getByRole('link');
   const index = Math.floor(await articles.count() / 2);
   const entry = articles.nth(index);
@@ -412,7 +496,7 @@ async function checkArchiveReading(page) {
     await page.goForward();
   }
   await main.getByRole('link', { name: /к архиву публикаций/i }).click();
-  await page.waitForURL(url + 'archive/');
+  await page.waitForURL(url + '#publication-archive');
   assert.ok(await listing.getByRole('link', { name: title, exact: true }).isVisible(),
     'The archive must contain the same article on return');
 
@@ -421,7 +505,10 @@ async function checkArchiveReading(page) {
   assert.ok(await clients.locator('img').evaluateAll(images => images.length > 0 && images.every(image =>
     Number(image.getAttribute('width')) > 0 && Number(image.getAttribute('height')) > 0)),
     'Project logos must reserve their area before the lazy files arrive');
-  const projects = clients.getByRole('link');
+  assert.equal(await clients.getByRole('link').count(), 0);
+  assert.equal(await clients.getByRole('img', {name: /.+/}).count(), 12);
+  const projects = page.getByRole('navigation', {name: 'Совместные проекты'}).getByRole('link');
+  assert.equal(await projects.count(), 3);
   await projects.first().focus();
   await page.keyboard.press('Tab');
   const chosen = projects.nth(1);
@@ -590,6 +677,9 @@ try {
   const phone = await browser.newPage({ viewport: { width: 375, height: 560 }, isMobile: true, hasTouch: true });
   await checkMobileExhibition(phone);
   await phone.close();
+  const motionPage = await browser.newPage({viewport: {width: 1440, height: 900}});
+  await checkProjectMotion(motionPage);
+  await motionPage.close();
   for (const width of [390, 1511]) {
     const mobile = width === 390;
     const pageOptions = {
@@ -643,6 +733,7 @@ try {
     await checkArchiveReading(page);
     await checkCalendar(page, mobile);
     await checkVisitorLinks(page, mobile);
+    await checkFooterDocuments(page, mobile);
     await checkSpecialProjectPrograms(page, mobile);
     await checkClubApplication(page);
     await checkConsentReturn(page);

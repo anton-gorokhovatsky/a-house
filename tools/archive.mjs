@@ -78,14 +78,14 @@ function publicationCover(original) {
 
 function renderPublication(page, original, topics) {
   const issue = issueLinks.get(page.slug);
-  const topicLinks = topics.map(({slug, title}) => '<a href="@@ROOT@@' + escape(slug) + '/">' + escape(title) + '</a>');
+  const topicLinks = topics.map(topic => '<a href="@@ROOT@@#' + escape(archiveFragment(topic)) + '">' + escape(topic.title) + '</a>');
   const timestamps = [...original.matchAll(/<meta itemprop="date(?:Published|Modified)" content="[^"]+">/g)].map(([tag]) => tag).join('');
   return `<div class="home-page" id="allrecords">
     <!-- EDITORIAL HEADER -->
     <main id="site-content" class="home-editorial publication-reader" tabindex="-1">
       <article itemscope itemtype="https://schema.org/BlogPosting">
         ${timestamps}
-        <a class="publication-back" href="@@ROOT@@archive/">К архиву публикаций</a>
+        <a class="publication-back" href="@@ROOT@@#publication-archive">К архиву публикаций</a>
         <header class="publication-heading">
           <div class="publication-meta">${[dateMarkup(page.published), ...topicLinks].filter(Boolean).join(' ')}</div>
           <h1 itemprop="headline">${escape(page.title)}</h1>
@@ -123,7 +123,7 @@ export async function collectArchive(routes, readArticle) {
       topics.set(slug, topic);
     }
     const html = renderPublication(page, originals[index], articleTopics);
-    articles.set(page.slug, {page, html, tags:[...tags]});
+    articles.set(page.slug, {page, html, topics:articleTopics});
   }
   const main = routes.find(page => page.slug === 'archive');
   const topicRoutes = [...topics.values()].map(topic => ({
@@ -132,20 +132,46 @@ export async function collectArchive(routes, readArticle) {
   return {articles, topicRoutes};
 }
 
-export function renderArchiveEntries(archive, topic, base) {
-  const slugs = topic ? topic.articles : [...archive.articles.keys()];
-  return slugs.map(slug => {
-    const {page,tags} = archive.articles.get(slug);
-    const date = dateMarkup(page.published);
-    return '<li>' + date + '<div><a href="' + escape(base + slug + '/') + '">' + escape(page.title) +
-      '</a>' + (tags.length ? '<small>' + escape(tags.join(', ')) + '</small>' : '') + '</div></li>';
+function topicKey(topic) {
+  return topic.slug.slice('archive/'.length);
+}
+
+export function archiveFragment(topic) {
+  return topic ? 'publication-archive-' + topicKey(topic) : 'publication-archive';
+}
+
+export function archiveFragmentStyles(archive) {
+  // A shared home fragment must also filter the static HTML with JavaScript off.
+  return archive.topicRoutes.map(({archiveTopic}) => {
+    const key = topicKey(archiveTopic);
+    return '#publication-archive:not([data-enhanced]):has(#' + archiveFragment(archiveTopic) + ':target) ' +
+      '[data-archive-topics]:not([data-archive-topics~="' + key + '"]) { display: none; }';
   }).join('\n');
 }
 
-export function renderArchiveTopics(archive, base, current) {
-  const options = [{slug:'archive', title:'Все публикации'}, ...archive.topicRoutes.map(page => page.archiveTopic)
-    .sort((a,b) => a.title.localeCompare(b.title,'ru'))];
-  return '<nav class="archive-topics" aria-label="Рубрики архива">' + options.map(({slug,title}) =>
-    '<a href="' + escape(base + slug + '/') + '"' + (slug === (current?.slug || 'archive') ? ' aria-current="page"' : '') + '>' + escape(title) + '</a>'
-  ).join('') + '</nav>';
+function renderArchiveEntries(archive, topic, base) {
+  const slugs = topic ? topic.articles : [...archive.articles.keys()];
+  return slugs.map(slug => {
+    const {page,topics} = archive.articles.get(slug);
+    const date = dateMarkup(page.published);
+    const keys = topics.map(topicKey).join(' ');
+    const labels = topics.map(item => item.title).join(', ');
+    return '<li data-archive-topics="' + escape(keys) + '">' + date + '<div><a href="' + escape(base + slug + '/') + '">' +
+      escape(page.title) + '</a>' + (labels ? '<small>' + escape(labels) + '</small>' : '') + '</div></li>';
+  }).join('\n');
+}
+
+export function renderArchiveCatalog(archive, base, current, inline) {
+  const options = [null, ...archive.topicRoutes.map(page => page.archiveTopic).sort((a,b) => a.title.localeCompare(b.title,'ru'))];
+  const links = options.map(topic => {
+    const key = topic ? topicKey(topic) : '';
+    const slug = topic?.slug || 'archive';
+    const fragment = inline && topic ? ' id="' + escape(archiveFragment(topic)) + '"' : '';
+    const selected = !inline && topic?.slug === current?.slug ? ' aria-current="page"' : '';
+    return '<a href="' + escape(base + slug + '/') + '" data-archive-topic="' + escape(key) + '"' + fragment + selected +
+      '>' + escape(topic?.title || 'Все публикации') + '</a>';
+  });
+  return '<div class="publication-catalog"><nav class="archive-topics" aria-label="Рубрики архива">' + links.join('') + '</nav>' +
+    (inline ? '<p class="screen-reader-only" role="status" data-archive-count></p>' : '') +
+    '<ol class="publication-list" aria-label="Публикации">' + renderArchiveEntries(archive, current, base) + '</ol></div>';
 }

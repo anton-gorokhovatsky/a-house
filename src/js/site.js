@@ -45,6 +45,31 @@ for (const board of readingBoards) {
   board.style.setProperty('--reading-rows', String(board.querySelectorAll('[data-type-role]').length));
 }
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+// Opt in only for the link the visitor just activated. Direct entry, focus,
+// browser history and a visitor's own scrolling keep their native behaviour.
+let followingAnchor = false;
+document.addEventListener('click', event => {
+  const link = event.target.closest('a[href]');
+  if (reduced.matches || !link?.hash || link.origin !== location.origin || link.pathname !== location.pathname ||
+      link.search !== location.search || link.classList.contains('skip-content') || event.button !== 0 ||
+      event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || link.hasAttribute('download') ||
+      (link.target && link.target !== '_self')) return;
+  followingAnchor = true;
+  document.documentElement.setAttribute('data-anchor-scroll', '');
+  requestAnimationFrame(() => document.documentElement.removeAttribute('data-anchor-scroll'));
+}, true);
+function interruptAnchorScroll() {
+  if (!followingAnchor) return;
+  followingAnchor = false;
+  window.scrollTo({ left: scrollX, top: scrollY, behavior: 'instant' });
+}
+window.addEventListener('wheel', interruptAnchorScroll, { passive: true });
+window.addEventListener('pointerdown', interruptAnchorScroll, { passive: true });
+window.addEventListener('keydown', event => {
+  if (['Tab', ' ', 'PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown'].includes(event.key)) interruptAnchorScroll();
+});
+document.addEventListener('scrollend', () => { followingAnchor = false; });
+window.addEventListener('pagehide', () => { followingAnchor = false; });
 function fitReadingText() {
   const largeType = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
   for (const board of readingBoards) {
@@ -134,7 +159,7 @@ if (header) {
   }
 }
 
-const archiveList = document.querySelector('main.archive-index, [data-page="special_projects"] main');
+const archiveList = document.querySelector('.publication-catalog, [data-page="special_projects"] main');
 
 // Browsers restore the URL on Back. Restore the place to continue reading or tabbing as well.
 document.addEventListener('click', event => {

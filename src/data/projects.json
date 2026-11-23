@@ -2,16 +2,18 @@
   {
     "id": "a-industry",
     "name": "A–Industry",
-    "photo": { "src": "media/delivery/Festival_50-1fec5914f145-640w-1d734bf72642.webp", "width": 640, "height": 427, "alt": "Посетители рассматривают работы на архитектурном фестивале A–House" },
+    "photo": { "src": "media/delivery/Festival_50-1fec5914f145-640w-1d734bf72642.webp", "width": 640, "height": 427, "large": "media/delivery/Festival_50-1fec5914f145-1280w-28710605dfb3.webp", "largeWidth": 1280, "alt": "Посетители рассматривают работы на архитектурном фестивале A–House" },
     "intro": "В A–Index бюро показывают свои проекты и ищут сотрудников. На лекциях A–School и экскурсиях A–Fest можно познакомиться с работой архитекторов.",
     "projects": [
       {
         "name": "A–Index",
+        "overviewLabel": "Каталог бюро A–Index",
         "description": "Справочник архитектурных бюро, дизайнеров и подрядчиков. Здесь можно посмотреть портфолио, найти контакты команды или вакансию.",
         "href": "https://aindexproject.com/"
       },
       {
         "name": "A–School",
+        "overviewLabel": "Дискуссии A–School",
         "description": "Открытые дискуссии об архитектуре в ММОМА. На встречах говорят о жилье, общественных пространствах и о том, как художники работают с городскими руинами.",
         "href": "@@ROOT@@education/"
       },
@@ -30,16 +32,18 @@
   {
     "id": "a-media",
     "name": "A–Media",
-    "photo": { "src": "media/delivery/image-36f89c243f35-640w-91894a99e900.webp", "width": 640, "height": 423, "alt": "Выставочный зал в Копенгагене из репортажа A–House о фестивале дизайна" },
+    "photo": { "src": "media/delivery/image-36f89c243f35-640w-91894a99e900.webp", "width": 640, "height": 423, "large": "media/delivery/image-36f89c243f35-1280w-bcfa00e5226a.webp", "largeWidth": 1280, "alt": "Выставочный зал в Копенгагене из репортажа A–House о фестивале дизайна" },
     "intro": "Редакция A–News пишет об архитектуре и дизайне, а издательство A–Press выпускает книги, газеты и журналы. В первом номере A–Kids — прогулка по Петербургу для всей семьи.",
     "projects": [
       {
         "name": "A–News онлайн",
+        "overviewLabel": "Читать A–News",
         "description": "Редакция показывает новые здания и интерьеры, беседует с их авторами и рассказывает, какие выставки стоит увидеть.",
         "href": "https://news.ahouseproject.com/"
       },
       {
         "name": "A–Press",
+        "overviewLabel": "Издания A–Press",
         "description": "Издательство A–House выпускает книги, каталоги и периодику. На его странице можно посмотреть издания и найти места, где есть печатные номера.",
         "href": "@@ROOT@@press/"
       },
@@ -98,11 +102,13 @@
     "projects": [
       {
         "name": "Клуб A–House",
+        "overviewLabel": "Программы клуба",
         "description": "Три программы участия — A–Member, A–Patron и Patron Platinum. Участники могут приглашать в Дом гостей, а патроны — проводить собственные мероприятия.",
         "href": "@@ROOT@@club/"
       },
       {
         "name": "A–Friend",
+        "overviewLabel": "Подписка A–Friend",
         "description": "Подписка на полные выпуски A–News, A–Kids, A–Sport и A–State. Их можно читать в PDF в приложении A–House.",
         "href": "#services-checkout"
       }
@@ -111,16 +117,18 @@
   {
     "id": "a-presence",
     "name": "A–Presence",
-    "photo": { "src": "media/home/house-facade-800.webp", "width": 800, "height": 600, "alt": "Фасад Дома A–House в Большом Афанасьевском переулке" },
+    "photo": { "src": "media/home/house-facade-800.webp", "width": 800, "height": 600, "large": "media/home/house-facade-1600.webp", "largeWidth": 1600, "alt": "Фасад Дома A–House в Большом Афанасьевском переулке" },
     "intro": "Команда открывает городские пространства и готовит для них программу. Дом предпринимателя в Москве — совместный проект A–House и Точка Банка.",
     "projects": [
       {
         "name": "Дом A–House",
+        "overviewLabel": "Резиденты Дома A–House",
         "description": "Особняк в Большом Афанасьевском переулке, где проходят выставки и клубные встречи. В Доме работают резиденты и кафе A–House × FINCH.",
         "href": "@@ROOT@@residents/"
       },
       {
         "name": "Дом предпринимателя",
+        "overviewLabel": "Дом предпринимателя",
         "description": "На встречах в Малом Каретном переулке предприниматели разбирают задачи своего бизнеса. Программа открыта для всех.",
         "href": "@@ROOT@@dompredprinimatelya/"
       }

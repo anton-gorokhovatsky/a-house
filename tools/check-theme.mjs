@@ -61,7 +61,7 @@ export async function checkTheme(browser, url) {
     await page.getByRole('link', { name: 'Оформление', exact: true }).tap();
     await page.waitForURL(url + '#site-theme');
     await page.waitForFunction(() => document.activeElement === document.querySelector('#site-theme :checked'));
-    assert.ok(await group(page).evaluate(element => element.getBoundingClientRect().bottom <= innerHeight + 1));
+    await page.waitForFunction(() => document.querySelector('#site-theme').getBoundingClientRect().bottom <= innerHeight + 1);
     assert.equal(await page.locator('#overview').getAttribute('data-view'), 'services-checkout');
     await page.goBack();
     await page.waitForURL(url + '#services-checkout');
@@ -75,7 +75,8 @@ export async function checkTheme(browser, url) {
       }
     }
     await page.goto(url + 'archive/');
-    await page.locator('.archive-index li a').first().tap();
+    await page.waitForURL(url + '#publication-archive');
+    await page.locator('#publication-archive .publication-list a').first().tap();
     await checkReadable(page.getByRole('main').getByRole('heading', {level: 1}));
     const other = await context.newPage();
     await other.goto(url + 'member/');
