@@ -244,6 +244,24 @@ async function checkSpecialProjectPrograms(page, mobile) {
     const box = link.getBoundingClientRect();
     return box.top >= 0 && box.bottom <= innerHeight;
   }), 'Opening organizer contacts must reveal the email on the first screen');
+  if (mobile) {
+    const originalViewport = page.viewportSize();
+    await page.setViewportSize({width: 320, height: 568});
+    const contacts = page.getByRole('dialog');
+    await contacts.locator('img').evaluate(image => image.decode());
+    await contacts.locator('.t390__wrapper *').evaluateAll(elements => {
+      const sizes = elements.map(element => parseFloat(getComputedStyle(element).fontSize));
+      elements.forEach((element, index) => element.style.fontSize = (sizes[index] * 2) + 'px');
+    });
+    assert.ok(await contacts.evaluate(dialog => {
+      const card = dialog.querySelector('.t-popup__container').getBoundingClientRect();
+      const title = new Range();
+      title.selectNodeContents(dialog.querySelector('.t390__title p'));
+      return [...title.getClientRects()].every(line =>
+        line.left >= card.left && line.right <= card.right && line.top >= 0 && line.bottom <= innerHeight);
+    }), 'Enlarged contact heading must stay legible inside the card after the photo loads');
+    await page.setViewportSize(originalViewport);
+  }
 }
 
 async function checkEnlargedMenu(page) {
