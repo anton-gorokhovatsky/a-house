@@ -11,9 +11,10 @@
   }
 
   function displayView(target) {
-    const selected = viewFor(target);
+    const context = target?.closest('.home-footer') ? document.getElementById(history.state?.homeContext || '') : target;
+    const selected = viewFor(context);
     overview.dataset.view = selected?.id || 'overview';
-    issue.hidden = target?.id === 'publications';
+    issue.hidden = context?.id === 'publications';
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
@@ -84,7 +85,8 @@
       const top = link.closest('.site-header') ? null : link.getBoundingClientRect().top;
       const homeReturn = { index: links.indexOf(link), top, scrollY };
       history.replaceState({ ...history.state, homeReturn }, '');
-      history.pushState(null, '', link.hash);
+      const state = target.closest('.home-footer') ? { homeContext: history.state?.homeContext || hashTarget()?.id || 'overview' } : null;
+      history.pushState(state, '', link.hash);
     }
     displayView(target);
     scrollToTarget(target);

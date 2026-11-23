@@ -5,6 +5,7 @@ import { chromium } from 'playwright-core';
 import { membershipSettings, projectRoot, siteBase } from './build.mjs';
 import { previewServer } from './preview.mjs';
 import { checkMembershipTransport } from './check-membership.mjs';
+import { checkTheme } from './check-theme.mjs';
 
 const base = siteBase(process.env.SITE_BASE);
 const server = previewServer(path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist')), base);
@@ -480,6 +481,7 @@ try {
     console.log('Archive reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');
     await page.close();
   }
+  await checkTheme(browser, url);
   await checkMembershipTransport(browser);
 } finally {
   await browser?.close();

@@ -55,6 +55,16 @@ for (const file of htmlFiles) {
   if (!/<meta\b[^>]*\bname="robots"[^>]*\bcontent="[^"]*\bnoindex\b/i.test(source)) errors.push(file+' lacks noindex');
   if (!/<h1\b|role="heading" aria-level="1"/i.test(source)) errors.push(file+' lacks its page heading');
   if (source.includes('@@ROOT@@') || source.includes('{{BODY}}')) errors.push(file+' has an unresolved template');
+  const head = source.slice(0, source.indexOf('</head>'));
+  const styles = [...head.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)];
+  const themeLoader = [...head.matchAll(/<script src="[^"]*\/js\/theme\.js(?:\?[^"]*)?"><\/script>/g)];
+  if (themeLoader.length !== 1 || !styles.length || themeLoader[0].index > styles[0].index ||
+      !styles.at(-1)[1].startsWith(base + 'styles/theme.css?')) {
+    errors.push(file + ' must restore the saved theme before styles and apply the shared palette last');
+  }
+  if ((source.match(/<fieldset\b[^>]*\bdata-site-theme(?=[\s>])/g) || []).length !== 1) {
+    errors.push(file + ' must have one appearance control');
+  }
   // The House renovation announcement also returns HTTP 200. A consent link
   // labelled as a privacy policy must lead to the published policy itself.
   for (const [label] of source.matchAll(/<label\b[^>]*\bt-checkbox__control\b[^>]*>[\s\S]*?<\/label>/gi)) {

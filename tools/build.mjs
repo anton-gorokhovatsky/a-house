@@ -109,6 +109,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const routes = JSON.parse(await source('routes.json'));
   const events = JSON.parse(await source('data/events.json'));
   const program = renderProgram(events, await source('partials/program-feature.html'), base);
+  const themeControl = await source('partials/theme-control.html');
   const archive = routes.filter(page => page.slug.startsWith('tpost/'))
     .sort((a,b) => (b.published || '').localeCompare(a.published || '') || a.title.localeCompare(b.title,'ru'))
     .map(page => {
@@ -166,10 +167,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     'media/fonts/ahouse-fonts.css',
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
     ...page.styles, ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
-    'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css'
+    'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
-  const references = new Set([nearbyImages, ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
+  const references = new Set([nearbyImages, 'js/theme.js', ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
     const bytes = await readFile(path.join(output, name));
     const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
@@ -198,7 +199,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- FOOTER -->', () => editorial ? homeFooter : footer)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
       .replace('<!-- ARCHIVE ENTRIES -->', () => archive);
-    const pageBody = prepareConsentDocuments(body);
+    let themedBody;
+    if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => themeControl);
+    else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');
+    else themedBody = body + '<footer class="theme-footer">' + themeControl + '</footer>';
+    const pageBody = prepareConsentDocuments(themedBody);
     const typeset = editorial ? typesetHomeText(pageBody) : keepProjectNames(pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
@@ -206,12 +211,12 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       ? '<script src="' + urls.get(nearbyImages) + '"></script>\n' + scriptTags
       : scriptTags;
     const values = {
-      TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug),
+      TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug), THEME_SCRIPT:urls.get('js/theme.js'),
       FORM_ACTION:escape((home ? friend : page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
-    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
+    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
   }
   await writeFile(path.join(output,'.nojekyll'),'');
