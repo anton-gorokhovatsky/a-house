@@ -64,6 +64,36 @@ async function checkHouseVisit(page, requested) {
   console.log('The House page showed the facade without fetching its clipped photographs.');
 }
 
+async function checkMobileExhibition(page) {
+  const events = JSON.parse(await readFile(path.join(projectRoot, 'src/data/events.json'), 'utf8'));
+  const feature = events.find(event => event.home === 'feature');
+  if (!feature?.photos?.length || !feature.booking) return;
+  const cover = feature.photos.find(photo => photo.mobileLead) || feature.photos[0];
+  await page.clock.setFixedTime(new Date(feature.start + 'T12:00:00+03:00'));
+  await page.goto(url);
+  const poster = page.locator('[data-home-now]');
+  for (const [width, height] of [[320, 480], [320, 568], [375, 560], [390, 664]]) {
+    await page.setViewportSize({ width, height });
+    const picture = poster.locator('img:visible');
+    const frame = await picture.evaluate(async element => {
+      await document.fonts.ready;
+      await element.decode();
+      return element.getBoundingClientRect().toJSON();
+    });
+    assert.ok((await picture.getAttribute('src')).endsWith(cover.file));
+    assert.ok(frame.top >= 0 && frame.height >= height / 4 && frame.bottom < height,
+      'A visitor should immediately see a substantial exhibition photograph');
+    const action = poster.getByRole('link', { name: feature.booking.label });
+    assert.equal(await action.getAttribute('href'), feature.booking.url);
+    const heading = await poster.getByRole('heading', { name: feature.title }).boundingBox();
+    const place = await poster.locator('.home-venue-link').boundingBox();
+    const button = await action.boundingBox();
+    assert.ok(frame.bottom <= heading.y && heading.y + heading.height <= place.y
+      && place.y + place.height <= button.y && button.height >= 44 && button.y + button.height <= height,
+      'The exhibition title, venue and booking action must follow the picture and fit on a short phone');
+  }
+}
+
 async function checkExpiredProgram(page) {
   await page.goto(url + '#program');
   const endDates = await page.locator('#program [data-event-end]').evaluateAll(items => items.map(item => item.dataset.eventEnd));
@@ -292,8 +322,26 @@ async function checkEditorialGrouping(page) {
   assert.ok(Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em,
     'The issue number must sit beside the upper edge of its cover on the phone and desktop overview');
 
-  const lists = page.locator('.home-events:visible');
+  const lists = page.locator('.home-season:visible .home-events');
   for (const list of await lists.all()) {
+    const baselines = await list.evaluate(el => {
+      if (!matchMedia('(min-width:48.001em)').matches) return [];
+      const pair = [...el.children].filter(card => !card.hidden).slice(0, 2);
+      if (!pair.length) return [];
+      const sectionTitle = el.closest('.home-season').querySelector('.home-program-head h2');
+      const metrics = document.createElement('canvas').getContext('2d');
+      return [sectionTitle, ...pair.map(card => card.querySelector('h2,h3'))].map(heading => {
+        const text = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT).nextNode();
+        const firstLetter = document.createRange();
+        firstLetter.setStart(text, 0);
+        firstLetter.setEnd(text, 1);
+        const style = getComputedStyle(heading);
+        metrics.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+        return firstLetter.getBoundingClientRect().top + metrics.measureText(firstLetter.toString()).fontBoundingBoxAscent;
+      });
+    });
+    assert.ok(baselines.every(y => Math.abs(y - baselines[0]) < 1),
+      'The program heading and the first lines of the two event titles must share a text baseline');
     const entries = await list.locator(':scope > article:visible').evaluateAll(cards => cards.map(card => {
       const link = card.querySelector('.home-event-link');
       const entry = { top: card.getBoundingClientRect().top, paid: Boolean(link?.innerText.includes('₽')) };
@@ -532,6 +580,9 @@ try {
   const narrowPage = await browser.newPage({ viewport: { width: 320, height: 844 } });
   await checkEnlargedMenu(narrowPage);
   await narrowPage.close();
+  const phone = await browser.newPage({ viewport: { width: 375, height: 560 }, isMobile: true, hasTouch: true });
+  await checkMobileExhibition(phone);
+  await phone.close();
   for (const width of [390, 1511]) {
     const mobile = width === 390;
     const pageOptions = {

@@ -112,7 +112,12 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 }
 
-.home-program { padding-top: clamp(1.6rem, 2.65vw, 2.85rem); padding-bottom: 0; }
+.home-program {
+  --program-top: clamp(1.6rem, 2.65vw, 2.85rem);
+  display: flex; flex-direction: column; padding-block: 0;
+}
+.home-program > .home-introduction { order: -1; margin-inline: 0; padding-inline: 0; }
+.home-feature-slot { padding-top: var(--program-top); }
 .home-feature {
   display: grid; grid-template-columns: minmax(0,1.85fr) minmax(0,1fr); grid-template-areas: 'heading heading' 'photo visit';
   gap: clamp(1.6rem, 2.5vw, 2.7rem) clamp(2rem, 4.9vw, 5.4rem);
@@ -129,6 +134,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-feature-slot .home-feature-context { font: 400 clamp(1.25rem, 1.7vw, 1.65rem)/1.36 var(--display); }
 .home-page .home-feature-visit p + p { margin-top: .22rem; color: var(--quiet); }
 .home-page .home-feature-visit .home-venue-link { color: var(--ink); }
+.home-feature-city { display: none; }
 .home-page .home-editorial a.home-action {
   display: inline-flex; align-items: center; min-height: 44px; padding: .62em 1em;
   margin-top: .95rem; background: var(--ink); color: var(--paper); line-height: 1.3; text-decoration: none;
@@ -137,7 +143,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-photo-pair { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,.87fr); gap: clamp(.65rem, 1.3vw, 1.4rem); align-items: end; }
 .home-photo-pair img { width: 100%; height: auto; aspect-ratio: 1.02; object-fit: cover; object-position: 50% 19%; }
 .home-photo-pair img.home-photo-detail { aspect-ratio: 1.25; object-position: 50% 52%; }
-.home-house-intro { max-width: 53rem; padding-block: var(--group); }
+.home-house-intro { max-width: 53rem; padding-block: calc(var(--program-top) + var(--group)) var(--group); }
 .home-house-intro > p { margin-top: 1.25rem !important; }
 .home-season { display: grid; grid-template-columns: minmax(0,.52fr) minmax(0,1.48fr); gap: 1rem var(--group); padding-top: var(--chapter); }
 .home-program-head { align-self: start; }
@@ -147,11 +153,11 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-events { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: var(--group); }
 .home-event-link { display: block; }
 .home-event .home-meta { display: flex; flex-wrap: wrap; gap: .12rem .9rem; }
-.home-event .home-meta + h3 { margin-top: .32rem; }
+.home-event .home-meta + .home-event-info { margin-top: .32rem; }
 .home-page .home-event h3 + p { margin-top: .48rem; max-width: 30em; }
 .home-page .home-event .home-event-price { margin-top: .75rem; color: var(--quiet); font-size: var(--note-size); line-height: 1.4; }
 .home-page .home-event p.home-detail { margin-top: .35rem; color: var(--quiet); }
-.home-events:empty { display:none; }
+.home-season .home-events:not(:has(> article:not([hidden]))) { display: none; }
 .home-events .home-feature { display: block; }
 .home-events .home-feature .home-feature-photo { display: none; }
 .home-events .home-feature h2 { font-size: var(--story-size); line-height: 1.07; }
@@ -174,7 +180,12 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-dispatches article > a { display: inline-block; padding-block: .5rem; }
 .home-publication-archive { grid-column: 1 / -1; }
 .home-industry-layout { display: grid; gap: var(--group); align-items: start; }
-.home-industry-layout > article > p { margin-block: .5rem; max-width: 34em; }
+.home-bureaus { display: grid; gap: .7rem; }
+.home-bureaus > p { max-width: 34em; }
+.home-bureaus .home-links {
+  display: grid; justify-items: start; gap: 0; margin-block-start: .6rem;
+}
+.home-bureaus .home-links > a { min-height: 44px; align-content: center; }
 .home-jobs { min-inline-size: 0; }
 .home-job-group { margin-top: 1.65rem; }
 .home-jobs-head .home-jobs-updated, .home-job-workplace, .home-job-date { color: var(--quiet); }
@@ -272,9 +283,21 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 }
 @media(min-width:48.001em) {
   .home-program-links { flex-direction: column; align-items: flex-start; }
-  .home-events:not(:empty) { row-gap: 0; }
-  .home-events > .home-event { display: grid; grid-template-rows: subgrid; grid-row: span 3; }
-  .home-event-link { display: grid; grid-template-rows: subgrid; grid-row: span 2; align-items: start; }
+  .home-season { grid-template-columns: minmax(0,calc((100% - var(--group)) * .26)) repeat(2,minmax(0,1fr)); row-gap: 0; }
+  .home-season:has(.home-events > article:not([hidden])) .home-program-head { grid-column: 1; grid-row: 2 / span 3; align-self: first baseline; }
+  .home-season .home-events { display: contents; }
+  /* Each pair shares rows for dates, stories, prices and addresses. */
+  .home-events > article { display: grid; grid-template-rows: subgrid; grid-row: span 4; grid-column: 2; }
+  .home-events > article:nth-child(even of :not([hidden])) { grid-column: 3; }
+  .home-events > article:nth-child(n+3 of :not([hidden])) { margin-top: var(--group); }
+  .home-event-link { display: grid; grid-template-rows: subgrid; grid-row: span 3; align-items: start; }
+  .home-event-link > .home-meta, .home-events .home-feature-heading > .home-meta { align-self: end; }
+  .home-event .home-meta + .home-event-info { align-self: first baseline; margin: 0; }
+  .home-events .home-feature { display: grid; grid-template-columns: minmax(0,1fr); grid-template-areas: none; gap: 0; }
+  .home-events .home-feature-heading { grid-area: auto; grid-row: span 2; display: grid; grid-template-rows: subgrid; container-type: normal; }
+  .home-page .home-events .home-feature-heading h2 { align-self: first baseline; margin: 0; font-size: var(--story-size); }
+  .home-events .home-feature-visit { grid-area: auto; grid-row: span 2; }
+  .home-season .home-upcoming-empty { grid-column: 2 / -1; }
   .home-editorial[data-view="overview"] .home-reading { display: grid; grid-template-columns: auto minmax(0,1fr); grid-template-areas: 'title more' 'issue issue'; align-items: baseline; gap: clamp(1.1rem, 1.7vw, 1.8rem) clamp(1.15rem, 2.3vw, 2.1rem); }
   .home-editorial[data-view="overview"] .home-reading .home-section-head { grid-area: title; margin: 0; }
   .home-editorial[data-view="overview"] .home-reading .home-section-tail { grid-area: more; margin: 0; }
@@ -285,18 +308,31 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   .home-editorial[data-view="overview"] .home-reading { padding-bottom: var(--chapter); }
 }
 @media(max-width:48em) {
-  .home-program { padding-top: clamp(1.4rem, 5.5vw, 2.3rem); }
-  .home-feature { grid-template-columns: minmax(0,1fr); grid-template-areas: "heading" "visit" "photo"; gap: 0; }
-  .home-feature-heading h2 > span { display: block; }
-  .home-page .home-feature-heading h2 { font-size: clamp(1.875rem, 12.3cqi, var(--lead-size)); }
-  .home-feature-visit { padding-top: .85rem; }
-  .home-feature-slot .home-feature-context { font: inherit; }
-  .home-feature-photo { width: 100%; margin-top: 1.5rem !important; }
-  .home-photo-pair { display: block; }
-  .home-photo-pair img { aspect-ratio: 1.3; object-position: 50% 10%; }
-  .home-photo-pair img.home-photo-detail { display: none; }
+  .home-program { --program-top: .5rem; }
+  .home-feature-slot { order: -2; }
+  .home-feature-slot:not([hidden]) ~ .home-introduction { padding-top: var(--group); }
+  .home-feature-slot .home-feature {
+    grid-template-columns: minmax(0, 1fr); grid-template-areas: "photo" "heading" "visit" "report"; gap: 0;
+  }
+  .home-feature-slot .home-feature-photo { display: contents; }
+  .home-feature-slot .home-photo-pair { grid-area: photo; display: block; margin-bottom: clamp(.75rem, 3.5vw, 1.1rem); }
+  .home-photo-pair img { display: none; }
+  .home-photo-pair img.home-photo-lead {
+    display: block; width: 100%; height: auto; aspect-ratio: 1.65; max-height: 34svh; object-position: 50% 54%;
+  }
+  .home-feature-slot figcaption { grid-area: report; }
+  .home-page .home-feature-slot figcaption a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0;
+    text-decoration: underline; text-underline-offset: .19em;
+  }
+  .home-page .home-feature-heading h2 { margin-top: .16em; font-size: clamp(1.875rem, 11.6cqi, var(--lead-size)); }
+  .home-feature-slot .home-feature-visit { display: flex; flex-direction: column; align-items: flex-start; padding-top: .65rem; max-width: none; }
+  .home-page .home-feature-slot .home-feature-context { order: 1; max-width: 42ch; margin: 1.05rem 0 0; font: inherit; }
+  .home-page .home-feature-visit .home-feature-place { margin: 0; }
+  .home-feature-city { display: inline; }
+  .home-page .home-feature-slot a.home-action { margin-top: .65rem; }
   .home-season, .home-dispatches, .home-places, .home-pair, .home-ways { grid-template-columns: minmax(0,1fr); }
-  .home-season { row-gap: var(--group); }
+  .home-season { row-gap: var(--group); container: home-season / inline-size; }
   .home-season > :not(.home-program-head) { grid-column: auto; }
   .home-events { grid-template-columns: minmax(0,1fr); }
   .home-reading { container: home-reading / inline-size; }
@@ -312,9 +348,17 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   .home-page .home-issue-copy h3 { margin-block: .1em .28em; }
   .home-ways ul { display: grid; gap: .15rem; }
 }
+@container home-season (max-width: 13em) {
+  .home-page .home-season :is(.home-program-head h2,.home-event-info h3,.home-event-info p,.home-meta) { hyphens: auto; hyphenate-limit-chars: 6 3 3; }
+}
 @container home-reading (max-width: 18em) {
   .home-issue { grid-template-columns: minmax(0,1fr); grid-template-areas: "cover" "title" "story"; gap: .75rem; }
   .home-issue-cover { width: min(55%, 11rem); }
+}
+@media (max-width: 48em) and (max-height: 35em) {
+  .home-photo-pair img.home-photo-lead { max-height: 32svh; }
+  .home-page .home-feature-slot .home-feature-access { order: 1; margin-top: .65rem; }
+  .home-page .home-feature-slot .home-feature-context { order: 2; }
 }
 @media(max-width:31em) {
   .home-project-list { grid-template-columns: minmax(0,1fr); }

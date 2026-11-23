@@ -4,13 +4,13 @@
     "title": "Здесь и сейчас. Свет времени",
     "start": "2026-11-17", "end": "2026-11-29",
     "kind": "Выставка мобильной фотографии",
-    "venue": "Дом A–House", "address": "Большой Афанасьевский пер., 14",
+    "venue": "Дом A–House", "city": "Москва", "address": "Большой Афанасьевский пер., 14",
     "summary": "На выставке собраны снимки участников конкурса restore:mobile photo awards 2025 и 2026 годов.",
     "detail": "A–House курирует номинацию «Лучшая архитектурная фотография».",
     "home": "feature",
     "photos": [
       { "file": "media/home/exhibition-architecture-602.webp", "width": 602, "height": 800, "alt": "Архитектурный снимок на деревянном стенде с надписью A–House в выставочном зале" },
-      { "file": "media/home/exhibition-light-of-time-602.webp", "width": 602, "height": 800, "alt": "Пейзажные фотографии на соседних стендах" }
+      { "file": "media/home/exhibition-light-of-time-602.webp", "width": 602, "height": 800, "alt": "Пейзажные фотографии на соседних стендах", "mobileLead": true }
     ],
     "access": "Экскурсия с медиатором длится 40 минут. Вход по записи.",
     "booking": { "url": "https://ahouse.timepad.ru/event/4293210/", "label": "Записаться на экскурсию" },

@@ -102,6 +102,19 @@
   const entries = [...document.querySelectorAll('#program [data-event-end]')];
   const spotlight = document.querySelector('[data-home-now]');
   const featured = spotlight.querySelector('[data-event-end]');
+  const program = spotlight.parentElement;
+  const introduction = program.querySelector('.home-introduction');
+  const compact = matchMedia('(max-width: 48em)');
+  // Keep the About link in visual reading order when the two opening sections swap places.
+  function orderIntroduction() {
+    const before = compact.matches ? spotlight.nextElementSibling : program.firstElementChild;
+    if (before === introduction) return;
+    const focused = introduction.contains(document.activeElement) ? document.activeElement : null;
+    program.insertBefore(introduction, before);
+    focused?.focus({preventScroll: true});
+  }
+  orderIntroduction();
+  compact.addEventListener('change', orderIntroduction);
   const calendar = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
   });

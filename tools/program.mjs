@@ -31,8 +31,8 @@ function eventCard(event, today, base) {
   const href = eventDestination(event, base + 'calendar/');
   return `<article class="home-event" ${attributes(event, today)}>
     <a class="home-event-link" href="${esc(href)}">
+      <p class="home-meta"><span>${dateLine(event, today)}</span> <span class="home-event-venue">${esc(event.shortVenue || event.venue)}</span></p>
       <div class="home-event-info">
-        <p class="home-meta">${dateLine(event, today)} <span class="home-event-venue">${esc(event.shortVenue || event.venue)}</span></p>
         <h3${event.legacyHeading ? ' id="' + esc(event.legacyHeading) + '"' : ''}>${esc(event.title)}</h3>
         <p>${esc(event.summary)}</p>
       </div>
@@ -44,10 +44,13 @@ function eventCard(event, today, base) {
 
 function featurePhoto(event, base) {
   if (!event.photos?.length) return '';
-  const images = event.photos.map((photo, index) =>
-    '<img ' + (index ? 'class="home-photo-detail" loading="lazy"' : 'fetchpriority="high"') +
-    ' src="' + esc(base + photo.file) + '" width="' + esc(photo.width) + '" height="' + esc(photo.height) +
-    '" alt="' + esc(photo.alt) + '">').join('');
+  const mobileLead = event.photos.find(photo => photo.mobileLead) || event.photos[0];
+  const images = event.photos.map((photo, index) => {
+    const classes = [index ? 'home-photo-detail' : '', photo === mobileLead ? 'home-photo-lead' : ''].filter(Boolean);
+    const priority = photo === mobileLead ? 'fetchpriority="high"' : 'loading="lazy"';
+    return '<img class="' + classes.join(' ') + '" ' + priority + ' src="' + esc(base + photo.file) +
+      '" width="' + esc(photo.width) + '" height="' + esc(photo.height) + '" alt="' + esc(photo.alt) + '">';
+  }).join('');
   const report = event.links.find(link => link.role === 'report');
   const caption = report ? '<figcaption><a href="' + esc(report.url) + '">' + esc(report.label) + '</a></figcaption>' : '';
   return '<figure class="home-feature-photo"><div class="home-photo-pair">' + images + '</div>' + caption + '</figure>';
@@ -65,6 +68,7 @@ export function renderProgram(events, featureTemplate, base, today = moscow.form
     summary: esc(spotlight.summary),
     detail: spotlight.detail ? '<span class="home-detail"> ' + esc(spotlight.detail) + '</span>' : '',
     access: spotlight.access ? '<p class="home-feature-access">' + esc(spotlight.access) + '</p>' : '',
+    city: spotlight.city ? '<span class="home-feature-city">' + esc(spotlight.city) + ', </span>' : '',
     address: esc(spotlight.address || spotlight.venue),
     booking: spotlight.booking ? '<a class="home-action" data-event-booking href="' + esc(spotlight.booking.url) + '">' + esc(spotlight.booking.label) + '</a>' : '',
     figure: featurePhoto(spotlight, base)
