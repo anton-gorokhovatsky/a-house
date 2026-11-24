@@ -1,0 +1,124 @@
+.project-story { padding: var(--group) var(--edge) var(--chapter); }
+.project-inner { max-inline-size: 76rem; margin-inline: auto; container: project-content / inline-size; }
+.project-story :is(p,ul,ol,dl), .project-panel > p { max-inline-size: 68ch; }
+.home-page .project-opening h1 {
+  margin-block: .12em .34em; max-inline-size: 23ch;
+  font: 400 var(--lead-size)/1.07 var(--display);
+  overflow-wrap: normal; hyphens: manual;
+}
+.home-page .project-story :is(h2,h3) { margin-block: 0 .45em; }
+.home-page .project-story h2 { font-size: var(--chapter-size); }
+.home-page .project-story h3 { font-size: var(--type-card); }
+.home-page .project-story p + p { margin-block-start: .8em; }
+.project-story .project-opening { margin-block-end: var(--group); }
+.project-inner > p { margin-block: 1rem; }
+.home-page .project-story :is(ul,ol) { padding-inline-start: 1.4em; }
+.project-story ul { list-style: disc; }
+.project-section { margin-block: var(--chapter); }
+.home-page .project-story a {
+  color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb,currentColor 55%,transparent); text-underline-offset: .17em;
+}
+.project-links { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; margin-block: 1.25rem; }
+.project-links a { min-height: 44px; align-content: center; }
+.project-story img, .project-panel img { display: block; inline-size: 100%; block-size: auto; }
+.project-story figure { margin: 0; }
+.project-story figcaption { margin-top: .5rem; color: var(--quiet); font-size: var(--note-size); }
+.project-gallery, .report-instruments, .report-cover-images, .project-contact-sheet, .city-photographs {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,15rem),1fr)); align-items: start;
+  gap: 1.2rem; margin-block: var(--group);
+}
+.project-hero-photo { margin-block: var(--group); max-width: 54rem; }
+.project-hero-photo img { width: auto; max-width: 100%; max-height: 65vh; }
+.project-contact-sheet, .city-photographs { grid-template-columns: repeat(auto-fit,minmax(min(100%,8rem),1fr)); gap: .65rem; }
+.project-contact-sheet img { aspect-ratio: 1; object-fit: contain; }
+.city-photographs img { aspect-ratio: 4 / 3; object-fit: cover; }
+.project-duo, .project-event, .research-interview { display: grid; gap: 1.25rem var(--group); }
+.project-duo { grid-template-columns: repeat(auto-fit,minmax(min(100%,22rem),1fr)); }
+.project-event, .research-interview {
+  grid-template-columns: minmax(0,.5fr) minmax(0,1.5fr); margin-block: var(--group);
+}
+.project-event > img, .research-interview > img { max-width: 15rem; }
+.home-page .project-event .home-meta { color: var(--quiet); margin-bottom: .4em; }
+.project-disclosure { border-block-start: 1px solid var(--ah-rule); }
+.project-disclosure summary {
+  cursor: pointer; padding-block: .85rem; min-height: 44px;
+  font: 400 var(--type-card)/1.3 var(--display);
+}
+.summary-note { display: block; margin: .25rem 0 0 1.2rem; font: 400 var(--copy-size)/1.4 var(--text); color: var(--quiet); }
+.disclosure-body { padding-block: .4rem var(--group); }
+.disclosure-body > img { max-width: 21rem; margin-bottom: 1rem; }
+.disclosure-body :is(ul,ol) + h3 { margin-top: 1.2rem; }
+.project-disclosure li + li { margin-top: .45em; }
+.project-facts { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap: 1.7rem; margin-block: 2rem; }
+.project-facts dt { font: 400 var(--story-size)/1.1 var(--display); }
+.project-facts dd { margin: .25rem 0 0; }
+.report-years { margin-block: var(--group); }
+.report-year summary { font-size: var(--story-size); }
+.report-year .report-milestones { margin-block: 1rem var(--group); }
+.report-milestones figure { max-width: 36rem; margin-block: 1rem; }
+.report-milestones li { margin-bottom: 1.75rem; padding-left: .35rem; }
+.report-stat strong { font-size: var(--type-lead); }
+.project-story .project-people { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,22rem),1fr)); max-width: none; list-style: none; padding: 0; gap: var(--group); }
+.project-people li { display: grid; grid-template-columns: minmax(0,.65fr) minmax(0,1fr); gap: 1rem; }
+.bank-program { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap: var(--group); margin-top: 2rem; }
+.project-past { border-top: 1px solid var(--ah-rule); padding-block: 1rem; }
+.project-story-open { overflow: hidden; }
+.project-dialog {
+  color: var(--ah-ink); background: var(--ah-paper); border: 1px solid var(--ah-rule);
+  box-sizing: border-box; width: min(46rem,94vw); max-height: 90dvh; margin: auto; padding: clamp(1rem,3vw,2.5rem);
+  overflow: auto; overscroll-behavior: contain;
+}
+.project-dialog::backdrop { background: rgb(0 0 0 / .65); }
+.story-close { display: block; margin-left: auto; min-height: 44px; font: inherit; color: inherit; background: none; border: 0; text-decoration: underline; text-underline-offset: .18em; cursor: pointer; }
+.project-panel > img { max-height: 22rem; width: auto; max-width: 100%; margin: 1rem 0; }
+.project-panel { margin-block: var(--group); }
+.project-dialog .project-panel { margin: 0; }
+.home-page .project-panel h2 { font-size: var(--story-size); hyphens: auto; hyphenate-limit-chars: 6 3 3; overflow-wrap: normal; }
+.project-form-column { max-inline-size: 36rem; }
+.project-form-column .services-form { color: var(--ink); font-family: var(--text); }
+.project-form-column .membership-field { margin: 0; }
+.story-t_private { --ink: #f2f0eb; --quiet: #c8c5be; --paper: #181818; }
+.story-t_business { --paper: light-dark(#ded3c2,#332f2b); --quiet: light-dark(#51483f,#cec4b6); }
+.home-page .project-opening .project-signature { display: block; width: min(13rem,65%); height: auto; margin-bottom: 1.4rem; }
+.competition-opening {
+  --ink: #161619; --quiet: #3e4050;
+  padding: clamp(1rem,4vw,3.5rem); color: var(--ink); background: linear-gradient(160deg,#a7b9e7,#eeedf5 75%);
+}
+.research-opening { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap: var(--group); }
+.research-opening .project-signature { filter: invert(calc(1 - var(--wordmark-inversion))); }
+.research-opening figure img { max-height: 24rem; width: auto; max-width: 100%; }
+.city-opening { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--group); align-items: start; }
+.city-intro, .city-poster { min-inline-size: 0; }
+.city-intro p { hyphens: auto; }
+.city-poster { display: grid; position: relative; isolation: isolate; place-items: center; background: #161616; color: #fff; container-type: inline-size; }
+.city-photographs { grid-area: 1/1; position: relative; display: block; width: 100%; aspect-ratio: 6/5; margin: 0; }
+.city-photographs img { position: absolute; width: 15%; height: 19%; object-fit: cover; left: var(--x); top: var(--y); translate: -50% -50%; }
+.home-page .city-poster h1 { grid-area: 1/1; max-width: 42%; margin: 0; text-align: center; font-size: clamp(1.1rem,6cqi,3.2rem); }
+.home-page .city-intro p + p { margin-top: .65em; }
+.story-report .project-opening, .story-report__ .project-opening {
+  padding: var(--group); background: #161616; color: #f4f1e9; --quiet: #ccc9c1;
+}
+.home-page :is(.story-report,.story-report__) .project-opening h1 { font-size: var(--type-display); }
+@container project-content (max-width: 18rem) {
+  .home-page .project-story .project-opening:not(.city-opening) h1 {
+    font-size: min(var(--lead-size),max(1.5rem,11cqi));
+  }
+  .home-page :is(.story-report,.story-report__) .project-opening { padding-inline: min(var(--group),5cqi); }
+}
+@container project-content (max-width: 14rem) {
+  .home-page .project-opening h1 { hyphens: auto; hyphenate-limit-chars: 6 3 3; }
+  .project-opening h1 .project-name { white-space: normal; }
+}
+@media (min-width: 60em) {
+  .city-opening { grid-template-columns: minmax(0,1.12fr) minmax(0,1fr); }
+}
+@container (max-width: 13rem) {
+  .home-page .city-opening .city-poster h1 { grid-area: auto; max-width: 100%; padding: .4em .5em; hyphens: manual; }
+}
+@media (max-width: 35em) {
+  .project-event, .research-interview { grid-template-columns: minmax(0,1fr); }
+  .project-event > img, .research-interview > img { max-width: 16rem; }
+  .project-people li { grid-template-columns: minmax(0,.6fr) minmax(0,1fr); }
+  .project-panel > img { max-height: 30vh; }
+  .project-dialog { width: 96vw; max-width: 96vw; padding: .6rem min(4vw,1rem) 1rem; }
+}

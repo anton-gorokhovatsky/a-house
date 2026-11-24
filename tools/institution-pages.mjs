@@ -22,7 +22,7 @@ function sectionContent(section) {
     '<div><dt>' + (entry.href ? link({ href: entry.href, label: entry.title }) : escape(entry.title)) + '</dt><dd>' + escape(entry.text) + '</dd></div>'
   ).join('\n') + '</dl>' : '';
   const people = section.people ? '<ul class="institution-people" role="list">' + section.people.map(person =>
-    `<li>${image(person)}<div><strong>${escape(person.name)}</strong>${person.role ? '<p>' + escape(person.role) + '</p>' : ''}</div></li>`
+    `<li class="editorial-pair">${image(person)}<div><h3 class="editorial-pair-title">${escape(person.name)}</h3>${person.role ? '<p>' + escape(person.role) + '</p>' : ''}</div></li>`
   ).join('\n') + '</ul>' : '';
   const photos = section.photos ? '<div class="institution-photos">' + section.photos.map(photo => figure(photo)).join('') + '</div>' : '';
   const video = section.video ? `<div class="t-video-carier institution-video" data-content-video-url-youtube="${escape(section.video)}"></div><noscript><a href="https://www.youtube.com/watch?v=${escape(section.video)}">Открыть видео на YouTube</a></noscript>` : '';
@@ -36,17 +36,17 @@ export function isInstitutionPage(slug) {
 export function renderInstitutionPage(slug) {
   const page = institutionPages[slug];
   const sections = page.sections.map(section => `
-    <section class="institution-section" id="${escape(section.id)}" aria-labelledby="${escape(section.id)}-title">
+    <section class="institution-section${section.people ? ' institution-section-people' : ''}" id="${escape(section.id)}" aria-labelledby="${escape(section.id)}-title">
       <h2 id="${escape(section.id)}-title">${escape(section.title)}</h2>
       <div class="institution-copy">${sectionContent(section)}</div>
     </section>`).join('\n');
   return `<div id="allrecords" class="t-records home-page">
     <!-- EDITORIAL HEADER -->
     <main id="site-content" tabindex="-1" class="home-editorial institution-page">
-      <header class="institution-opening${page.photo ? ' institution-opening-photo' : ''}">
+      <header class="institution-opening${page.photo ? ' institution-opening-photo editorial-pair' : ''}">
         <div class="institution-intro">
-          <h1>${escape(page.title)}</h1>
-          <p class="institution-lead">${escape(page.lead)}</p>
+          <h1 class="editorial-pair-title">${escape(page.title).replace('предпринимателя', '<span class="institution-long-word">пред&shy;при&shy;ни&shy;ма&shy;те&shy;ля</span>')}</h1>
+          <p class="institution-lead">${escape(page.lead).replace('предпринимателей', 'пред&shy;при&shy;ни&shy;ма&shy;те&shy;лей')}</p>
           ${page.intro ? '<p>' + escape(page.intro) + '</p>' : ''}
           ${links(page.links)}
         </div>

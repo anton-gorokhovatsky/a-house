@@ -36,7 +36,9 @@ const membershipPages = new Map([
   ['index.html', { kind: 'friend', settings: membershipSettings('friend') }],
   ['member/index.html', { kind: 'member', settings: membershipSettings('member') }]
 ]);
-const htmlFiles = routes.map(({slug}) => slug==='home' ? 'index.html' : slug==='404' ? '404.html' : slug+'/index.html');
+const expectedFiles = routes.map(({slug}) => slug==='home' ? 'index.html' : slug==='404' ? '404.html' : slug+'/index.html');
+const htmlFiles = [...files].filter(file => file.endsWith('.html'));
+for (const file of expectedFiles) if (!files.has(file)) errors.push('Missing page ' + file);
 const documents = new Map();
 const routeTitles = new Map(routes.map(({slug, title}) => [base + slug + '/', title]));
 function validateURL(source, value, asset) {
@@ -126,16 +128,12 @@ for (const file of htmlFiles) {
   for (const ref of source.matchAll(/url\(\s*['"]?([^)'"]+)/g)) validateURL(file,ref[1],true);
 }
 
-// A 200 from a preserved route does not tell us whether the visitor has left
-// the new site for an imported layout. Follow the actual editorial link graph.
-const reachable = new Set(['index.html']);
-for (const file of reachable) {
-  const html = documents.get(file);
-  if (!html) continue;
+// Bookmarks and partner programmes can open any HTML document directly.
+for (const [file, html] of documents) {
   const main = html.match(/<main\b[^>]*\bid="site-content"[^>]*>[\s\S]*?<\/main>/i)?.[0];
   if (!main || !html.includes('class="site-header home-masthead"') || !html.includes('class="home-footer"') ||
       /\bclass="[^"]*\b(?:t-rec|t396__artboard)\b/.test(main)) {
-    errors.push('An internal link from the editorial site opens the old layout at ' + file);
+    errors.push('Direct entry renders a legacy layout at ' + file);
   }
   for (const [,href] of html.matchAll(/<a\b[^>]*?\shref="([^"]+)"/gi)) {
     const address = new URL(href.replaceAll('&amp;', '&'), 'https://preview.invalid' + base + file);
@@ -146,7 +144,6 @@ for (const file of reachable) {
     let target = decodeURIComponent(address.pathname.slice(base.length));
     if (!target || target.endsWith('/')) target += 'index.html';
     if (!documents.has(target)) continue;
-    reachable.add(target);
     if (target !== file && address.hash) {
       const id = decodeURIComponent(address.hash.slice(1));
       if (!documents.get(target).includes('id="' + id + '"')) errors.push(file + ' links to missing #' + id + ' in ' + target);
@@ -165,4 +162,4 @@ if (errors.length) {
   console.error(unique.slice(0,35).join('\n'));
   throw new Error(unique.length+' site checks failed');
 }
-console.log('Verified '+htmlFiles.length+' noindex documents, '+reachable.size+' connected editorial pages and their assets in '+files.size+' files for '+base);
+console.log('Verified '+htmlFiles.length+' direct editorial pages and their assets in '+files.size+' files for '+base);

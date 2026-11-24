@@ -7,6 +7,7 @@ import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
 import { loadImageDelivery } from './images.mjs';
 import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } from './calendar.mjs';
 import { renderProgram } from './program.mjs';
+import { renderHomeProjects } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
 import { archiveFragment, archiveFragmentStyles, collectArchive, renderArchiveCatalog } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
@@ -24,6 +25,19 @@ export function siteBase(value = '/a-house/') {
 
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const source = name => readFile(file('src', name), 'utf8');
+
+function renderReportYear(year, label, edition) {
+  const [heading, body] = year.records[edition];
+  const items = year.entries.map(entry => '<li>' + entry.map(item => {
+    if (item.copy) return item.copy;
+    if (item.figure) return '<p class="report-stat"><strong>' + item.figure + '</strong> ' + item.label + '</p>';
+    return '<figure>' + year.images[edition][item.photo] + '</figure>';
+  }).join('\n') + '</li>').join('\n');
+  return `<details class="project-disclosure report-year" id="rec${heading}">
+    <summary>${label}<span class="summary-note">${year.summary}</span></summary>
+    <ol class="report-milestones" id="rec${body}">${items}</ol>
+  </details>`;
+}
 
 export function membershipSettings(kind, env = process.env) {
   if (kind !== 'friend' && kind !== 'member') throw new Error('Unknown membership form: ' + kind);
@@ -63,7 +77,11 @@ function renderMembership(kind, template, agreementTemplate, settings) {
   const fields = {
     formAttributes: settings ? `method="post" action="${escape(settings.action)}"` : 'method="dialog"',
     availability: settings ? '' : `<p class="membership-status">${status}</p>`,
-    agreements: settings ? agreementTemplate.replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : '',
+    agreements: settings ? agreementTemplate.replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : friend ? `<div class="membership-field">
+      <label class="order-consent"><input type="checkbox" name="consent" value="1" required aria-describedby="friend-consent-error"><span>Даю согласие на обработку персональных данных и принимаю <a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="friend-documents">политику конфиденциальности</a>.</span></label>
+      <p id="friend-documents" class="membership-hint">Документ откроется в новой вкладке.</p>
+      <p id="friend-consent-error" class="membership-error" data-field-error="consent" hidden></p>
+    </div>` : '',
     submitState: settings ? '' : ' disabled'
   };
   return template.replace(/\{\{(formAttributes|availability|agreements|submitState)\}\}/g, (_, key) => fields[key]);
@@ -116,26 +134,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const projectNavigation = directions.map(group =>
     `<a href="#${escape(group.id)}">${escape(group.name)}</a>`
   ).join('\n');
-  const featuredProjects = directions.flatMap(group => group.projects)
-    .filter(project => project.feature)
-    .sort((a, b) => a.feature.order - b.feature.order)
-    .map(project => {
-      const {photo, action} = project.feature;
-      return `<article class="home-project-feature">
-        <h3>${escape(project.name)}</h3>
-        <figure style="--photo-ratio: ${photo.width} / ${photo.height}">
-          <img src="@@ROOT@@${escape(photo.src)}"
-            srcset="@@ROOT@@${escape(photo.src)} ${photo.width}w, @@ROOT@@${escape(photo.large)} ${photo.largeWidth}w"
-            sizes="(min-width: 52rem) min(44vw, 37rem), 90vw"
-            width="${photo.width}" height="${photo.height}" alt="${escape(photo.alt)}" loading="lazy" decoding="async">
-          ${photo.caption ? '<figcaption>' + escape(photo.caption) + '</figcaption>' : ''}
-        </figure>
-        <div class="home-project-feature-copy">
-          <p>${escape(project.description)}</p>
-          <a class="home-project-action" href="${escape(project.href)}">${escape(action)}</a>
-        </div>
-      </article>`;
-    }).join('\n');
+  const featuredProjects = renderHomeProjects(directions, events);
   const projectGroups = directions.map(group => {
     const {id, name, intro} = group;
     const rows = group.projects.map(project => `<li>
@@ -154,25 +153,28 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   }).join('\n');
   const sportPhoto = (await source('partials/a-sport-print.html')).trim();
   const pages = JSON.parse(await source('routes.json'));
+  const reportYears = JSON.parse(await source('data/report-years.json'));
   const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));
   const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
   const program = renderProgram(events, await source('partials/program-feature.html'), base);
   const comfort = events.find(event => event.id === 'designing-comfort');
   const themeControl = await source('partials/theme-control.html');
-  const [shell, header, editorialHeader, footerTemplate, homeFooterTemplate, memberPrograms, friendTemplate, memberTemplate, agreements] = await Promise.all([
-    'layout.html', 'partials/header.html', 'partials/editorial-header.html', 'partials/footer.html',
+  const [shell, editorialHeader, footerTemplate, homeFooterTemplate, memberPrograms, friendTemplate, memberTemplate, agreements] = await Promise.all([
+    'layout.html', 'partials/editorial-header.html', 'partials/footer.html',
     'partials/home-footer.html', 'partials/member-programs.html', 'partials/friend-order.html',
     'partials/member-application.html', 'partials/membership-agreements.html'
   ].map(source));
   const footerContent = new Map();
-  const footer = footerTemplate.replace(/<!-- footer:(\w+) -->([\s\S]*?)<!-- \/footer -->/g, (_, name, content) => {
+  for (const [, name, content] of footerTemplate.matchAll(/<!-- footer:(\w+) -->([\s\S]*?)<!-- \/footer -->/g)) {
     footerContent.set(name, content);
-    return content;
-  });
+  }
   const friendPrice = 12000;
+  const friendEditions = 'Полные выпуски A–News, A–Kids, A–Sport и A–State в PDF можно читать в приложении A–House.';
+  const friendExtras = 'В подписку также входят путеводители, подборки фильмов, ресторанов и спектаклей, дайджесты событий, трансляции с международных площадок и приглашения на выставки A–House.';
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
   const period = env.A_FRIEND_PERIOD?.trim();
-  const orderForm = renderMembership('friend', friendTemplate, agreements, friend);
+  const orderForm = renderMembership('friend', friendTemplate, agreements, friend)
+    .replace('{{friendUnitPrice}}', String(friendPrice)).replace('{{friendTotal}}', priceLabel);
   const applicationForm = renderMembership('member', memberTemplate, agreements, member)
     .replace('<!-- MEMBER PROGRAMS -->', () => memberPrograms);
   if (!outputDirectory) await rm(output, { recursive: true, force: true });
@@ -197,6 +199,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   await appendFile(path.join(output, 'styles/pages/archive-list.css'), '\n' + archiveFragmentStyles(archive) + '\n');
   const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
   function scriptsFor(page) {
+    if (page.layout === 'project') return ['js/site.js', ...(page.slug === 'a_pass' ? ['js/services.js'] : ['js/project-stories.js'])];
     if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/publication-archive.js', 'js/membership.js'];
     if (page.slug === 'member') return [...scripts, 'js/membership.js'];
     if (page.slug === 'calendar') return [...scripts, 'js/calendar.js'];
@@ -236,18 +239,17 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     await mkdir(location,{ recursive:true });
     const home = page.slug === 'home';
     const programPage = page.slug === 'calendar' || Boolean(page.event);
-    const wrapped = documents.has(page.slug) || features.has(page.slug);
-    const editorial = home || clubPages.has(page.slug) || programPage || wrapped || isInstitutionPage(page.slug) || readerPage(page);
     const template = page.event ? 'event' : page.archiveTopic ? 'archive' : page.slug;
     const pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug)
       : archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
-    const markup = wrapped ? '<div id="allrecords" class="t-records home-page">\n<!-- EDITORIAL HEADER -->\n' + pageContent + '\n<!-- FOOTER -->\n</div>' : pageContent;
+    const markup = pageContent.includes('<!-- EDITORIAL HEADER -->') ? pageContent :
+      '<div id="allrecords" class="t-records home-page">\n<!-- EDITORIAL HEADER -->\n' + pageContent + '\n<!-- FOOTER -->\n</div>';
     const body = markup
       .replace('<!-- EDITORIAL HEADER -->', () => editorialHeader
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
         .replace('{{programCurrent}}', programPage ? ' aria-current="location"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
-      .replace('<!-- HEADER -->', () => header)
+      .replace(/<!-- REPORT (\d{4}) -->/g, (_, year) => renderReportYear(reportYears[year], year, page.slug))
       .replaceAll('{{eventsLabel}}', 'События')
       .replaceAll('{{projectsLabel}}', 'Все проекты')
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
@@ -268,8 +270,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replaceAll('{{comfortURL}}', () => escape(eventDestination(comfort, base + 'calendar/')))
       .replace('{{comfortDate}}', () => escape(comfort.start.slice(5).split('-').reverse().join('.')))
       .replace('{{comfortTitle}}', () => escape(comfort.title))
+      .replaceAll('{{friendEditions}}', friendEditions)
+      .replaceAll('{{friendExtras}}', friendExtras)
       .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
-      .replace('<!-- FOOTER -->', () => editorial ? homeFooterTemplate : footer)
+      .replace('<!-- FOOTER -->', () => homeFooterTemplate)
       .replace(/\{\{footer\.(\w+)\}\}/g, (_, name) => {
         if (!footerContent.has(name)) throw new Error('Missing shared footer content: ' + name);
         return footerContent.get(name);
@@ -282,7 +286,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');
     else themedBody = body + '<footer class="theme-footer">' + themeControl + '</footer>';
     const pageBody = prepareConsentDocuments(themedBody);
-    const typeset = editorial && !documents.has(page.slug) ? typesetHomeText(pageBody) : keepProjectNames(pageBody);
+    const typeset = documents.has(page.slug) ? keepProjectNames(pageBody) : typesetHomeText(pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')

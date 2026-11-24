@@ -40,11 +40,11 @@ body { background-color: var(--ah-paper); color: var(--ah-ink); }
 #t-footer.t-records:has(.footer-wordmark) > [data-bg-color="#000000"] {
   background-color: var(--ah-contacts) !important;
 }
-.membership-request :is(input:not([type="radio"], [type="checkbox"]), textarea) {
+.membership-request :is(input:not([type="radio"], [type="checkbox"]), textarea, select) {
   background-color: var(--ah-paper);
   border-color: var(--ah-rule);
 }
-.membership-request :is(input:not([type="radio"], [type="checkbox"]), textarea):focus { border-color: var(--ah-ink); }
+.membership-request :is(input:not([type="radio"], [type="checkbox"]), textarea, select):focus { border-color: var(--ah-ink); }
 .membership-request [aria-invalid="true"]:not([type="radio"]) { border-color: var(--ah-error); }
 .membership-request .membership-error { color: var(--ah-error); }
 .membership-send .membership-action { color: var(--ah-paper); }
@@ -172,11 +172,6 @@ body { background-color: var(--ah-paper); color: var(--ah-ink); }
   border-color: var(--ah-rule);
 }
 
-/* These self-contained campaigns compose transparent artwork over a white sheet. */
-body:is([data-page="longevity"], [data-page="mts"], [data-page="t_private"], [data-page="t_business"]) #site-content {
-  background-color: #fff;
-  color: #000;
-}
 .ah.ah-program {
   color-scheme: inherit;
   --white: var(--ah-paper);

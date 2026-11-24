@@ -252,17 +252,28 @@ async function checkVisitorLinks(page, mobile) {
   assert.equal(await page.locator('#publication-archive').isVisible(), false);
   assert.equal(await page.locator('#projects .home-direction:visible').count(), 0);
   const projects = projectGroups.flatMap(group => group.projects);
-  const selected = projects.filter(project => project.feature).sort((a, b) => a.feature.order - b.feature.order);
+  const selected = ['primary','gatherings','houses'].flatMap(key =>
+    projects.filter(project => project.feature && project.overview === key).sort((a, b) => a.feature.order - b.feature.order));
   const features = page.locator('#projects .home-project-feature');
-  assert.deepEqual(await features.locator('h3').allInnerTexts(), selected.map(project => project.name));
-  assert.deepEqual(await features.locator('a').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
+  assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
+  assert.deepEqual(await features.locator('.home-project-action').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
+  assert.equal(await page.locator('.home-project-features article:visible').count(), projects.length);
+  for (const work of projects.flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
+    const example = page.locator('.project-examples a').filter({hasText: work.title});
+    assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
+  }
+  const forum = page.locator('.home-project-feature').filter({has: page.getByRole('heading', {name:'A–Forum', exact:true})});
+  assert.equal(await forum.getByRole('link', {name:/Итоги форума/}).getAttribute('href'), 'https://t.me/ahouseproject/10590');
   for (const feature of await features.all()) {
     const image = await feature.locator('img').boundingBox();
-    const title = await feature.locator('h3').boundingBox();
+    const title = await feature.locator('.editorial-pair-title').boundingBox();
     assert.ok(image.width > 0 && image.height > 0, 'Reserve the space for each photograph before scrolling to it');
     assert.ok(mobile ? title.y + title.height <= image.y + 1 : Math.abs(title.y - image.y) < 2);
   }
   await features.last().scrollIntoViewIfNeeded();
+  await page.goto(url + '#collection-gatherings');
+  assert.ok(await forum.isVisible());
+  assert.equal(await page.locator('#overview').getAttribute('data-view'), 'overview');
   await page.goto(url + '#a-industry');
   await page.waitForFunction(() => {
     const { top } = document.getElementById('a-industry').getBoundingClientRect();
@@ -342,22 +353,17 @@ async function checkSpecialProjectPrograms(page, mobile) {
   const activate = element => mobile ? element.tap() : element.press('Enter');
   await page.goto(url + 't_private/');
   if (mobile) {
-    assert.equal(await page.locator('.ah-interaction-open:visible').count(), 0,
+    assert.equal(await page.getByRole('dialog').count(), 0,
       'A mobile visitor must reach the program before choosing an event');
   }
 
   await page.goto(url + 't_bank/');
   const gift = page.locator('a[href="#second"]').filter({ hasText: /Искусство дарить/i }).first();
   await activate(gift);
-  const panel = page.locator('[data-tooltip-hook="#second"]');
+  const panel = page.getByRole('dialog', {name: /Искусство дарить/});
   await panel.waitFor();
   assert.match(await panel.innerText(), /Искусство дарить/i);
-  // The painted backdrop can hide the whole card even when its text passes hit testing.
-  assert.ok(await panel.evaluate(dialog => {
-    const backdrop = dialog.nextElementSibling;
-    if (!backdrop?.matches('.t-popup__bg-active') || !backdrop.getClientRects().length) return true;
-    return Number(getComputedStyle(dialog).zIndex) > Number(getComputedStyle(backdrop).zIndex);
-  }), 'An open program card must paint above its backdrop');
+  assert.ok(await panel.evaluate(dialog => dialog.matches(':modal')), 'The event occupies the native modal layer');
   await activate(panel.getByRole('button', { name: /закрыть/i }).first());
   await panel.waitFor({state: 'hidden'});
 
@@ -374,14 +380,11 @@ async function checkSpecialProjectPrograms(page, mobile) {
     await page.setViewportSize({width: 320, height: 568});
     const contacts = page.getByRole('dialog');
     await contacts.locator('img').evaluate(image => image.decode());
-    await contacts.locator('.t390__wrapper *').evaluateAll(elements => {
-      const sizes = elements.map(element => parseFloat(getComputedStyle(element).fontSize));
-      elements.forEach((element, index) => element.style.fontSize = (sizes[index] * 2) + 'px');
-    });
+    await page.addStyleTag({content:'html { font-size: 200%; }'});
     assert.ok(await contacts.evaluate(dialog => {
-      const card = dialog.querySelector('.t-popup__container').getBoundingClientRect();
+      const card = dialog.getBoundingClientRect();
       const title = new Range();
-      title.selectNodeContents(dialog.querySelector('.t390__title p'));
+      title.selectNodeContents(dialog.querySelector('h2'));
       return [...title.getClientRects()].every(line =>
         line.left >= card.left && line.right <= card.right && line.top >= 0 && line.bottom <= innerHeight);
     }), 'Enlarged contact heading must stay legible inside the card after the photo loads');

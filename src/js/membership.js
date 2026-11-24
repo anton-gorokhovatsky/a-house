@@ -14,6 +14,64 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
     if (option) option.checked = true;
   }
 
+  const basket = form.querySelector('.friend-basket');
+  if (basket) {
+    const quantity = form.elements.namedItem('quantity');
+    const price = Number(basket.dataset.unitPrice);
+    const format = new Intl.NumberFormat('ru-RU');
+    const less = basket.querySelector('[data-order-action="less"]');
+    const more = basket.querySelector('[data-order-action="more"]');
+    const restore = basket.querySelector('[data-order-action="restore"]');
+    let previousQuantity = 1;
+    let empty = false;
+    quantity.readOnly = false;
+    function displayQuantity() {
+      const count = Number(quantity.value);
+      const valid = Number.isSafeInteger(count * price) && Number.isInteger(count) && count > 0;
+      quantity.setCustomValidity(valid || empty ? '' : 'Введите целое количество подписок от одной.');
+      basket.querySelector('[data-order-total]').textContent = empty || valid ? format.format(count * price) + ' ₽' : '—';
+      basket.querySelector('[data-order-line]').hidden = empty;
+      basket.querySelector('[data-order-empty]').hidden = !empty;
+      form.querySelector('.friend-fields').hidden = empty;
+    }
+    for (const button of basket.querySelectorAll('[data-order-action]')) button.hidden = false;
+    basket.addEventListener('click', event => {
+      const action = event.target.closest('button')?.dataset.orderAction;
+      if (!action) return;
+      const count = Number(quantity.value);
+      if (action === 'more' && Number.isSafeInteger((count + 1) * price)) quantity.value = Math.max(1, Math.floor(count) + 1);
+      if (action === 'less' && count > 1) quantity.value = count - 1;
+      if (action === 'remove' || (action === 'less' && count <= 1)) {
+        empty = true;
+        previousQuantity = Number.isSafeInteger(count) && count > 0 ? count : 1;
+        quantity.value = 0;
+      }
+      if (action === 'restore') {
+        empty = false;
+        quantity.value = previousQuantity;
+      }
+      displayQuantity();
+      if (quantity.hasAttribute('aria-invalid') && !empty) validate([quantity]);
+      if (empty) restore.focus();
+      if (action === 'restore') more.focus();
+    });
+    quantity.addEventListener('input', displayQuantity);
+    quantity.addEventListener('blur', () => { if (!empty) validate([quantity]); });
+    displayQuantity();
+    window.addEventListener('pageshow', displayQuantity);
+    document.addEventListener('click', event => {
+      const link = event.target.closest('a[href^="#"]');
+      if (!empty || !link || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const section = document.getElementById(link.hash.slice(1))?.closest('[data-home-section]');
+      if (section?.id === 'services-checkout') {
+        empty = false;
+        quantity.value = 1;
+        displayQuantity();
+        validate([quantity]);
+      }
+    });
+  }
+
   function messageFor(controls) {
     const field = controls[0];
     if (field.type === 'radio') {
@@ -56,7 +114,8 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
     if (controls?.some(field => field.hasAttribute('aria-invalid'))) validate(controls);
   });
   form.addEventListener('submit', event => {
-    if (form.method.toLowerCase() !== 'post' || !form.hasAttribute('action')) {
+    if (form.method.toLowerCase() !== 'post' || !form.hasAttribute('action') ||
+        (basket && basket.querySelector('[data-order-line]').hidden)) {
       event.preventDefault();
       return;
     }

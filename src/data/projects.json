@@ -6,29 +6,42 @@
     "projects": [
       {
         "name": "A–Index",
+        "overview": "primary",
+        "works": [
+          {"title": "Макеты бюро figura A", "date": "2026-11-23", "source": "A–House в Telegram", "text": "Архитекторы показывают, как проверяют пропорции и конструкцию на физических моделях.", "href": "https://t.me/ahouseproject/10756"},
+          {"title": "Главный архитектор в «Сфера групп»", "date": "2026-11-18", "source": "Вакансия в A–Index", "href": "https://aindexproject.com/vacancies/glavnyj-arhitektor/"}
+        ],
         "description": "Справочник архитектурных бюро, дизайнеров и подрядчиков. Здесь можно посмотреть портфолио, найти контакты команды или вакансию.",
         "href": "https://aindexproject.com/",
         "feature": {
           "order": 1, "action": "Открыть справочник A–Index",
-          "photo": { "src": "media/home/a-index-architecture-640-1829071a6379.webp", "width": 640, "height": 388, "large": "media/home/a-index-architecture-1200-ed303e7c3a35.webp", "largeWidth": 1200, "alt": "Изгиб белой лестницы на обложке раздела «Архитектура» в A–Index" }
+          "photo": { "src": "media/home/a-index-urban-villas-640.webp", "width": 640, "height": 640, "large": "media/home/a-index-urban-villas-1200.webp", "largeWidth": 1200, "alt": "Белые террасы жилого дома среди деревьев рядом с водонапорной башней", "caption": "«Урбан виллы», Адлер, 2022. Концепция Arch(e)type.", "href": "https://aindexproject.com/organisations/archetype/" }
         }
       },
       {
         "name": "A–School",
+        "overview": "houses",
+        "works": [
+          {"title": "Свет для читателя, который ходит по комнате", "text": "На дискуссии в ММОМА светодизайнер Влад Обласов разобрал задачу заказчика с непривычным способом читать книги.", "href": "https://news.ahouseproject.com/a-house-x-mmoma-ergonomika-i-sczenarii-zhizni/"}
+        ],
         "description": "Открытые дискуссии об архитектуре в ММОМА. На встречах говорят о жилье, общественных пространствах и о том, как художники работают с городскими руинами.",
         "href": "@@ROOT@@education/"
       },
       {
         "name": "A–Fest",
+        "overview": "gatherings",
+        "event": "a-fest-2026",
         "description": "Московский фестиваль архитектуры. В программу 2026 года вошли выставка «Архитектура 2.0» и экскурсии по стройплощадкам.",
         "href": "https://aindexproject.com/fest/",
         "feature": {
-          "order": 4, "action": "Программа A–Fest",
+          "order": 4, "action": "Сайт фестиваля",
           "photo": { "src": "media/home/a-fest-architecture-640-902584bfa723.webp", "width": 640, "height": 640, "large": "media/home/a-fest-architecture-1200-a9a9cab29e25.webp", "largeWidth": 1200, "alt": "Макет со стеклянными сферами у стенда Manuel Herz Architects", "caption": "Работа Manuel Herz Architects на выставке «Архитектура 2.0»." }
         }
       },
       {
         "name": "A–Forum",
+        "overview": "gatherings",
+        "event": "a-forum-2026",
         "description": "На первом форуме архитекторы и отельеры обсуждали, как меняются гостиницы. Гости увидели выставочный номер A–Room с мебелью и светом от участников A–Index.",
         "href": "https://news.ahouseproject.com/forum/",
         "feature": {
@@ -45,60 +58,105 @@
     "projects": [
       {
         "name": "A–News",
+        "overview": "primary",
+        "works": [
+          {"title": "30 лет INTERIOR+DESIGN", "date": "2026-11-20", "text": "Журнал отметил юбилей спектаклем «Сцена:Дом» во Дворце пионеров на Воробьёвых горах.", "href": "https://news.ahouseproject.com/manifest-vmesto-retrospektivy-30-let-interior-design/"},
+          {"title": "Новая арена для «Милана» и «Интера»", "date": "2026-11-19", "text": "В проекте Foster + Partners и MANICA трибуны укрыты кровлей, а поле остаётся под открытым небом.", "href": "https://news.ahouseproject.com/foster-partners-i-manica-pokazali-zamenu-san-siro/"}
+        ],
         "description": "Онлайн-журнал об архитектуре и дизайне. Редакция показывает новые здания и интерьеры, беседует с их авторами и рассказывает, какие выставки стоит увидеть.",
         "href": "https://news.ahouseproject.com/",
         "feature": {
           "order": 2, "action": "Читать A–News",
-          "photo": { "src": "media/home/a-news-ibiza-640-1e4170bc3dc0.webp", "width": 640, "height": 422, "large": "media/home/a-news-ibiza-1200-146d877d0d56.webp", "largeWidth": 1200, "alt": "Синие стулья и полосатые столики в кафе на Ибице", "caption": "Кафе Seth & Manni’s на Ибице. Фото Nacho Dorado." }
+          "photo": { "src": "media/home/a-news-ibiza-640-1e4170bc3dc0.webp", "width": 640, "height": 422, "large": "media/home/a-news-ibiza-1200-146d877d0d56.webp", "largeWidth": 1200, "alt": "Синие стулья и полосатые столики в кафе на Ибице", "caption": "Кафе Seth & Manni’s на Ибице. Фото Nacho Dorado.", "href": "https://news.ahouseproject.com/memfis-na-ibicze-otkrytie-seth-mannis/" }
         }
       },
       {
         "name": "A–Press",
+        "overview": "editions",
+        "works": [
+          {"title": "Где взять печатные издания", "text": "Издательские газеты и журналы можно найти в ММОМА, отеле «Рихтер» и кафе кинотеатра «Художественный». На карте издательства есть и другие адреса.", "href": "@@ROOT@@press/#distribution"}
+        ],
         "description": "Издательство A–House выпускает книги, каталоги и периодику. На его странице можно посмотреть издания и найти места, где есть печатные номера.",
         "href": "@@ROOT@@press/"
       },
       {
         "name": "Газета A–News",
+        "overview": "editions",
+        "works": [
+          {"title": "№ 2. Коллекционирование", "text": "Основательницы ярмарки blazar и кураторы её секции дизайна рассказывают, как новые имена попадают на ярмарку."}
+        ],
         "description": "Второй номер посвящён коллекционированию. Среди его героев — основательницы ярмарки blazar и кураторы её секции «Дизайн».",
         "href": "@@ROOT@@tpost/f0997i9441-anews-2/"
       },
       {
         "name": "Журнал A–Kids",
+        "overview": "editions",
+        "works": [
+          {"title": "Первый номер. Петербург с двух сторон", "text": "Взрослым — путеводитель по городу. Если перевернуть журнал, начинаются игры и задания для детей."}
+        ],
         "description": "Журнал-перевёртыш для всей семьи. В первом номере с одной стороны — путеводитель по Петербургу для родителей, с другой — игры для детей.",
         "href": "@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/"
       },
       {
         "name": "Газета A–Sport",
+        "overview": "editions",
+        "works": [
+          {"title": "Зачем велотуфлям шипы", "text": "В номере «Движение» команда Velopraktika разбирает одежду, обувь и велосипед для первых тренировок.", "href": "https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/"}
+        ],
         "description": "Газета о спорте и культуре. В номере «Движение» команда Velopraktika помогает выбрать велосипед, одежду и обувь для тренировок.",
         "href": "#issue-a-sport"
       },
       {
         "name": "Газета A–State",
+        "overview": "editions",
+        "works": [
+          {"title": "Владикавказ Тамары Сокуровой", "text": "В выпуске о Северном Кавказе основательница кинофестиваля «Алания» рассказывает о своём городе."}
+        ],
         "description": "Каждый выпуск посвящён одному региону. В номере о Северном Кавказе Тамара Сокурова рассказывает о Владикавказе и своём кинофестивале «Алания».",
         "href": "https://news.ahouseproject.com/a-talks-tamara-sokurova/"
       },
       {
         "name": "A–Focus",
+        "overview": "editions",
+        "works": [
+          {"title": "Номер с Archipélago", "text": "Для первого партнёрского выпуска редакция собрала истории мебельного бренда, интервью и календарь событий в предметном дизайне.", "href": "https://archipelago.studio/about/news/2250/?lang=ru"}
+        ],
         "description": "Газета, которую A–Press делает на заказ. Первый выпуск о предметном дизайне издательство подготовило вместе с мебельным брендом Archipélago.",
         "href": "@@ROOT@@press/#a-focus"
       },
       {
         "name": "A–Guide",
+        "overview": "editions",
+        "works": [
+          {"title": "По Аэропорту с Дарьей Беляковой", "text": "Авторский маршрут ведёт от мастерских художников на Масловке к Петровскому путевому дворцу."}
+        ],
         "description": "Авторские прогулки по городу. В гиде по московскому району Аэропорт архитектор Дарья Белякова рассказывает о мастерских художников на Масловке.",
         "href": "https://news.ahouseproject.com/a-guide-rajon-aeroport-ot-dari-belyakovoj/"
       },
       {
         "name": "Канал A–House",
+        "overview": "channels",
+        "works": [
+          {"title": "Архитектурная фотография на выставке «Свет времени»", "text": "Команда показывает, как работы участников конкурса мобильной фотографии выглядят в зале Дома.", "href": "https://t.me/ahouseproject/10736?single"}
+        ],
         "description": "В Telegram команда объявляет встречи в Доме и публикует фотографии с выставок. Здесь же выходят заметки архитекторов о своей работе.",
         "href": "https://t.me/s/ahouseproject"
       },
       {
         "name": "A–House On Air",
+        "overview": "channels",
+        "works": [
+          {"title": "«Мемфис» на ярмарке NOMAD в Абу-Даби", "date": "2026-11-20", "text": "В фоторепортаже со стенда — мебель Этторе Соттсасса и ковёр Натали дю Паскье.", "href": "https://t.me/ahouseonair/416"}
+        ],
         "description": "Канал репортажей с ярмарок и форумов. В ленте сохранилась трансляция первого A–Forum о гостиничной индустрии.",
         "href": "https://t.me/s/ahouseonair"
       },
       {
         "name": "Канал A–Kids",
+        "overview": "channels",
+        "works": [
+          {"title": "Как дети собирали собственные макеты", "date": "2024-11-11", "text": "На встрече в бюро Arch(e)type дети познакомились с работой архитекторов. На фотографиях — мастерская и макеты участников.", "href": "https://t.me/ahousekids/143"}
+        ],
         "description": "Архив семейного канала в Telegram. В нём собраны идеи для занятий, детские выставки и разговоры с детьми об искусстве.",
         "href": "https://t.me/s/ahousekids"
       }
@@ -111,11 +169,19 @@
     "projects": [
       {
         "name": "Клуб A–House",
+        "overview": "houses",
+        "works": [
+          {"title": "Luma Poetica на клубном вечере", "text": "Дарья Золотухина и Мила Миллер соединили электронную музыку и чтение стихов. Сохранился фоторепортаж с премьеры.", "href": "@@ROOT@@tpost/aftf5ucec1-novogodnii-klubnii-vecher-ahouse/"}
+        ],
         "description": "Три программы участия — A–Member, A–Patron и Patron Platinum. Участники могут приглашать в Дом гостей, а патроны — проводить собственные мероприятия.",
         "href": "@@ROOT@@club/"
       },
       {
         "name": "A–Friend",
+        "overview": "editions",
+        "works": [
+          {"title": "Четыре издания в одной подписке", "text": "В приложении доступны полные PDF-выпуски A–News, A–Kids, A–Sport и A–State. Здесь можно посмотреть условия и оформить подписку."}
+        ],
         "description": "Подписка на полные выпуски A–News, A–Kids, A–Sport и A–State. Их можно читать в PDF в приложении A–House.",
         "href": "#services-checkout"
       }
@@ -128,11 +194,19 @@
     "projects": [
       {
         "name": "Дом A–House",
+        "overview": "houses",
+        "works": [
+          {"title": "Как устроен Дом в Большом Афанасьевском", "text": "На первом этаже за чашкой кофе можно рассмотреть предметы дизайнеров, а в Малом кабинете — архитектурные макеты.", "href": "https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/"}
+        ],
         "description": "Особняк в Большом Афанасьевском переулке, где проходят выставки и клубные встречи. В Доме работают резиденты и кафе A–House × FINCH.",
         "href": "@@ROOT@@residents/"
       },
       {
         "name": "Дом предпринимателя",
+        "overview": "houses",
+        "works": [
+          {"title": "Как открыть дом для предпринимателей", "text": "Дарья Белякова и Андрей Завадских рассказывают, зачем партнёрам понадобилось собственное пространство в Москве.", "href": "https://news.ahouseproject.com/dom-predprinimatelya-intervyu-dari-belyakovoi-i-andreya-zavadskih/"}
+        ],
         "description": "Площадка A–House и Точка Банка в Малом Каретном переулке. Здесь проходят открытые лекции и разборы бизнес-задач. На сайте Дома можно выбрать встречу и записаться.",
         "href": "https://dompred.ru/",
         "feature": {

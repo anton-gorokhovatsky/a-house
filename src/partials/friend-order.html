@@ -2,10 +2,42 @@
 <form id="friend-form" class="membership-form" data-membership-form="friend" aria-labelledby="friend-form-heading" {{formAttributes}} accept-charset="UTF-8">
   {{availability}}
   <input type="hidden" name="product" value="A-Friend">
+  <div class="friend-basket" data-unit-price="{{friendUnitPrice}}">
+    <div data-order-line>
+      <label for="friend-quantity">Количество подписок</label>
+      <div class="friend-quantity">
+        <button type="button" data-order-action="less" aria-label="Уменьшить количество" hidden>−</button>
+        <input type="number" inputmode="numeric" id="friend-quantity" name="quantity" min="1" step="1" value="1" required readonly aria-describedby="friend-quantity-error">
+        <button type="button" data-order-action="more" aria-label="Увеличить количество" hidden>+</button>
+        <button type="button" data-order-action="remove" hidden>Удалить</button>
+      </div>
+      <p id="friend-quantity-error" class="membership-error" data-field-error="quantity" hidden></p>
+    </div>
+    <div data-order-empty hidden>
+      <p>В заказе нет подписок.</p>
+      <button type="button" data-order-action="restore">Вернуть в заказ</button>
+    </div>
+    <p class="friend-total" aria-live="polite" aria-atomic="true">Итого <span data-order-total>{{friendTotal}}</span></p>
+  </div>
+  <div class="friend-fields">
   <div class="membership-field">
     <label for="friend-name">Имя и фамилия</label>
     <input id="friend-name" name="name" autocomplete="name" maxlength="100" required aria-describedby="friend-name-error">
     <p id="friend-name-error" class="membership-error" data-field-error="name" hidden></p>
+  </div>
+  <div class="membership-field">
+    <label for="friend-workarea">Сфера деятельности <span class="membership-optional">По желанию</span></label>
+    <select id="friend-workarea" name="workarea">
+      <option value="">Выберите один из вариантов</option>
+      <option>Архитектура и проектирование</option>
+      <option>Предметный дизайн</option>
+      <option>Интерьерный дизайн</option>
+      <option>Графический дизайн и брендинг</option>
+      <option>Строительство и девелопмент</option>
+      <option>Урбанистика</option>
+      <option>Искусство</option>
+      <option>Другое</option>
+    </select>
   </div>
   <div class="membership-field">
     <label for="friend-email">Электронная почта</label>
@@ -14,9 +46,15 @@
   </div>
   <div class="membership-field">
     <label for="friend-phone">Телефон</label>
-    <input type="tel" id="friend-phone" name="phone" autocomplete="tel" maxlength="40" required aria-describedby="friend-phone-error">
+    <input type="tel" id="friend-phone" name="phone" autocomplete="tel" maxlength="40" placeholder="+7 900 000-00-00" required aria-describedby="friend-phone-error">
     <p id="friend-phone-error" class="membership-error" data-field-error="phone" hidden></p>
+  </div>
+  <div class="membership-field">
+    <label for="friend-comment">Комментарий <span class="membership-optional">По желанию</span></label>
+    <p class="membership-hint" id="friend-comment-hint">Если покупаете сертификат в подарок, укажите имя будущего владельца.</p>
+    <textarea id="friend-comment" name="comment" rows="3" aria-describedby="friend-comment-hint"></textarea>
   </div>
   {{agreements}}
   <div class="membership-send"><button class="membership-action" type="submit"{{submitState}}>Перейти к оплате</button></div>
+  </div>
 </form>

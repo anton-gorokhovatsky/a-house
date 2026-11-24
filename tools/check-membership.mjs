@@ -84,6 +84,19 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
       assert.equal(await form.getAttribute('action'), api + endpoint);
       assert.equal(await consent.isChecked(), false);
       if (friend) {
+        const increment = form.getByRole('button', { name: 'Увеличить количество' });
+        await increment.click();
+        assert.match(await form.locator('[data-order-total]').innerText(), /24\s000/);
+        await form.getByRole('button', { name: 'Удалить' }).click();
+        assert.equal(await submit.isVisible(), false);
+        assert.equal(await form.locator('[name="quantity"]').inputValue(), '0');
+        await form.getByRole('button', { name: 'Вернуть в заказ' }).click();
+        assert.equal(await form.locator('[name="quantity"]').inputValue(), '2');
+        const areas = form.getByLabel('Сфера деятельности', { exact: false });
+        assert.equal(await areas.locator('option').count(), 9);
+        assert.equal(await areas.inputValue(), '');
+        await areas.selectOption({ label: 'Урбанистика' });
+        await form.locator('textarea[name="comment"]').fill('Сертификат для получателя');
         const offer = await page.locator('#services-checkout').innerText();
         assert.match(offer, /12\s000\s₽/);
         assert.match(offer, /за\s+3\s+месяца/);
@@ -120,13 +133,15 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         assert.equal(await field('name').inputValue(), name);
         assert.equal(await field('phone').inputValue(), phone);
         assert.equal(await email.inputValue(), declinedEmail);
+        assert.equal(await form.locator('[name="workarea"]').inputValue(), 'Урбанистика');
+        assert.equal(await form.locator('[name="comment"]').inputValue(), 'Сертификат для получателя');
         await email.fill(goodEmail);
         await consent.check();
       }
       await Promise.all([page.waitForURL(api + '/received' + endpoint), submit.click()]);
       await page.getByRole('heading', { name: 'Принято локальным обработчиком' }).waitFor();
       const expected = { name, phone, email: goodEmail, consent: '1' };
-      if (friend) expected.product = 'A-Friend';
+      if (friend) Object.assign(expected, { product: 'A-Friend', quantity: '2', workarea: 'Урбанистика', comment: 'Сертификат для получателя' });
       else Object.assign(expected, { offer: 'patron', company: 'Тестовое бюро', connect: 'Email' });
       const last = received.at(-1);
       assert.equal(received.length, count + (friend ? 2 : 1));

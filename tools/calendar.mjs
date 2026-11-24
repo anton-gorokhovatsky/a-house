@@ -8,7 +8,7 @@ function escape(value) {
   return String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
 
-function eventDate({ start, end = start }) {
+export function eventDate({ start, end = start }) {
   const full = day => dateFormat.format(new Date(day + 'T12:00:00Z'));
   const year = day => day.slice(0, 4);
   const time = (date, label, withYear = false) => '<time datetime="' + escape(date) + '">' + escape(label) +

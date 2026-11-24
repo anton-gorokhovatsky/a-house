@@ -25,11 +25,12 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page188457209.css",
-      "styles/source/forms-1.0.css",
-      "styles/pages/a_pass.css",
-      "styles/chrome.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css",
+      "styles/pages/membership.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "about",
@@ -120,11 +121,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page242768809.css",
-      "styles/source/animation-2.0.css",
-      "styles/source/popup-1.1.css",
-      "styles/pages/longevity.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "member",
@@ -145,9 +146,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page391812709.css",
-      "styles/pages/moscow_business.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "mts",
@@ -156,10 +159,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page141649966.css",
-      "styles/source/popup-1.1.css",
-      "styles/pages/mts.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "mts_docs",
@@ -200,10 +204,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page39233461.css",
-      "styles/source/animation-2.0.css",
-      "styles/pages/politic.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "politic_a-com",
@@ -261,10 +266,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page233352509.css",
-      "styles/source/animation-2.0.css",
-      "styles/pages/report.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "report__",
@@ -273,10 +279,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page210511809.css",
-      "styles/source/animation-2.0.css",
-      "styles/pages/report__.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "residents",
@@ -336,11 +343,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page150661766.css",
-      "styles/source/animation-2.0.css",
-      "styles/source/popup-1.1.css",
-      "styles/pages/t_bank.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "t_business",
@@ -349,10 +356,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page152189286.css",
-      "styles/source/popup-1.1.css",
-      "styles/pages/t_business.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "t_private",
@@ -361,10 +369,11 @@
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
-      "styles/source/blocks-page149166796.css",
-      "styles/source/popup-1.1.css",
-      "styles/pages/t_private.css"
-    ]
+      "styles/chrome.css",
+      "styles/pages/home.css",
+      "styles/pages/projects.css"
+    ],
+    "layout": "project"
   },
   {
     "slug": "tpost/020abjgjn1-dialogi",

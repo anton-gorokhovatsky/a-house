@@ -3,7 +3,8 @@
   margin-inline: auto;
   padding: clamp(2rem, 7vw, 6rem) var(--edge) var(--chapter);
   color: var(--ink);
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: auto;
 }
 
 .institution-opening,
@@ -21,15 +22,18 @@
 .institution-intro {
   container: institution-intro / inline-size;
 }
+.institution-long-word { display: inline-block; max-inline-size: 100%; hyphens: manual; }
 
 .home-page .institution-intro h1 {
-  max-width: 16ch;
+  max-inline-size: 100%;
   margin: 0;
   color: var(--ink);
-  font: 400 var(--lead-size)/1.07 var(--display);
+  font: 400 min(var(--lead-size), max(1.8rem, 10.35cqi))/1.07 var(--display);
   letter-spacing: normal;
   text-wrap: balance;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
 }
 
 .institution-intro > p,
@@ -150,8 +154,8 @@
 
 .institution-page .institution-people {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-  gap: 1.5rem 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 29rem), 1fr));
+  gap: var(--group);
 }
 
 .institution-page .institution-people:first-child {
@@ -159,30 +163,31 @@
 }
 
 .institution-people li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .45rem .9rem;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, .63fr) minmax(0, 1fr);
+  gap: clamp(.85rem, 2vw, 2rem);
 }
 
 .institution-people img {
-  width: min(4.75rem, 25%);
+  display: block;
+  width: 100%;
   height: auto;
 }
 
 .institution-people li > div {
-  flex: 1 1 9.5em;
   min-width: 0;
 }
 
-.institution-people strong {
-  font-weight: 600;
+.home-page .institution-people h3 {
+  margin: 0;
+  font: 400 var(--type-card)/1.16 var(--display);
+  text-wrap: pretty;
 }
 
 .home-page .institution-people p {
-  margin: .25rem 0 0;
+  margin: .6rem 0 0;
   color: var(--quiet);
-  font-size: var(--note-size);
+  font-size: var(--copy-size);
   line-height: 1.35;
 }
 
@@ -199,17 +204,16 @@
   max-width: 50rem;
 }
 
-@container institution-intro (max-width: 12em) {
+@container institution-intro (max-width: 17em) {
   .home-page .institution-intro h1 {
-    font-size: calc(var(--lead-size) * .9);
-    hyphens: auto;
+    hyphens: manual;
   }
 
   .institution-intro h1 .project-name {
     display: inline-block;
     max-width: 100%;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
   }
 }
 
@@ -219,10 +223,15 @@
     overflow-wrap: anywhere;
   }
 }
+.institution-section-people .institution-copy { container-type: inline-size; }
+@container (max-width: 16rem) {
+  .institution-people li { grid-template-columns: minmax(0, 1fr); }
+  .institution-people img { max-width: 13rem; }
+}
 
 @media (min-width: 55em) {
   .institution-opening-photo {
-    grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
     gap: var(--group);
     align-items: start;
   }
@@ -235,4 +244,5 @@
     grid-template-columns: minmax(0, .64fr) minmax(0, 1.36fr);
     gap: var(--group);
   }
+  .institution-section-people { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
 }

@@ -7,6 +7,7 @@
   let restoreFrame = 0;
 
   function viewFor(target) {
+    if (target?.closest('.home-overview-only')) return null;
     return target?.closest('[data-home-section]') || null;
   }
 

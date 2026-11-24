@@ -35,7 +35,7 @@
           <h2 id="media-heading">Издания и&nbsp;статьи</h2>
           <a class="home-detail" href="@@ROOT@@press/">Издательство A–Press</a>
         </div>
-        <article class="home-issue" id="issue-a-sport" tabindex="-1">
+        <article class="home-issue editorial-pair" id="issue-a-sport" tabindex="-1">
           <figure class="home-issue-cover">
             <!-- A-SPORT PRINT -->
           </figure>
@@ -134,7 +134,8 @@
           <article id="friend" tabindex="-1">
             <p class="home-kicker" id="rec3091941801">Цифровая подписка</p>
             <h3 id="rec3796030101">A–Friend</h3>
-            <p>В&nbsp;приложении A–House по&nbsp;подписке можно читать полные выпуски A–News, A–Kids, A–Sport и&nbsp;A–State в&nbsp;PDF. Участникам клуба A–Member подписка уже доступна.</p>
+            <p>{{friendEditions}} {{friendExtras}}</p>
+            <p>Участникам клуба A–Member подписка уже доступна.</p>
             <div class="home-links">
               <a class="home-primary" href="#services-checkout">Условия и оформление подписки</a>
             </div>
@@ -175,7 +176,7 @@
       </section>
       <section id="projects" class="home-section home-directory" data-home-section data-overview-section tabindex="-1" aria-labelledby="projects-heading">
         <div class="home-section-head">
-          <h2 id="projects-heading"><span class="home-overview-only">Чем занимается A–House</span><span class="home-detail">{{projectsLabel}}</span></h2>
+          <h2 id="projects-heading"><span id="project-stories" class="home-overview-only">Чем занимается A–House</span><span class="home-detail">{{projectsLabel}}</span></h2>
           <a class="home-overview-only" href="#projects">{{projectsLabel}}</a>
           <a class="home-detail" href="@@ROOT@@about/">Об&nbsp;A–House</a>
         </div>
@@ -190,11 +191,12 @@
         </div>
       </section>
       <section id="services-checkout" class="home-section membership-page" data-home-section tabindex="-1" aria-labelledby="friend-heading">
-        <div class="membership-layout">
+        <div class="membership-layout" id="order:A-Friend=12000" tabindex="-1">
           <header class="membership-intro" id="rec634408909">
             <p class="home-kicker">Цифровая подписка</p>
             <h2 id="friend-heading">A–Friend</h2>
-            <p class="membership-lead">Полные выпуски A–News, A–Kids, A–Sport и A–State в приложении A–House.</p>
+            <p class="membership-lead">{{friendEditions}}</p>
+            <p class="membership-benefits">{{friendExtras}}</p>
             <p class="membership-price">{{friendPrice}}</p>
             <p class="membership-note">Для участников A–Member подписка уже включена.</p>
           </header>
