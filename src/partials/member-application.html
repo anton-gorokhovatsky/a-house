@@ -1,5 +1,4 @@
 <form id="member-form" class="membership-form" data-membership-form="member" aria-labelledby="member-heading" {{formAttributes}}>
-  {{availability}}
   <!-- MEMBER PROGRAMS -->
   <div class="membership-field">
     <label for="member-name">Фамилия и&nbsp;имя, отчество при&nbsp;наличии</label>
@@ -28,7 +27,7 @@
     <p id="member-connect-error" class="membership-error" data-field-error="connect" hidden></p>
   </fieldset>
   <details class="membership-extra">
-    <summary><span class="when-closed">Дополнить заявку</span><span class="when-open">Свернуть дополнительные сведения</span> <span class="membership-optional">По&nbsp;желанию</span></summary>
+    <summary aria-labelledby="member-extra-action member-extra-optional"><span id="member-extra-action"><span class="when-closed">Дополнить заявку</span><span class="when-open">Свернуть дополнительные сведения</span></span> <span id="member-extra-optional" class="membership-optional">По&nbsp;желанию</span></summary>
     <div class="membership-extra-fields">
       <div class="membership-field">
         <label for="member-sphere">Сфера деятельности</label>

@@ -1,4 +1,4 @@
-import { eventDestination } from './calendar.mjs';
+import { bookingLabel, eventAddress, eventDestination } from './calendar.mjs';
 
 const dates = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 const moscow = new Intl.DateTimeFormat('sv-SE', {
@@ -29,16 +29,15 @@ function attributes(event, today) {
 
 function eventCard(event, today, base) {
   const href = eventDestination(event, base + 'calendar/');
-  const amount = event.price ? '<span class="home-event-amount">' + esc(event.price) + '</span>' : '';
+  const heading = event.legacyHeading || event.id + '-home-title';
   const admission = event.booking
-    ? '<a class="home-event-admission" href="' + esc(event.booking.url) + '">' + esc(event.booking.label) +
-      (amount ? ' — ' + amount : '') + '</a>'
-    : amount;
+    ? '<a class="home-event-admission" href="' + esc(event.booking.url) + '">' + bookingLabel(event) + '</a>'
+    : event.price ? '<span class="home-event-amount">' + esc(event.price) + '</span>' : '';
   return `<article class="home-event" ${attributes(event, today)}>
-    <a class="home-event-link" href="${esc(href)}">
+    <a class="home-event-link" href="${esc(href)}" aria-labelledby="${esc(heading)}">
       <p class="home-meta"><span>${dateLine(event, today)}</span> <span class="home-event-venue">${esc(event.shortVenue || event.venue)}</span></p>
       <div class="home-event-info">
-        <h3${event.legacyHeading ? ' id="' + esc(event.legacyHeading) + '"' : ''}>${esc(event.title)}</h3>
+        <h3 id="${esc(heading)}">${esc(event.title)}</h3>
         <p>${esc(event.summary)}</p>
       </div>
     </a>
@@ -84,9 +83,9 @@ export function renderProgram(events, featureTemplate, base, today = moscow.form
     summary: esc(spotlight.summary),
     detail: spotlight.detail ? '<span class="home-detail"> ' + esc(spotlight.detail) + '</span>' : '',
     access: spotlight.access ? '<p class="home-feature-access">' + esc(spotlight.access) + '</p>' : '',
-    city: spotlight.city ? '<span class="home-feature-city">' + esc(spotlight.city) + ', </span>' : '',
-    address: esc(spotlight.address || spotlight.venue),
-    booking: spotlight.booking ? '<a class="home-action" data-event-booking href="' + esc(spotlight.booking.url) + '">' + esc(spotlight.booking.label) + '</a>' : '',
+    place: eventAddress(spotlight, (spotlight.city ? '<span class="home-feature-city">' + esc(spotlight.city) + ', </span>' : '') +
+      esc(spotlight.address || spotlight.venue)),
+    booking: spotlight.booking ? '<a class="home-action" data-event-booking href="' + esc(spotlight.booking.url) + '">' + bookingLabel(spotlight) + '</a>' : '',
     figure: featurePhoto(spotlight, base)
   };
   const feature = fields ? featureTemplate.replace(/\{\{(\w+)\}\}/g, (_, key) => fields[key]) : '';

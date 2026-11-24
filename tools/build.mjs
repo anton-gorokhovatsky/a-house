@@ -1,5 +1,6 @@
 import { appendFile, cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { typesetText } from './typography.mjs';
@@ -26,6 +27,16 @@ export function siteBase(value = '/a-house/') {
 
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const source = name => readFile(file('src', name), 'utf8');
+
+function siteVersion() {
+  const git = args => spawnSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).stdout?.trim();
+  if (git(['rev-parse', '--is-shallow-repository']) === 'false') {
+    const count = git(['rev-list', '--first-parent', '--count', 'HEAD']);
+    if (/^[1-9]\d*$/.test(count)) return 'Версия сайта ' + count;
+  }
+  if (process.env.GITHUB_ACTIONS === 'true') throw new Error('The published site version requires the full Git history.');
+  return 'Локальная сборка';
+}
 
 function renderReportYear(year, label, edition) {
   const [heading, body] = year.records[edition];
@@ -73,18 +84,17 @@ export function membershipSettings(kind, env = process.env) {
 
 function renderMembership(kind, template, agreementTemplate, settings) {
   const friend = kind === 'friend';
-  const status = friend ? 'Оплата пока недоступна.' : 'Приём заявок пока недоступен.';
   const legal = { ...settings, kind, termsLabel: friend ? 'Условия покупки' : 'Условия вступления' };
   const fields = {
-    formAttributes: settings ? `method="post" action="${escape(settings.action)}"` : 'method="dialog"',
-    availability: settings ? '' : `<p class="membership-status">${status}</p>`,
+    formAttributes: settings ? `method="post" action="${escape(settings.action)}"` :
+      `method="dialog" aria-describedby="${friend ? 'friend-availability' : 'member-intro'}"`,
     agreements: settings ? agreementTemplate.replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : `<div class="membership-field">
       <p class="home-links"><a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${kind}-documents">Политика обработки персональных данных</a></p>
       <p id="${kind}-documents" class="membership-hint">Документ откроется в новой вкладке.</p>
     </div>`,
     submitState: settings ? '' : ' disabled'
   };
-  return template.replace(/\{\{(formAttributes|availability|agreements|submitState)\}\}/g, (_, key) => fields[key]);
+  return template.replace(/\{\{(formAttributes|agreements|submitState)\}\}/g, (_, key) => fields[key]);
 }
 
 function consentLink(link, hintId) {
@@ -124,11 +134,17 @@ function prepareConsentDocuments(html) {
 }
 
 export async function build(base = siteBase(process.env.SITE_BASE), { outputDirectory, env = process.env } = {}) {
+  const versionLabel = siteVersion();
   const friend = membershipSettings('friend', env);
   const member = membershipSettings('member', env);
   const output = outputDirectory ?? file('dist');
   const delivery = await loadImageDelivery(projectRoot);
-  const events = JSON.parse(await source('data/events.json'));
+  const events = JSON.parse(await source('data/events.json')).map(event => {
+    if (!event.venueId) return event;
+    const venue = venues[event.venueId];
+    if (!venue) throw new Error('Unknown venue ' + event.venueId + ' for event ' + event.id);
+    return { ...event, venue: venue.name, venueMap: venue.map };
+  });
   const jobs = renderJobs(JSON.parse(await source('data/jobs.json')));
   const directions = JSON.parse(await source('data/projects.json'));
   const projectNavigation = directions.map(group =>
@@ -178,6 +194,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const digitalEditions = new Intl.ListFormat('ru').format(printEditions.filter(issue => issue.latest).map(issue => issue.edition));
   const friendEditions = `Полные выпуски ${digitalEditions} в PDF можно читать в приложении A–House.`;
   const friendExtras = 'В подписку также входят путеводители, подборки фильмов, ресторанов и спектаклей, дайджесты событий, трансляции с международных площадок и приглашения на выставки A–House.';
+  const memberClosed = 'Приём заявок на сайте закрыт.';
+  const memberIntro = member ? 'Выберите программу и оставьте контакты для связи с командой клуба.' :
+    memberClosed + ' Можно посмотреть анкету.';
+  const friendAction = friend ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
   const period = env.A_FRIEND_PERIOD?.trim();
   const orderForm = renderMembership('friend', friendTemplate, agreements, friend)
@@ -266,6 +286,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
+      .replaceAll('{{memberIntro}}', memberIntro)
+      .replaceAll('{{memberAction}}', member ? 'Подать заявку' : 'Посмотреть анкету')
+      .replaceAll('<!-- CLUB AVAILABILITY -->', member ? '' : `<p class="club-application-status">${memberClosed}</p>`)
+      .replace('<!-- FRIEND AVAILABILITY -->', friend ? '' : '<p id="friend-availability" class="membership-availability">Оплата на сайте пока недоступна.</p>')
+      .replace('{{friendFormHeading}}', friend ? 'Оформить подписку' : 'Форма заказа')
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
       .replace(/<!-- VENUE PROGRAM (\w+) -->/g, (_, key) => renderVenueProgram(events, venues[key].name, base))
@@ -277,6 +302,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('{{sportStoryHref}}', () => escape(sportStory.href))
       .replace('{{sportStoryTitle}}', () => escape(sportStory.title))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(printEditions, digitalEditions, projects))
+      .replaceAll('{{friendAction}}', friendAction)
       .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@media/press/a-news-01-daria-belyakova.pdf', 'Читать интервью', 'PDF, с. 24–25'))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- A-SPORT PRINT -->', () => sportPhoto)
@@ -298,6 +324,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         if (!footerContent.has(name)) throw new Error('Missing shared footer content: ' + name);
         return footerContent.get(name);
       })
+      .replace('{{siteVersion}}', versionLabel)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
       .replace('{{archiveHeading}}', () => page.archiveTopic ? escape(page.archiveTopic.title) : 'Архив публикаций')
       .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic, home));

@@ -13,21 +13,21 @@
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
-.home-page .calendar-page :is(.calendar-opening > a, #calendar-filters a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset]) {
+.home-page .calendar-page :is(.calendar-entry-links a, #calendar-filters a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset]) {
   color: inherit;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: .19em;
   text-decoration-color: #939393;
 }
-.calendar-opening > a, .calendar-months a, .calendar-audience a,
+.calendar-entry-links a, .calendar-months a, .calendar-audience a,
 .calendar-family-source, .calendar-event-links a, .calendar-archive-tools a, [data-calendar-reset] {
   display: inline-block;
   min-height: 44px;
   align-content: center;
   padding-block: .4em;
 }
-.calendar-opening > a { margin-top: .3rem; }
+.calendar-entry-links { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1.3rem; margin-top: .3rem; }
 .calendar-layout { margin-top: clamp(1.2rem, 3.8vw, 4rem); }
 #calendar-filters {
   display: flex;
@@ -37,7 +37,6 @@
   scroll-margin-top: 1rem;
 }
 .calendar-audience { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1.15rem; }
-.calendar-results-shortcut { display: inline-block; min-height: 44px; align-content: center; font-size: var(--note-size); }
 .home-page .calendar-page #calendar-filters [aria-current="true"] {
   text-decoration: none;
 }
@@ -101,7 +100,10 @@
   #calendar-filters { display: grid; justify-items: start; gap: .4rem; }
   .calendar-filter-year { display: block; margin-top: .45rem; }
   .calendar-audience { display: grid; gap: 0; }
-  .calendar-results-shortcut { display: none; }
+  .calendar-entry-links .calendar-results-shortcut:not(:focus) {
+    position: absolute; inline-size: 1px; block-size: 1px; min-height: 0; padding: 0;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
   .calendar-stream { margin-top: 0; }
   .calendar-event { display: grid; grid-template-columns: minmax(8.2rem, .52fr) minmax(0, 1.5fr); gap: .35rem var(--group); align-items: baseline; }
   .calendar-event-meta { margin-block-start: 0; }

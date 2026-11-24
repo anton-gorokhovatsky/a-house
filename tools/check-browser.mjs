@@ -95,6 +95,12 @@ async function checkMobileExhibition(page) {
   await page.clock.setFixedTime(new Date(feature.start + 'T12:00:00+03:00'));
   await page.goto(url);
   const poster = page.locator('[data-home-now]');
+  if (feature.venueId) {
+    const map = await poster.locator('.home-venue-link').getAttribute('href');
+    assert.ok(map.startsWith('https://') && await page.locator('#visit .home-map-link').evaluateAll(
+      (links, destination) => links.some(link => link.href === destination), map),
+      'The exhibition address and the corresponding house must open the same map');
+  }
   for (const [width, height] of [[320, 480], [320, 568], [375, 560], [390, 664], [390, 740], [390, 844]]) {
     await page.setViewportSize({ width, height });
     await page.evaluate(() => scrollTo({top:0, behavior:'instant'}));
@@ -177,6 +183,8 @@ async function checkReadingReturn(page, mobile) {
     await page.locator('[data-home-view][href="#media"]').click();
   }
   const subscription = page.locator('#media a[href="#services-checkout"]');
+  const friendLabel = membershipSettings('friend') ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
+  assert.equal((await subscription.innerText()).replace(/\s+/g, ' '), friendLabel);
   const originalTop = await subscription.evaluate(async link => {
     await document.fonts.ready;
     link.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -218,6 +226,16 @@ async function checkCalendar(page, mobile) {
   assert.ok(await page.locator('#upcoming').isVisible() && await page.locator('#past').isVisible());
   await kids.waitFor();
   await page.evaluate(() => document.fonts.ready);
+  const shortcut = page.locator('.calendar-results-shortcut');
+  await shortcut.focus();
+  const shortcutBox = await shortcut.boundingBox();
+  assert.ok(shortcutBox.height >= 44 && shortcutBox.y < (await months.boundingBox()).y,
+    'Keyboard and touch visitors must be able to skip the expanded months');
+  await shortcut.press('Enter');
+  await page.waitForFunction(() => document.activeElement.id === 'calendar-results');
+  await page.goBack();
+  assert.equal(await rows.first().getByRole('heading').getByRole('link').evaluate(link =>
+    getComputedStyle(link).textDecorationLine), 'underline', 'Event titles must be recognisable as links without hovering');
   const positions = await controlsAndResults();
   for (const choice of [kids, all, kids]) {
     await activate(choice);
@@ -700,17 +718,25 @@ async function checkClubApplication(page) {
   assert.equal(await programs.count(), 3);
   const card = programs.nth(1);
   const programName = await card.getByRole('heading').innerText();
-  await card.getByRole('link', { name: /подать заявку/i }).click();
+  const memberOpen = Boolean(membershipSettings('member'));
+  assert.equal(await card.locator('.club-application-status').count(), memberOpen ? 0 : 1);
+  const action = memberOpen ? 'Подать заявку' : 'Посмотреть анкету';
+  await card.getByRole('link', { name: action + ' по программе ' + programName }).click();
   await page.waitForURL(url + 'member/?offer=patron');
   assert.equal(await page.locator('.home-masthead').count(), 1);
   const form = page.locator('#member-form');
   const selected = form.getByRole('radio', { name: programName, exact: true });
   assert.ok(await selected.isChecked(), 'The selected club program must follow the visitor into the form');
+  const intro = await page.locator('#member-intro').innerText();
+  assert.match(intro.replace(/\s+/g, ' '), memberOpen ? /оставьте контакты/ : /^Приём заявок на сайте закрыт/);
   await checkMembershipForm(page, 'member');
   await page.goBack();
   await card.waitFor();
   assert.equal(new URL(page.url()).hash, '#programs');
   await page.goto(url + '#services-checkout');
+  const friendOpen = Boolean(membershipSettings('friend'));
+  assert.equal(await page.locator('#friend-availability').count(), friendOpen ? 0 : 1);
+  assert.equal(await page.locator('#friend-form-heading').innerText(), friendOpen ? 'Оформить подписку' : 'Форма заказа');
   await checkMembershipForm(page, 'friend');
 }
 
@@ -770,6 +796,16 @@ async function checkHomeRoutes(page, mobile) {
   const section = name => page.locator('[data-home-section][id="' + name + '"]');
   const headingGap = name => section(name).locator('h2').first().evaluate(heading =>
     heading.getBoundingClientRect().top - document.getElementById('t-header').getBoundingClientRect().bottom);
+  for (const anchor of ['visit', 'publications', 'services-checkout']) {
+    await page.goto(url + '#' + anchor);
+    await page.locator('.skip-content').press('Enter');
+    assert.equal(page.url(), url + '#' + anchor, 'Skipping the header must preserve the selected view');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'site-content');
+    await page.keyboard.press('Tab');
+    const visibleSection = section(anchor === 'publications' ? 'media' : anchor);
+    assert.ok(await visibleSection.evaluate(el => el.contains(document.activeElement)),
+      'Reading must continue inside the original section');
+  }
   await checkReadingReturn(page, mobile);
   await page.goto(url);
   await checkEditorialGrouping(page);
@@ -805,12 +841,26 @@ async function checkHomeRoutes(page, mobile) {
     assert.ok(rows.length > 1 && Math.max(...rows) - Math.min(...rows) < 2, 'Desktop destinations must share one visible row');
   }
   if (mobile) {
+    const houses = page.locator('.home-tools > a');
     await menu.focus();
+    await menu.scrollIntoViewIfNeeded();
+    const housesClosed = await houses.boundingBox();
     await page.keyboard.press('Enter');
     assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+    assert.deepEqual(await houses.boundingBox(), housesClosed, 'Opening the menu must keep the address shortcut in place');
+    assert.ok(await page.locator('#site-content').evaluate(el => el.inert), 'The full-screen menu covers the page content');
+    const maps = page.locator('.menu-visit a:visible');
+    assert.equal(await maps.count(), 2);
     await page.keyboard.press('Escape');
     assert.equal(await menu.getAttribute('aria-expanded'), 'false');
     assert.ok(await menu.evaluate(el => el === document.activeElement), 'Escape must return focus to the menu toggle');
+    assert.equal(await page.locator('#site-content').evaluate(el => el.inert), false);
+    await menu.press('Enter');
+    await maps.last().focus();
+    await page.keyboard.press('Tab');
+    assert.ok(await page.locator('#site-content').evaluate(el => el.contains(document.activeElement)),
+      'Tab past the last direction link must continue into the page');
+    await menu.focus();
     await page.keyboard.press('Enter');
     await calendarLink.press('Enter');
     await page.waitForURL(url + 'calendar/');

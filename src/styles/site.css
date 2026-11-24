@@ -21,6 +21,11 @@ main:focus { outline: none; }
   margin-inline: auto;
   padding-inline: var(--edge, clamp(1rem, 5vw, 5.5rem));
 }
+.home-page .footer-wordmark .site-version {
+  max-inline-size: var(--measure); margin: .85rem auto 0; padding-inline: var(--edge);
+  color: #c5c5c5; font: 400 var(--note-size)/1.4 var(--text);
+  font-variant-numeric: tabular-nums; text-align: start;
+}
 @media print { .footer-wordmark { display: none; } }
 #t-footer.t-records .footer-channels {
   display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center; gap: .25em 1em;

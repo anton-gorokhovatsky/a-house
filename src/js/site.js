@@ -103,6 +103,8 @@ if (header) {
   const trigger = presence?.querySelector('button');
   const submenu = presence?.querySelector('.site-submenu');
   const compact = matchMedia('(max-width: 61.25em)');
+  const coveredRegions = [document.getElementById('site-content'), document.getElementById('t-footer')];
+  const regionsToRestore = new Set();
 
   function openSubmenu(open) {
     if (!submenu || !trigger) return;
@@ -113,7 +115,17 @@ if (header) {
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
     menu.hidden = compact.matches && !open;
-    if (!open) openSubmenu(false);
+    if (open) {
+      for (const region of coveredRegions) {
+        if (!region || region.inert) continue;
+        region.inert = true;
+        regionsToRestore.add(region);
+      }
+    } else {
+      for (const region of regionsToRestore) region.inert = false;
+      regionsToRestore.clear();
+      openSubmenu(false);
+    }
   }
   function measureHeader() {
     fitReadingText();
@@ -153,7 +165,15 @@ if (header) {
     if (submenu && !submenu.hidden) { openSubmenu(false); trigger.focus({ preventScroll: true }); }
     else if (toggle.getAttribute('aria-expanded') === 'true') { openMenu(false); toggle.focus({ preventScroll: true }); }
   });
-  menu.addEventListener('click', event => {
+  // Continue into the page when the visitor tabs past the full-screen disclosure.
+  menu.addEventListener('keydown', event => {
+    if (event.key !== 'Tab' || event.shiftKey || toggle.getAttribute('aria-expanded') !== 'true') return;
+    const links = [...menu.querySelectorAll('a[href]')].filter(link => link.getClientRects().length);
+    if (document.activeElement !== links.at(-1)) return;
+    openMenu(false);
+    toggle.focus({ preventScroll: true });
+  });
+  header.addEventListener('click', event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const link = event.target.closest('a[href]');
     if (!link || !link.hash || link.origin !== location.origin || link.pathname !== location.pathname ||
@@ -164,7 +184,7 @@ if (header) {
     openMenu(false);
     // A selection may reveal its target as part of the fragment navigation.
     requestAnimationFrame(() => {
-      if (document.activeElement === document.body || menu.contains(document.activeElement)) {
+      if (document.activeElement === document.body || header.contains(document.activeElement)) {
         target.focus({ preventScroll: true });
       }
     });

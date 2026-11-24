@@ -8,6 +8,21 @@ function escape(value) {
   return String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
 
+export function eventAddress(event, addressHtml) {
+  if (!event.venueMap || !addressHtml) return addressHtml;
+  return '<a class="home-venue-link" href="' + escape(event.venueMap) + '">' + addressHtml +
+    '<span class="screen-reader-only"> на Яндекс Картах</span></a>';
+}
+
+function venueLine(event) {
+  return [escape(event.venue || ''), eventAddress(event, escape(event.address || ''))].filter(Boolean).join(', ');
+}
+
+export function bookingLabel(event) {
+  const price = event.price ? ' — <span class="home-event-amount">' + escape(event.price) + '</span>' : '';
+  return escape(event.booking.label) + price;
+}
+
 export function eventDate({ start, end = start }) {
   const full = day => dateFormat.format(new Date(day + 'T12:00:00Z'));
   const year = day => day.slice(0, 4);
@@ -75,7 +90,6 @@ function renderFilters(events, calendar) {
       <a href="${calendar}" data-calendar-audience="" aria-current="true">Все события</a>
       <a href="${calendar}?audience=kids" data-calendar-audience="kids" class="calendar-kids">Для детей</a>
     </nav>
-    <a class="calendar-results-shortcut" href="#calendar-results">К списку событий</a>
     <nav class="calendar-months" aria-label="Месяц события">
       <a href="${calendar}" data-calendar-month="" aria-current="true">Все месяцы</a>${choices}
     </nav>
@@ -89,13 +103,13 @@ function renderEvent(event, calendar) {
   const time = event.time ? '<time class="calendar-time" datetime="' + escape(event.start + 'T' + event.time + '+03:00') + '">' + escape(event.time) + '</time>' : '';
   const children = event.audience === 'kids'
     ? '<span class="calendar-kids">Для детей' + (event.age ? ' · ' + escape(event.age) : '') + '</span>' : '';
-  const venue = [event.venue, event.address].filter(Boolean).map(escape).join(', ');
+  const venue = venueLine(event);
   const destination = eventDestination(event, calendar);
   const links = (event.links || []).filter(link => link.url !== destination).map(link =>
     '<a href="' + escape(link.url) + '"' + (link.url === event.booking?.url ? ' data-booking-source' : '') + '>' + escape(link.label) + '</a>'
   );
-  if (event.booking) links.unshift('<a data-calendar-booking href="' + escape(event.booking.url) + '" hidden>' + escape(event.booking.label) + '</a>');
-  const price = event.price ? '<p data-calendar-price hidden>' + escape(event.price) + '</p>' : '';
+  if (event.booking) links.unshift('<a data-calendar-booking href="' + escape(event.booking.url) + '" hidden>' + bookingLabel(event) + '</a>');
+  const price = event.price && !event.booking ? '<p data-calendar-price hidden>' + escape(event.price) + '</p>' : '';
   return `<article class="calendar-event" id="${escape(event.id)}" data-calendar-event data-start="${escape(event.start)}" data-end="${escape(end)}" data-time="${escape(event.time || '')}" data-audience="${escape(event.audience || '')}" tabindex="-1" aria-labelledby="${escape(event.id)}-title">
     <div class="calendar-date">${eventDate(event)}${time}</div>
     <div class="calendar-event-copy">
@@ -112,7 +126,7 @@ export function renderEventPage(event, base, now = new Date()) {
   const end = event.end || event.start;
   const past = end < moscowDate.format(now);
   const calendar = base + 'calendar/';
-  const venue = [event.venue, event.address].filter(Boolean).join(', ');
+  const venue = venueLine(event);
   const clock = event.time ? ' <time datetime="' + escape(event.start + 'T' + event.time + ':00+03:00') + '">' +
     escape(event.time) + (event.endTime ? '–' + escape(event.endTime) : '') + '</time>' : '';
   const audience = event.audience === 'kids' ? '<span class="calendar-kids">Для детей' +
@@ -124,11 +138,11 @@ export function renderEventPage(event, base, now = new Date()) {
   const reference = link => '<a href="' + escape(link.url) + '">' + escape(link.label) + '</a>';
   const links = (event.links || []).filter(link => link !== report && link.url !== event.booking?.url).map(reference);
   const access = [];
-  if (event.price) access.push('<p class="event-price">' + escape(event.price) + '</p>');
+  if (event.price && !event.booking) access.push('<p class="event-price">' + escape(event.price) + '</p>');
   if (event.access) access.push('<p>' + escape(event.access) + '</p>');
-  const fallback = !past && (access.length || event.booking)
-    ? '<noscript>' + access.join('') + (event.booking ? reference(event.booking) : '') + '</noscript>' : '';
-  if (event.booking) access.push('<a class="home-action" href="' + escape(event.booking.url) + '">' + escape(event.booking.label) + '</a>');
+  if (event.booking) access.push('<a class="home-action" href="' + escape(event.booking.url) + '">' + bookingLabel(event) + '</a>');
+  const fallback = !past && access.length
+    ? '<noscript>' + access.join('') + '</noscript>' : '';
   return `<article class="event-article" data-event-detail data-end="${escape(end)}">
     <a class="event-calendar-link" data-event-calendar href="${escape(calendar + '#' + event.id)}">Календарь событий</a>
     <header class="event-opening">
@@ -138,7 +152,7 @@ export function renderEventPage(event, base, now = new Date()) {
     <div class="event-body">
       <div class="event-when">
         <p class="event-date">${eventDate(event)}${clock}</p>
-        <p class="event-venue">${escape(venue)}</p>
+        <p class="event-venue">${venue}</p>
         <p class="event-ended" data-event-ended${past ? '' : ' hidden'}>Событие завершилось</p>
         ${access.length ? '<div class="event-admission" data-event-admission hidden>' + access.join('') + '</div>' : ''}
         ${fallback}
@@ -163,7 +177,10 @@ export function renderCalendar(events, base, now = new Date()) {
   const entries = list => list.map(event => renderEvent(event, calendar)).join('\n');
   return `<header class="calendar-opening">
     <h1>Календарь событий</h1>
-    <a href="${calendar}#past" data-jump-past${past.length ? '' : ' hidden'}>Весь архив событий</a>
+    <nav class="calendar-entry-links" aria-label="Разделы календаря">
+      <a class="calendar-results-shortcut" href="#calendar-results">К списку событий</a>
+      <a href="${calendar}#past" data-jump-past${past.length ? '' : ' hidden'}>Весь архив событий</a>
+    </nav>
   </header>
   <div class="calendar-layout" data-calendar>
     ${renderFilters(events, calendar)}

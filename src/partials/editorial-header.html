@@ -8,21 +8,28 @@
       </div>
     </div>
     <nav id="site-navigation" class="site-navigation" aria-label="Разделы A–House">
-      <ul>
-        <li class="home-menu-extra"><a data-home-view href="{{home}}#overview">Главная</a></li>
+      <ul class="menu-sections">
         <li><a href="@@ROOT@@calendar/"{{programCurrent}}>{{eventsLabel}}</a></li>
         <li><a data-home-view href="{{home}}#visit">{{housesLabel}}</a></li>
         <li><a data-home-view href="{{home}}#media">Издания и&nbsp;статьи</a></li>
         <li><a data-home-view href="{{home}}#industry">Бюро и&nbsp;вакансии</a></li>
         <li><a href="@@ROOT@@club/"{{clubCurrent}}>Клуб A–House</a></li>
-        <li><a data-home-view href="{{home}}#partnership">Сотрудничество</a></li>
+        <li><a data-home-view href="{{home}}#partnership">Сотруд&shy;ничество</a></li>
       </ul>
       <ul class="home-menu-about">
         <li><a data-home-view href="{{home}}#projects">{{projectsLabel}}</a></li>
+        <li class="home-menu-extra"><a data-home-view href="{{home}}#overview">Главная</a></li>
         <li class="home-menu-extra"><a href="@@ROOT@@about/">Об A–House</a></li>
         <li class="home-menu-extra"><a href="#t-footer">Контакты</a></li>
         <li class="home-menu-extra theme-menu-link" hidden><a href="#site-theme">{{themeLabel}}</a></li>
       </ul>
+      <div class="menu-visit">
+        <h2>Как добраться</h2>
+        <ul>
+          <li><a href="{{venue.house.map}}"><span>{{venue.house.name}}</span> <span>{{venue.house.address}}</span></a></li>
+          <li><a href="{{venue.entrepreneur.map}}"><span>{{venue.entrepreneur.name}}</span> <span>{{venue.entrepreneur.address}}</span></a></li>
+        </ul>
+      </div>
     </nav>
   </div>
 </header>

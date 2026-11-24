@@ -49,6 +49,13 @@
 }
 .home-page .club-programs p { max-width: 34em; }
 .home-page .club-programs p + p { margin-block-start: .65em; }
+.home-page .club-programs p.club-application-status { margin-block-start: 1em; color: var(--quiet); }
+.home-page .club-programs .club-application-status + .club-apply { margin-block-start: 0; }
+
+.home-page .club-opening p a {
+  text-decoration: underline; text-decoration-thickness: 1px;
+  text-decoration-color: var(--quiet); text-underline-offset: .18em;
+}
 
 .home-page .club-page .club-apply {
   display: inline-block;
@@ -61,7 +68,7 @@
   text-underline-offset: .2em;
 }
 @media (hover: hover) {
-  .home-page .club-page .club-apply:hover { text-decoration-color: currentColor; }
+  .home-page .club-page .club-apply:hover, .home-page .club-opening p a:hover { text-decoration-color: currentColor; }
 }
 .club-terms { display: grid; align-items: baseline; gap: .65rem var(--group); }
 .home-page .club-page .club-terms .home-links { margin-block-start: .65rem; }

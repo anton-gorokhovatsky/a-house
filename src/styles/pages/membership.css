@@ -25,6 +25,7 @@
 .home-page .membership-intro .membership-benefits { max-width: 48ch; margin-top: .8rem; }
 .home-page .membership-intro .membership-note { max-width: 32ch; margin-top: .8rem; color: var(--quiet); font-size: var(--note-size); }
 .membership-intro .home-links { margin-top: 1.25rem; }
+.home-page .membership-intro .membership-availability { margin-block-start: .8rem; }
 .home-page .membership-request > :is(h2,h3) { margin: 0; font-size: var(--story-size); }
 .membership-request, .membership-field, .membership-form, .friend-fields { min-inline-size: 0; }
 .membership-form, .friend-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }

@@ -142,7 +142,14 @@ for (const file of htmlFiles) {
 }
 
 // Bookmarks and partner programmes can open any HTML document directly.
+const versionTag = [...documents.values()][0].match(/<p class="site-version">([^<]+)<\/p>/)?.[0];
+if (!versionTag || !/Версия сайта[\s\u00a0]+[1-9]\d*|Локальная сборка/.test(versionTag)) {
+  errors.push('Missing readable site version');
+}
 for (const [file, html] of documents) {
+  if (!html.includes(versionTag) || !html.includes('class="skip-content" href="#site-content"')) {
+    errors.push(file + ' is missing the shared version or the skip link');
+  }
   const main = html.match(/<main\b[^>]*\bid="site-content"[^>]*>[\s\S]*?<\/main>/i)?.[0];
   if (!main || !html.includes('class="site-header home-masthead"') || !html.includes('class="home-footer"') ||
       /\bclass="[^"]*\b(?:t-rec|t396__artboard)\b/.test(main)) {

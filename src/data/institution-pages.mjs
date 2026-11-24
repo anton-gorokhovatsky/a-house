@@ -92,7 +92,7 @@ export const institutionPages = {
     photo: photo('home/house-facade-800.webp', 800, 600, 'Красный фасад Дома A–House с двумя чёрными маркизами', 'Фото Дианы Вешкурцевой'),
     links: [link('Программа Дома', '#program-house'), link('На карте', venues.house.map), link('Резиденты Дома', '#residents')],
     sections: [
-      { id: 'program-house', title: 'Программа Дома', program: 'house', links: [link('Весь календарь A–House', '@@ROOT@@calendar/')] },
+      { id: 'program-house', title: 'Программа Дома A–House', program: 'house', links: [link('Весь календарь A–House', '@@ROOT@@calendar/')] },
       {
         id: 'inside', title: 'Внутри Дома',
         paragraphs: ['Штаб-квартира A–House занимает бывший доходный дом 1895 года. В Салоне на втором этаже проходят выставки, лекции и клубные ужины. Рядом находится Малый кабинет с архитектурными макетами.',
@@ -146,7 +146,7 @@ export const institutionPages = {
     photo: photo('DI_09068-2_1-fe7d19b5f983.webp', 3000, 2000, 'Светлый зал Дома предпринимателя с рядами кресел'),
     links: [link('Программа Дома', '#program-house'), link('На карте', venues.entrepreneur.map)],
     sections: [
-      { id: 'program-house', title: 'Программа Дома', program: 'entrepreneur', links: [link('Все встречи и регистрация на сайте Дома', 'https://dompred.ru/events')] },
+      { id: 'program-house', title: 'Программа Дома предпринимателя', program: 'entrepreneur', links: [link('Все встречи и регистрация на сайте Дома', 'https://dompred.ru/events')] },
       {
         id: 'house', title: 'Как устроен Дом',
         entries: [

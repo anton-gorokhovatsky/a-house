@@ -105,7 +105,16 @@
     const link = event.target.closest('a[href^="#"]');
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     const target = document.getElementById(link.hash.slice(1));
-    if (!target || link.classList.contains('skip-content')) return;
+    if (!target) return;
+    if (link.classList.contains('skip-content')) {
+      // On the home page the fragment also selects what the main region contains.
+      if (overview.dataset.view !== 'overview') {
+        event.preventDefault();
+        target.focus({ preventScroll: true });
+        scrollToTarget(target);
+      }
+      return;
+    }
     event.preventDefault();
     const previousView = overview.dataset.view;
     if (location.hash !== link.hash) {

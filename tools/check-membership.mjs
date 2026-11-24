@@ -75,7 +75,12 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
       const friend = kind === 'friend';
       const endpoint = friend ? '/order' : '/application';
       const entry = site + base + (friend ? '#services-checkout' : 'member/?offer=patron');
-      await page.goto(entry);
+      await page.goto(site + base + (friend ? 'press/#print-archive' : 'club/#programs'));
+      const destination = friend
+        ? page.locator('#print-archive').getByRole('link', { name: 'Оформить подписку A–Friend' })
+        : page.getByRole('link', { name: 'Подать заявку по программе A–Patron' });
+      await destination.click();
+      await page.waitForURL(entry);
       const form = page.locator('#' + kind + '-form');
       const field = key => form.locator('input[name="' + key + '"]');
       const submit = form.locator('button[type="submit"]');
@@ -101,6 +106,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         assert.match(offer, /12\s000\s₽/);
         assert.match(offer, /за\s+3\s+месяца/);
       } else {
+        assert.match((await page.locator('#member-intro').innerText()).replace(/\s+/g, ' '), /оставьте контакты/);
         assert.equal(await form.locator('[name="offer"]:checked').inputValue(), 'patron');
         await field('company').fill('Тестовое бюро');
         await form.locator('[name="connect"][value="Email"]').check();
