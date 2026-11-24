@@ -11,11 +11,14 @@ concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      deployment: false
     env:
       A_FRIEND_ORDER_URL: ${{ vars.A_FRIEND_ORDER_URL }}
       A_FRIEND_PERIOD: ${{ vars.A_FRIEND_PERIOD }}
@@ -36,9 +39,17 @@ jobs:
       - run: npm run build
       - run: npm run check
       - run: npm run check:browser
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+          include-hidden-files: true
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - name: Deploy
         id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
