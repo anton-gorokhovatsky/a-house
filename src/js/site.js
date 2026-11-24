@@ -66,7 +66,7 @@ let followingAnchor = false;
 document.addEventListener('click', event => {
   const link = event.target.closest('a[href]');
   if (reduced.matches || !link?.hash || link.origin !== location.origin || link.pathname !== location.pathname ||
-      link.search !== location.search || link.classList.contains('skip-content') || event.button !== 0 ||
+      link.search !== location.search || link.matches('.skip-content, .calendar-results-shortcut') || event.button !== 0 ||
       event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || link.hasAttribute('download') ||
       (link.target && link.target !== '_self')) return;
   followingAnchor = true;

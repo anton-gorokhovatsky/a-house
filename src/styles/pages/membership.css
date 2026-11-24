@@ -7,7 +7,7 @@
 .friend-edition { display: none; }
 .friend-edition:target { display: block; scroll-margin-block-start: 1rem; }
 .membership-intro:has(.friend-edition:target) > .home-kicker { display: none; }
-.home-page .membership-intro .friend-archive-return { display: inline-block; min-height: 44px; padding-block: .4rem; font-size: var(--note-size); text-decoration: underline; text-underline-offset: .18em; }
+.home-page .membership-intro .friend-archive-return { display: inline-block; min-height: 44px; padding-block: .4rem; font-size: var(--note-size); text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
 .home-page .membership-intro:has(.friend-edition:target) .friend-archive-all { display: none; }
 .home-page .membership-intro :is(h1,h2) {
   margin: .25em 0 0; font: 400 var(--lead-size)/1.04 var(--display);
@@ -34,7 +34,7 @@
 .friend-quantity { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
 .friend-basket button { color: var(--ink); background: transparent; padding: .3rem .5rem; }
 .friend-quantity button:is([data-order-action="less"],[data-order-action="more"]) { min-width: 44px; text-align: center; border: 1px solid var(--quiet); }
-.friend-basket button:is([data-order-action="remove"],[data-order-action="restore"]) { text-decoration: underline; text-underline-offset: .18em; }
+.friend-basket button:is([data-order-action="remove"],[data-order-action="restore"]) { text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
 .membership-request .friend-quantity input[type="number"] { width: 5ch; min-height: 44px; padding: .3rem; text-align: center; appearance: textfield; }
 .friend-quantity input::-webkit-inner-spin-button { appearance: none; }
 .home-page .friend-basket .friend-total { margin-top: .65rem; font-weight: 600; }
@@ -75,11 +75,11 @@
 .order-consent input { flex: none; width: 1em; height: 1em; margin: 0; accent-color: var(--ink); }
 .order-consent > span { min-inline-size: 0; hyphens: auto; overflow-wrap: anywhere; }
 .order-consent input:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-.home-page .membership-form a { color: inherit; text-decoration: underline; text-underline-offset: .18em; }
+.home-page .membership-form a { color: inherit; text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
 .membership-request button:disabled { color: #585858; background: #e8e8e8; cursor: default; }
 .membership-extra summary {
   width: fit-content; max-width: 100%; padding-block: .45rem; list-style: none;
-  cursor: pointer; text-decoration: underline; text-underline-offset: .19em;
+  cursor: pointer; text-decoration: underline; text-underline-offset: var(--link-underline-offset);
 }
 .membership-extra summary::-webkit-details-marker { display: none; }
 .membership-extra-fields { display: grid; gap: 1rem; margin-top: .65rem; }

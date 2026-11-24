@@ -54,7 +54,7 @@
 
 .home-page .club-opening p a {
   text-decoration: underline; text-decoration-thickness: 1px;
-  text-decoration-color: var(--quiet); text-underline-offset: .18em;
+  text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset);
 }
 
 .home-page .club-page .club-apply {
@@ -64,8 +64,8 @@
   padding-block: max(.3em, calc((44px - 1.4em) / 2));
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-decoration-color: var(--quiet);
-  text-underline-offset: .2em;
+  text-decoration-color: var(--link-underline-color);
+  text-underline-offset: var(--link-underline-offset);
 }
 @media (hover: hover) {
   .home-page .club-page .club-apply:hover, .home-page .club-opening p a:hover { text-decoration-color: currentColor; }

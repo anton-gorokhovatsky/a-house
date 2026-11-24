@@ -32,9 +32,9 @@
 .home-page :is(.publication-reader, .archive-index) a {
   color: inherit;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+  text-decoration-color: var(--link-underline-color);
   text-decoration-thickness: .06em;
-  text-underline-offset: .2em;
+  text-underline-offset: var(--link-underline-offset);
 }
 .home-page :is(.publication-reader, .archive-index) a:hover { text-decoration-color: currentColor; }
 .publication-back, .publication-meta a, .publication-issue a {

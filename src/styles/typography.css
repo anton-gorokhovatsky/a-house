@@ -12,7 +12,24 @@
   --type-brand: 1.5rem;
 }
 .project-name { white-space: nowrap; word-break: normal; overflow-wrap: normal; hyphens: none; }
-.wrap-group { display: inline-block; max-inline-size: 100%; hyphens: manual; }
+.wrap-group { display: inline-block; inline-size: max-content; max-inline-size: 100%; hyphens: manual; overflow-wrap: break-word; }
+a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underline-offset: inherit; }
+.media-title-phrase {
+  hyphens: auto;
+  -webkit-hyphenate-limit-before: 4;
+  -webkit-hyphenate-limit-after: 5;
+  hyphenate-limit-chars: 9 4 5;
+}
+#media-heading { container: media-label / inline-size; font-size: var(--chapter-size); }
+@media (max-width: 61.25em) {
+  #site-navigation .menu-sections { container: media-label / inline-size; font-size: var(--type-card); }
+}
+/* In the section typeface the noun measures 6.705em and the phrase 7.64em.
+   When only the noun fits, let «и» follow «Журнал» on the preceding line. */
+@container media-label (6.705em <= inline-size < 7.64em) {
+  .media-title-phrase { display: inline; }
+  .media-title-phrase > span { display: inline-block; }
+}
 .legal-name { display: inline-block; max-inline-size: 100%; overflow-wrap: break-word; hyphens: manual; vertical-align: top; }
 .legal-name > span { white-space: nowrap; }
 

@@ -1,4 +1,11 @@
-* { -webkit-tap-highlight-color: transparent; }
+:root {
+  --link-underline-color: color-mix(in srgb, currentColor 55%, transparent);
+  --link-underline-offset: .16em;
+  --link-title-underline-offset: .065em;
+}
+:where(h1, h2, h3, h4, h5, h6) { --link-underline-offset: var(--link-title-underline-offset); }
+a:focus-visible, a:active { --link-underline-color: currentColor; }
+@media (hover: hover) { a:hover { --link-underline-color: currentColor; } }
 body { margin: 0; }
 html { overflow-x: clip; }
 @media (prefers-reduced-motion: no-preference) {
@@ -60,8 +67,8 @@ main:focus { outline: none; }
   max-width: 100%;
   padding-block: .23em;
   color: inherit;
-  text-decoration: underline 1px #858585;
-  text-underline-offset: .2em;
+  text-decoration: underline 1px var(--link-underline-color);
+  text-underline-offset: var(--link-underline-offset);
 }
 #t-footer .footer-legal nav a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 #t-footer .footer-legal nav a:hover { text-decoration-color: currentColor; }
@@ -169,7 +176,7 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
   line-height: 1.25;
   text-transform: uppercase;
   text-decoration: none;
-  text-underline-offset: .18em;
+  text-underline-offset: var(--link-underline-offset);
 }
 .site-presence-toggle { cursor: pointer; }
 .site-navigation :is(a, button):is(:focus-visible, [aria-current="page"], [aria-expanded="true"]) { text-decoration: underline; }
@@ -257,7 +264,7 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
 }
 .missing-page,.archive-index { box-sizing: border-box; min-height: 100vh; padding: clamp(22px,5vw,85px); font: 400 clamp(20px,2.1vw,32px)/1.25 AHTimes,Georgia,serif; }
 .missing-page { background: #000; color: #fff; display: flex; flex-direction: column; gap: 15vh; }
-.missing-page a,.archive-index a { color: inherit; text-underline-offset: .15em; }
+.missing-page a,.archive-index a { color: inherit; text-underline-offset: var(--link-underline-offset); }
 .missing-page h1,.archive-index h1 { font: inherit; font-size: clamp(42px,7vw,105px); line-height: 1; margin: .25em 0; }
 .missing-page p { max-width: 36ch; }
 .missing-page nav { display: flex; flex-wrap: wrap; gap: 1em; }

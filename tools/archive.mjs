@@ -73,6 +73,7 @@ export function renderCurrentPrintIssues(issues, projects) {
     .sort((a, b) => b.published.localeCompare(a.published))[0];
   return [regular, special].filter(Boolean).sort((a, b) => b.published.localeCompare(a.published)).map((issue, index) => {
     const { cover } = issue;
+    const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
     const subscriberIssue = issue === regular;
     const more = issue.announcement ? ` <a href="${escape(issue.announcement)}">О выпуске в Telegram</a>` : '';
     const articleLink = issue.article
@@ -81,7 +82,7 @@ export function renderCurrentPrintIssues(issues, projects) {
     return `<article class="home-issue ${index === 0 ? 'home-current-issue' : 'home-companion-issue'} editorial-pair">
       ${cover ? `<figure class="home-issue-cover"><img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy"></figure>` : ''}
       <div class="home-issue-copy">
-        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h4>${escape(issue.title)}</h4></div>
+        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h4>${title}</h4></div>
         <div class="home-issue-story">${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}${articleLink}</div>
       </div>
     </article>`;

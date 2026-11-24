@@ -83,7 +83,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-editorial img { display: block; max-width: 100%; }
 .home-page .home-editorial a { color: inherit; text-decoration: none; }
 .home-page .home-editorial .home-upcoming-empty a {
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset);
 }
 .home-page .home-editorial :is(a,summary):focus-visible, .home-page #t-header :is(a,button):focus-visible {
   outline: 2px solid currentColor; outline-offset: 3px;
@@ -118,9 +118,9 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-links > a, .home-section-tail > a, .home-section-head > a,
 .home-editorial .home-action { display: inline-block; padding-block: .42rem; }
 .home-page .home-editorial .home-links > a:not(:first-child) { color: var(--quiet); }
-.home-page .home-editorial :is(.home-introduction a,.home-links > a,.home-section-tail > a,.home-section-head > a,.home-program-links a,.home-venue-link,.home-places .home-address a,.home-feature-heading h3 a,.home-event-link h3,.calendar-event-copy h3 a) {
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .19em;
-  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+.home-page .home-editorial :is(.home-introduction a,.home-links > a,.home-section-tail > a,.home-section-head > a,.home-program-links a,.home-venue-link,.home-places .home-address a,.home-feature-heading h3 a,.home-feature-photo figcaption a,.home-event-link h3,.calendar-event-copy h3 a) {
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset);
+  text-decoration-color: var(--link-underline-color);
 }
 
 .home-program {
@@ -136,7 +136,13 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-feature-heading .home-meta { display: flex; flex-wrap: wrap; gap: .1rem 1rem; }
 .home-feature-date { white-space: normal; }
 .home-page .home-feature-heading h3 {
-  margin-top: clamp(.2rem, .5vw, .5rem); font-size: clamp(3rem, 6.55cqi, 6.25rem); line-height: 1.06;
+  margin-top: clamp(.5rem, .65vw, .65rem); font-size: clamp(3rem, 6.55cqi, 6.25rem); line-height: 1.06;
+}
+.home-feature-heading h3 > a {
+  display: block;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding-block-end: .12em;
 }
 .home-feature-visit { grid-area: visit; align-self: start; max-width: 31rem; }
 .home-page .home-feature-visit .home-feature-context { margin-bottom: clamp(1.2rem, 1.8vw, 2rem); max-width: 35ch; text-wrap: pretty; }
@@ -161,7 +167,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-event .home-meta + .home-event-info { margin-top: .32rem; }
 .home-page .home-event h3 + p { margin-top: .48rem; max-width: 30em; }
 .home-page .home-event .home-event-price { margin-top: .6rem; font-size: var(--type-body); line-height: 1.4; }
-.home-page .home-editorial .home-event-admission { display: inline-block; min-height: 44px; align-content: center; text-decoration: underline; text-underline-offset: .18em; }
+.home-page .home-editorial .home-event-admission { display: inline-block; min-height: 44px; align-content: center; text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
 .home-event-amount { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .home-page .home-event p.home-detail { margin-top: .35rem; color: var(--quiet); }
 .home-season .home-events:not(:has(> article:not([hidden]))) { display: none; }
@@ -221,7 +227,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-job-body h5 { margin: 1.1rem 0 .3rem; font: 600 1em/1.4 var(--text); }
 .home-job-body li + li { margin-top: .4rem; }
 .home-job-body .home-job-application { margin-top: .85rem; }
-.home-page .home-job-body .home-job-apply { display: inline-block; padding-block: .65rem; text-decoration: underline; text-underline-offset: .18em; }
+.home-page .home-job-body .home-job-apply { display: inline-block; padding-block: .65rem; text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
 .home-job-body > p + p { margin-top: .6rem; }
 @media (min-width: 56em) {
   .home-industry-layout { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--chapter); }
@@ -240,13 +246,13 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page .home-visit .project-examples { margin-block-start: var(--story-gap); }
 .home-places .project-examples p { max-width: 44ch; color: var(--quiet); }
 .home-page .home-editorial :is(.home-places h3, .project-intro h3, .home-community h3, .home-gathering h3, .home-print h3) a {
-  color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: .17em; text-decoration-thickness: 1px;
+  color: inherit; text-decoration: underline; text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset); text-decoration-thickness: 1px;
 }
 .venue-program ul { list-style: none; margin: 0; padding: 0; }
 .home-visit-info .venue-program { margin-top: 1rem; }
 .venue-program li + li { margin-top: .6rem; }
 .venue-program .home-meta { display: block; }
-.home-page .venue-program a { display: inline-block; min-block-size: 44px; align-content: center; font-weight: 600; text-decoration: underline; text-underline-offset: .18em; }
+.home-page .venue-program a { display: inline-block; min-block-size: 44px; align-content: center; font-weight: 600; text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
 .home-places .home-venue-hours { margin: 0 0 .65rem; padding: 0; }
 .home-venue-hours div { display: flex; flex-wrap: wrap; gap: 0 .65em; align-items: baseline; }
 .home-venue-hours dd { margin: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -257,8 +263,8 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-editorial:not([data-view]) .home-directory:not(:target):not(:has(.home-detail :target, #projects-heading:target)) .home-detail { display: none; }
 .home-project-navigation { display: flex; flex-wrap: wrap; gap: 0 1.5em; margin-block: -.6rem var(--group); }
 .home-page .home-editorial :is(.home-project-navigation a,.home-project-name) {
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em;
-  text-decoration-color: color-mix(in srgb, currentColor 48%, transparent);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset);
+  text-decoration-color: var(--link-underline-color);
 }
 .home-project-navigation a {
   display: inline-block; min-block-size: 44px; padding-block: max(.35em, calc((44px - 1.46em) / 2));
@@ -286,7 +292,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .project-examples li + li { margin-block-start: var(--story-gap); }
 .project-examples li > a { display: inline-block; font-weight: 600; padding-block: .2em; }
 .home-page .home-editorial :is(.project-examples, .home-edition-brief h4, .home-project-feature figcaption, .editions-access) a, .home-page .home-gathering > a {
-  text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb,currentColor 52%,transparent); text-underline-offset: .18em;
+  text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset);
 }
 .home-page .home-project-feature figcaption a { padding-top: 0; }
 .home-community, .home-gatherings, .home-editions { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,19rem),1fr)); align-items: start; gap: var(--group); }
@@ -301,11 +307,11 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page .home-gathering > a { display: inline-block; margin-block-start: .15em; min-block-size: 44px; align-content: center; }
 .editions-access { margin-block-start: var(--group); }
 .editions-access p { max-inline-size: 62ch; }
-.home-page .home-editorial .press-highlights .home-issue-story > p a { text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb,currentColor 52%,transparent); }
+.home-page .home-editorial .press-highlights .home-issue-story > p a { text-decoration: underline; text-underline-offset: var(--link-underline-offset); text-decoration-thickness: 1px; text-decoration-color: var(--link-underline-color); }
 .editions-access .home-section-tail { gap: 0 1.25em; margin-block-start: .35em; }
 .editions-access .home-section-tail a { min-block-size: 44px; align-content: center; }
 .home-page .home-edition-brief h4 { margin: 0 0 .35em; font: 400 var(--type-card)/1.2 var(--display); }
-.home-page .home-past-projects h2 a { color: inherit; text-decoration: underline; text-underline-offset: .17em; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb,currentColor 45%,transparent); }
+.home-page .home-past-projects h2 a { color: inherit; text-decoration: underline; text-underline-offset: var(--link-underline-offset); text-decoration-thickness: 1px; text-decoration-color: var(--link-underline-color); }
 .home-edition-brief .project-examples p, .home-community .project-examples p { color: var(--quiet); }
 .home-project-list { display: grid; gap: var(--group); }
 .home-direction { min-width: 0; scroll-margin-block-start: 1.4rem; }
@@ -352,8 +358,8 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page #t-footer .t389__list_item a[href^="mailto:"] { white-space: normal; overflow-wrap: anywhere; }
 
 @media (hover:hover) {
-  .home-page .home-editorial a:not(.home-event-link,.home-action):hover, .home-page .home-event-link:hover h3, .home-page #t-header .site-navigation a:hover,
-  .home-page #t-header .home-tools > :hover { text-decoration: underline; text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: .19em; }
+  .home-page .home-editorial a:not(.home-event-link,.home-project-row,.press-file,.home-action):hover, .home-page #t-header .site-navigation a:hover,
+  .home-page #t-header .home-tools > :hover { text-decoration: underline; text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset); }
   .home-page .home-editorial a.home-action:hover { background: #373737; }
 }
 .home-page .home-editorial .home-action:focus-visible { outline-color: var(--ink); }
@@ -396,7 +402,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   }
   .home-page #t-header .menu-visit a { padding-block: .3em; }
   .menu-visit a > span { display: block; }
-  .menu-visit a > span:first-child { text-decoration: underline; text-decoration-color: var(--quiet); text-underline-offset: .18em; }
+  .menu-visit a > span:first-child { text-decoration: underline; text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset); }
   .menu-visit a > span + span { margin-top: .15em; color: var(--quiet); font-size: var(--note-size); line-height: 1.35; }
 }
 @container home-header (max-width:11em) {
@@ -439,9 +445,9 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   .home-feature-slot figcaption { grid-area: report; }
   .home-page .home-feature-slot figcaption a {
     display: inline-block; align-content: center; min-height: 44px; padding: 0;
-    text-decoration: underline; text-underline-offset: .19em;
+    text-decoration: underline; text-underline-offset: var(--link-underline-offset);
   }
-  .home-page .home-feature-slot .home-feature-heading h3 { margin-top: .19rem; font-size: clamp(1.875rem, 11.6cqi, var(--lead-size)); }
+  .home-page .home-feature-slot .home-feature-heading h3 { margin-top: .5rem; font-size: clamp(1.875rem, 11.6cqi, var(--lead-size)); }
   .home-feature-slot .home-feature-visit { display: flex; flex-direction: column; align-items: flex-start; padding-top: .65rem; max-width: none; }
   .home-page .home-feature-slot .home-feature-context { order: 1; max-width: 42ch; margin: 1.05rem 0 0; font: inherit; }
   .home-page .home-feature-visit .home-feature-place { margin: 0; }
@@ -479,9 +485,9 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   .home-photo-pair img.home-photo-lead { max-height: 27svh; }
   .home-program-head { margin-bottom: .35rem; }
   .home-feature-slot .home-photo-pair { margin-bottom: .5rem; }
-  .home-feature-slot .home-feature-heading { display: flex; flex-direction: column; gap: .35rem; }
+  .home-feature-slot .home-feature-heading { display: flex; flex-direction: column; gap: .5rem; }
   .home-page .home-feature-slot .home-feature-heading h3 { order: -1; margin-top: 0; }
-  .home-feature-slot .home-feature-visit { padding-top: .35rem; }
+  .home-feature-slot .home-feature-visit { padding-top: .15rem; }
   .home-page .home-feature-slot a.home-action { margin-top: .4rem; }
   .home-page .home-feature-slot .home-feature-access { order: 1; margin-top: .65rem; }
   .home-page .home-feature-slot .home-feature-context { order: 2; }
@@ -510,8 +516,8 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page .home-footer :is(p,ul) { margin: 0; padding: 0; }
 .home-page #t-footer.home-footer a {
   display: inline-block; max-width: 100%; color: inherit; font: inherit;
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em;
-  text-decoration-color: #777;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset);
+  text-decoration-color: var(--link-underline-color);
 }
 .home-page #t-footer.home-footer a[href^="mailto:"] { text-transform: lowercase; }
 .home-page #t-footer.home-footer .home-footer-office > a {
@@ -533,7 +539,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-footer-inner > .footer-legal { grid-column: 1 / -1; }
 .home-page #t-footer.home-footer a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 @media (hover:hover) {
-  .home-page #t-footer.home-footer a:hover { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: .2em; }
+  .home-page #t-footer.home-footer a:hover { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: var(--link-underline-offset); }
 }
 @media (max-width:54em) {
   .home-footer-inner { grid-template-columns: minmax(0,1fr); }

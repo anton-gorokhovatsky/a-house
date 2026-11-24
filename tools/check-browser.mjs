@@ -115,7 +115,13 @@ async function checkMobileExhibition(page) {
       'A visitor should immediately see a substantial exhibition photograph');
     const action = poster.getByRole('link', { name: feature.booking.label });
     assert.equal(await action.getAttribute('href'), feature.booking.url);
-    const heading = await poster.getByRole('heading', { name: feature.title }).boundingBox();
+    const title = poster.getByRole('heading', { name: feature.title });
+    const heading = await title.boundingBox();
+    const linkBox = await title.getByRole('link').boundingBox();
+    const captionBox = await poster.locator('.home-feature-heading .home-meta').boundingBox();
+    const clearance = Math.max(linkBox.y - (captionBox.y + captionBox.height),
+      captionBox.y - (linkBox.y + linkBox.height));
+    assert.ok(clearance >= 4, 'Keyboard focus around the exhibition title must leave the date unobstructed');
     const place = await poster.locator('.home-venue-link').boundingBox();
     const button = await action.boundingBox();
     const intro = await page.locator('.home-introduction').boundingBox();
@@ -604,6 +610,41 @@ async function checkEnlargedMenu(page) {
 }
 
 async function checkEditorialGrouping(page) {
+  const title = page.locator('#media-title');
+  const mobile = page.viewportSize().width < 600;
+  const [beforeConjunction, afterConjunction] = await renderedWordGaps(title);
+  if (mobile) assert.ok(beforeConjunction === null || beforeConjunction < 0, 'The print section title breaks before «и издательство» on the phone');
+  else assert.ok(beforeConjunction > 0, 'The print section title fits on one line on desktop');
+  assert.ok(afterConjunction > 0, 'The conjunction must remain on the same line as the noun');
+
+  const renderedLines = locator => locator.evaluate(element => {
+    const range = document.createRange();
+    range.selectNodeContents(element.firstChild);
+    return new Set([...range.getClientRects()].filter(rect => rect.width > 0).map(rect => Math.round(rect.top))).size;
+  });
+  const specialTitle = page.locator('.home-issue h4').filter({hasText: /A–Focus.*предприни/u});
+  const markedWord = specialTitle.locator('.wrap-group');
+  if (await specialTitle.count()) assert.equal(await renderedLines(markedWord), 1,
+    'Keep the full word «предпринимателя» on a fresh line when it fits in the A–Focus title');
+
+  if (mobile) {
+    const viewport = page.viewportSize();
+    const menu = page.locator('.site-menu-toggle');
+    const largerText = await page.addStyleTag({content: 'html { font-size: 200% !important; }'});
+    try {
+      await page.setViewportSize({width: 320, height: viewport.height});
+      await menu.tap();
+      const item = page.locator('#site-navigation a[href$="#media"]');
+      const [before, after] = await renderedWordGaps(item);
+      assert.ok(before > 0 && (after === null || after < 0), 'In the enlarged menu «Журнал и» still has room on the first line');
+      assert.equal(await renderedLines(item.getByText('издательство', {exact: true})), 1,
+        'At 320px and 200% text the whole noun fits on a fresh menu line');
+    } finally {
+      if (await menu.getAttribute('aria-expanded') === 'true') await menu.tap();
+      await largerText.evaluate(style => style.remove());
+      await page.setViewportSize(viewport);
+    }
+  }
   const festival = page.locator('.home-gathering').filter({ hasText: 'A–Fest' });
   const countLines = await festival.locator('p').last().evaluate(async el => {
     await document.fonts.ready;

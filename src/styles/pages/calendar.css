@@ -17,8 +17,8 @@
   color: inherit;
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: .19em;
-  text-decoration-color: #939393;
+  text-underline-offset: var(--link-underline-offset);
+  text-decoration-color: var(--link-underline-color);
 }
 .calendar-entry-links a, .calendar-months a, .calendar-audience a,
 .calendar-family-source, .calendar-event-links a, .calendar-archive-tools a, [data-calendar-reset] {
@@ -117,7 +117,7 @@
 }
 @media (hover: hover) {
   .home-page .calendar-page a:hover {
-    text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: .19em;
+    text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: var(--link-underline-offset);
   }
 }
 @media (forced-colors: active) {
@@ -126,8 +126,8 @@
 
 .event-page { max-inline-size: 77rem; padding-block-start: var(--page-entry-with-back-link); }
 .home-page .event-page a:not(.home-action) {
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em;
-  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset);
+  text-decoration-color: var(--link-underline-color);
 }
 .event-calendar-link, .event-reading a, .event-photos figcaption a {
   display: inline-block; align-content: center; min-block-size: 44px;

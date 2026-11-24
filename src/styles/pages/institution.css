@@ -127,8 +127,8 @@
 .home-page .institution-page a {
   color: inherit;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
-  text-underline-offset: .2em;
+  text-decoration-color: var(--link-underline-color);
+  text-underline-offset: var(--link-underline-offset);
   text-decoration-thickness: 1px;
 }
 

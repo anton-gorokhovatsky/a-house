@@ -18,9 +18,9 @@
   padding-block: .2em;
   color: inherit;
   text-decoration: underline;
-  text-underline-offset: .18em;
+  text-underline-offset: var(--link-underline-offset);
   text-decoration-thickness: 1px;
-  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-decoration-color: var(--link-underline-color);
 }
 .home-page .publication-catalog .archive-topics a[aria-current] {
   color: var(--ink);
@@ -53,13 +53,10 @@
   overflow-wrap: anywhere;
   hyphens: auto;
   text-wrap: pretty;
-  text-decoration: none;
+  text-decoration: underline 1px var(--link-underline-color);
+  text-underline-offset: var(--link-title-underline-offset);
 }
-.home-page .publication-catalog .publication-list a:is(:hover, :focus-visible) {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: .17em;
-}
+.home-page .publication-catalog .publication-list a:visited { color: var(--quiet); }
 @media (min-width: 45em) {
   .home-page .publication-catalog .publication-list li {
     grid-template-columns: 9.5rem minmax(0, 1fr);

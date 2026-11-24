@@ -52,6 +52,41 @@ function russianSpacing(text) {
     .replace(/(?<=\S) (?=[—·](?:\s|$))/gu, '\u00a0');
 }
 
+// Old rich-text imports wrapped links in <u> or added <u> inside the link.
+// Let the link own its underline, keeping independent annotations and their attributes.
+function cleanLinkUnderlines(tokens) {
+  let linkStart = -1;
+  const underlines = [];
+  let changed = false;
+  for (const [i, tag] of tokens.entries()) {
+    if (/^<a\s/i.test(tag) && /\shref\s*=/i.test(tag)) {
+      linkStart = i;
+      changed = false;
+    } else if (/^<u\b/i.test(tag)) {
+      underlines.push(i);
+    } else if (/^<\/u\s*>$/i.test(tag)) {
+      const start = underlines.pop();
+      if (linkStart >= 0 && start > linkStart && /^<u\s*>$/i.test(tokens[start])) {
+        tokens[start] = tokens[i] = '';
+        changed = true;
+      }
+    } else if (linkStart >= 0 && /^<\/a\s*>$/i.test(tag)) {
+      if (underlines.at(-1) === linkStart - 1 && /^<u\s*>$/i.test(tokens[linkStart - 1]) && /^<\/u\s*>$/i.test(tokens[i + 1])) {
+        tokens[underlines.pop()] = tokens[i + 1] = '';
+        changed = true;
+      }
+      if (changed) {
+        const content = tokens.slice(linkStart + 1, i).join('');
+        const [, before, label, after] = content.match(/^((?:\s|&nbsp;)*)([\s\S]*?)((?:\s|&nbsp;)*)$/i);
+        tokens[linkStart] = before + tokens[linkStart] + label + tag + after;
+        tokens.fill('', linkStart + 1, i + 1);
+      }
+      linkStart = -1;
+    }
+  }
+  return tokens.join('');
+}
+
 // Join a paragraph's text across inline tags, including links and <time>,
 // then put its characters back in the original text nodes. This keeps both
 // sides of a link and its complete opening tag exactly where the author put them.
@@ -94,5 +129,5 @@ export function typesetText(html) {
     }
   }
   finishRun();
-  return tokens.join('');
+  return cleanLinkUnderlines(tokens);
 }
