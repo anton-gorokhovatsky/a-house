@@ -850,10 +850,22 @@ async function checkClubApplication(page) {
   assert.equal(await card.locator('.club-application-status').count(), memberOpen ? 0 : 1);
   const action = memberOpen ? 'Подать заявку' : 'Посмотреть анкету';
   const application = card.getByRole('link', { name: action + ' по программе ' + programName });
-  await application.evaluate(link => link.scrollIntoView({ block: 'center', behavior: 'instant' }));
-  const position = await application.evaluate(link => ({ href: link.href, top: link.getBoundingClientRect().top }));
+  await application.evaluate(async link => {
+    await document.fonts.ready;
+    link.scrollIntoView({ block: 'center', behavior: 'instant' });
+    // The browser can still scroll the link while preparing a pointer click.
+    link.addEventListener('click', () => {
+      sessionStorage.setItem('test-club-link-position', JSON.stringify({ href: link.href, top: link.getBoundingClientRect().top }));
+    }, { once: true });
+  });
   await application.click();
   await page.waitForURL(url + 'member/?offer=patron');
+  const position = await page.evaluate(() => {
+    const position = sessionStorage.getItem('test-club-link-position');
+    sessionStorage.removeItem('test-club-link-position');
+    return JSON.parse(position);
+  });
+  assert.ok(position, 'Measure the position at the actual click on the application link');
   assert.equal(await page.locator('.home-masthead').count(), 1);
   const form = page.locator('#member-form');
   const selected = form.getByRole('radio', { name: programName, exact: true });
