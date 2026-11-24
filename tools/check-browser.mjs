@@ -672,6 +672,15 @@ async function checkEnlargedMenu(page) {
       return top >= header.bottom - 1 && top < innerHeight - 24;
     });
   }
+  await page.goto(url + 'special_projects/#rec2308379591');
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForFunction(() => {
+    const contact = document.querySelector('main a:target');
+    if (!contact || contact.getAttribute('href') !== 'mailto:partners@ahouseproject.com') return false;
+    const link = contact.getBoundingClientRect();
+    const header = document.querySelector('#t-header').getBoundingClientRect();
+    return link.top >= header.bottom - 1 && link.bottom <= innerHeight;
+  });
 }
 
 async function checkEditorialGrouping(page) {

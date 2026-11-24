@@ -148,17 +148,17 @@ if (header) {
   openMenu(false);
   measureHeader();
   new ResizeObserver(measureHeader).observe(header);
-  // The home page handles its own routes. Other pages use native section bookmarks.
+  // The home page handles its own routes. Other pages use native fragment links.
   if (location.hash && !document.getElementById('overview') && performance.getEntriesByType('navigation')[0]?.type === 'navigate') {
     const input = cancelPositioningOnInput();
     input.signal.addEventListener('abort', () => { entryBookmark = null; }, { once: true });
     window.addEventListener('pageshow', () => requestAnimationFrame(async () => {
-      const bookmark = document.querySelector('main :is(section, article, h1, h2, h3, h4):target');
+      const bookmark = document.querySelector('main :is(section, article, h1, h2, h3, h4, a[href]):target');
       if (!bookmark) {
         input.abort();
         return;
       }
-      // Late type metrics can move a bookmarked heading by several screens.
+      // Late type metrics can move a fragment target by several screens.
       bookmark.getBoundingClientRect();
       await document.fonts.ready;
       await new Promise(resolve => requestAnimationFrame(resolve));
