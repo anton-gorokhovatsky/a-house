@@ -26,17 +26,15 @@ function photoFigure(photo, portfolio) {
 }
 
 function projectFeature(project) {
-  const title = `<h3 class="editorial-pair-title">${link(project.href, project.name)}</h3>`;
-  const intro = `<header class="project-intro">${title}<p>${escape(project.description)}</p></header>`;
-  if (project.feature.portfolios) {
-    return `<article class="home-project-feature home-portfolio-feature editorial-pair">
-      ${intro}
-      <div class="home-project-portfolios">${project.feature.portfolios.map(item => photoFigure(item.photo, item)).join('')}</div>
-      <div class="home-project-feature-copy">${renderProjectWorks(project)}</div>
-    </article>`;
-  }
-  return `<article class="home-project-feature editorial-pair">
-    ${intro}${photoFigure(project.feature.photo)}
+  const bookmark = escape(project.bookmark);
+  const { portfolios, photo } = project.feature;
+  const images = portfolios
+    ? `<div class="home-project-portfolios">${portfolios.map(item => photoFigure(item.photo, item)).join('')}</div>`
+    : photoFigure(photo);
+  return `<article class="home-project-feature editorial-pair" aria-labelledby="${bookmark}">
+    <h2 id="${bookmark}" class="editorial-pair-title">${link(project.href, project.name)}</h2>
+    <p class="project-intro">${escape(project.description)}</p>
+    ${images}
     <div class="home-project-feature-copy">${renderProjectWorks(project)}</div>
   </article>`;
 }
@@ -61,7 +59,7 @@ export function renderHomeProjects(projects, events, group) {
         ${renderProjectWorks(project)}</article>`;
     }
     const distinct = project.works.some(work => work.href && work.href !== project.href);
-    return `<article class="home-edition-brief"><h4>${distinct ? link(project.href, project.name) : escape(project.name)}</h4>
+    return `<article class="home-edition-brief"><h3>${distinct ? link(project.href, project.name) : escape(project.name)}</h3>
       ${renderProjectWorks(project)}</article>`;
   }).join('\n');
 }

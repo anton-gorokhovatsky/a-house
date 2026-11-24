@@ -31,7 +31,7 @@
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
-    const heading = selected && document.getElementById(selected.getAttribute('aria-labelledby'));
+    const heading = selected && document.getElementById(selected.dataset.homeTitle || selected.getAttribute('aria-labelledby'));
     const sectionTitle = heading?.querySelector('.home-detail') || heading;
     document.title = sectionTitle
       ? sectionTitle.textContent.replaceAll('\u00ad', '').replace(/\s+/g, ' ').trim() + ' — ' + homeTitle
@@ -126,8 +126,9 @@
     }
     displayView(target);
     scrollToTarget(target, previousView === overview.dataset.view ? 'auto' : 'instant');
-    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-    target.focus({ preventScroll: true });
+    const focusTarget = document.getElementById(target.dataset.homeTitle) || target;
+    if (!focusTarget.hasAttribute('tabindex')) focusTarget.setAttribute('tabindex', '-1');
+    focusTarget.focus({ preventScroll: true });
   });
 
   // The calendar keeps the same public event address before and after the last day.

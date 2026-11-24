@@ -82,7 +82,7 @@ export function renderCurrentPrintIssues(issues, projects) {
     return `<article class="home-issue ${index === 0 ? 'home-current-issue' : 'home-companion-issue'} editorial-pair">
       ${cover ? `<figure class="home-issue-cover"><img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy"></figure>` : ''}
       <div class="home-issue-copy">
-        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h4>${title}</h4></div>
+        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h3>${title}</h3></div>
         <div class="home-issue-story">${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}${articleLink}</div>
       </div>
     </article>`;

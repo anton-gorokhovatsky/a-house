@@ -70,14 +70,14 @@
           <!-- PROJECTS community -->
         </div>
       </section>
-      <section id="media" class="home-section home-reading" data-home-section data-overview-section tabindex="-1" aria-labelledby="media-title">
-        <div id="media-heading" class="home-section-head">
+      <div id="media" class="home-section home-reading" data-home-section data-overview-section data-home-title="media-title" tabindex="-1">
+        <div id="media-heading" class="home-section-head home-detail">
           <h2 id="media-title">{{mediaLabel}}</h2>
+          <a href="#a-news">К онлайн-журналу A–News</a>
         </div>
         <div class="reading-highlights">
-          <!-- PROJECTS news -->
           <section class="home-print" aria-labelledby="collection-editions">
-            <h3 id="collection-editions"><a href="@@ROOT@@press/">A–Press</a></h3>
+            <h2 id="collection-editions"><a href="@@ROOT@@press/">A–Press</a></h2>
             <div class="press-highlights"><!-- CURRENT PRINT ISSUES --></div>
             <div class="editions-access">
               <p>Предыдущие номера можно бесплатно прочитать в архиве. Свежие выпуски {{digitalEditions}} доступны по подписке в приложении A–House.</p>
@@ -89,17 +89,19 @@
             </div>
             <div class="home-editions"><!-- PROJECTS editions --></div>
           </section>
+          <div class="home-overview-only"><!-- PROJECTS directory --></div>
+          <!-- PROJECTS news -->
         </div>
-      </section>
+      </div>
       <section id="industry" class="home-section home-industry" data-home-section tabindex="-1" aria-labelledby="industry-heading">
         <div class="home-section-head">
-          <h2 id="industry-heading">Бюро и&nbsp;вакансии</h2><a class="home-bureaus-shortcut" href="#architecture-bureaus">К архитектурным бюро</a>
+          <h2 id="industry-heading">Бюро и&nbsp;вакансии</h2><a class="home-bureaus-shortcut" href="#architecture-bureaus">К справочнику A–Index</a>
         </div>
         <div class="home-industry-layout">
           <!-- A-HOUSE JOBS -->
           <article id="architecture-bureaus" class="home-bureaus" tabindex="-1">
-            <h3>{{bureausLabel}}</h3>
-            <p>По&nbsp;портфолио и&nbsp;контактам в&nbsp;A–Index можно подобрать бюро для своего проекта.</p>
+            <h3>Справочник A–Index</h3>
+            <p>Найдите бюро по портфолио, представьте свою команду или перейдите к вакансиям.</p>
             <div class="home-links">
               <a href="https://aindexproject.com/services/architecture/">Найти бюро в&nbsp;A–Index</a>
               <a href="https://aindexproject.com/submit-organisation/">Представить своё&nbsp;бюро</a>
@@ -134,14 +136,20 @@
         </div>
         <div class="home-section-tail"><a href="mailto:partners@ahouseproject.com">Предложить партнёрский проект</a></div>
       </section>
+      <section id="gatherings" class="home-section home-past-projects home-overview-only" data-home-section data-overview-section aria-labelledby="collection-gatherings" tabindex="-1">
+        <header class="home-section-head">
+          <h2 id="collection-gatherings">Форум и фестиваль</h2>
+          <a href="@@ROOT@@calendar/#past">Все прошедшие события</a>
+        </header>
+        <div class="home-gatherings"><!-- PROJECTS gatherings --></div>
+      </section>
       <section id="projects" class="home-section home-directory" data-home-section data-overview-section tabindex="-1" aria-labelledby="projects-heading">
         <div class="home-section-head">
-          <h2 id="projects-heading"><span id="project-stories" class="home-overview-only">{{bureausLabel}}</span><span class="home-detail">{{projectsLabel}}</span></h2>
-          <a class="home-overview-only" href="#projects">Все проекты A–House</a>
-          <a class="home-detail" href="@@ROOT@@about/">Об&nbsp;A–House</a>
-        </div>
-        <div class="home-project-features home-overview-only">
-          <!-- PROJECTS directory -->
+          <h2 id="projects-heading"><a class="home-overview-only" href="#projects">Все проекты A–House</a><span class="home-detail">{{projectsLabel}}</span></h2>
+          <div class="home-links home-detail">
+            <a href="@@ROOT@@special_projects/">Спецпроекты и мероприятия</a>
+            <a href="@@ROOT@@about/">Об A–House</a>
+          </div>
         </div>
         <nav class="home-project-navigation home-detail" aria-label="Направления A–House">
           <!-- PROJECT NAVIGATION -->
@@ -149,13 +157,6 @@
         <div class="home-project-list home-detail">
           <!-- PROJECT DIRECTIONS -->
         </div>
-      </section>
-      <section id="gatherings" class="home-section home-past-projects home-overview-only" data-home-section data-overview-section aria-labelledby="collection-gatherings" tabindex="-1">
-        <header class="home-section-head">
-          <h2 id="collection-gatherings">Форум и фестиваль</h2>
-          <a href="@@ROOT@@calendar/#past">Все прошедшие события</a>
-        </header>
-        <div class="home-gatherings"><!-- PROJECTS gatherings --></div>
       </section>
       <section id="services-checkout" class="home-section membership-page" data-home-section tabindex="-1" aria-labelledby="friend-heading">
         <div class="membership-layout" id="order:A-Friend=12000" tabindex="-1">

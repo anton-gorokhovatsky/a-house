@@ -339,10 +339,10 @@ async function checkVisitorLinks(page, mobile) {
   assert.equal(await page.locator('#publication-archive').isVisible(), false);
   assert.equal(await page.locator('#projects .home-direction:visible').count(), 0);
   const projects = projectGroups.flatMap(group => group.projects);
-  const selected = ['news','directory'].map(key => projects.find(project => project.overview === key));
+  const selected = ['directory','news'].map(key => projects.find(project => project.overview === key));
   const features = page.locator('.home-project-feature:visible');
   assert.deepEqual(await page.locator('#overview > [data-home-section]:visible').evaluateAll(items => items.map(item => item.id)),
-    ['program', 'visit', 'media', 'projects', 'gatherings']);
+    ['program', 'visit', 'media', 'gatherings', 'projects']);
   assert.ok(await page.locator('#collection-community a[href$="/club/"]').isVisible());
   assert.equal(await page.locator('main a[href*="/member/"]').count(), 0, 'The homepage introduces the club before asking for an application');
   assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
@@ -351,8 +351,10 @@ async function checkVisitorLinks(page, mobile) {
   const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
   assert.deepEqual(await features.locator('.home-project-portfolios strong a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
-  assert.deepEqual(await editions.locator('.home-editions article h4').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
-  assert.deepEqual(await editions.locator('.home-editions h4 a').evaluateAll(links => links.map(link => link.hash)),
+  assert.deepEqual(await page.locator('#media h2:visible').allInnerTexts(), ['A–Press', 'A–Index', 'A–News'],
+    'Each project has one heading and follows the intended order');
+  assert.deepEqual(await editions.locator('.home-editions article h3').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
+  assert.deepEqual(await editions.locator('.home-editions h3 a').evaluateAll(links => links.map(link => link.hash)),
     printCatalog.map(series => '#' + (series.archiveAnchor || series.seriesId)), 'Every print series opens its own archive');
   assert.equal(await editions.locator(':scope > .editions-access a[href="#services-checkout"]').count(), 1, 'Subscription terms belong to the publisher, outside individual issues');
   assert.equal(await editions.locator(':scope > .editions-access a[href$="press/#distribution"]').count(), 1);
@@ -367,10 +369,14 @@ async function checkVisitorLinks(page, mobile) {
   for (const feature of await features.all()) {
     const image = await feature.locator('img').first().boundingBox();
     const title = await feature.locator('.editorial-pair-title').boundingBox();
+    const description = await feature.locator('.project-intro').boundingBox();
     assert.ok(image.width > 0 && image.height > 0, 'Reserve the space for each photograph before scrolling to it');
-    assert.ok(mobile ? title.y + title.height <= image.y + 1 : Math.abs(title.y - image.y) < 2);
+    assert.ok(Math.abs(title.x - image.x) < 2 && title.y + title.height <= image.y + 1);
+    assert.ok(mobile ? description.y + description.height <= image.y + 1 : Math.abs(description.y - image.y) < 2);
   }
-  await features.last().scrollIntoViewIfNeeded();
+  await page.goto(url + '#project-stories');
+  await page.getByRole('heading', { name: 'A–Index', exact: true }).waitFor();
+  assert.equal(await page.locator('#overview').getAttribute('data-view'), 'overview');
   await page.goto(url + '#collection-gatherings');
   assert.ok(await forum.isVisible());
   assert.equal(await page.locator('#overview').getAttribute('data-view'), 'overview');
@@ -383,6 +389,7 @@ async function checkVisitorLinks(page, mobile) {
   await activate(page.getByRole('main').getByRole('link', { name: 'Все проекты A–House', exact: true }));
   await page.waitForURL(url + '#projects');
   assert.equal(await page.locator('#projects .home-project-row:visible').count(), projects.length);
+  assert.equal(await page.getByRole('link', { name: 'Спецпроекты и мероприятия' }).getAttribute('href'), new URL('special_projects/', url).pathname);
   const press = page.locator('#a-media .home-project-row[href$="/press/"]');
   await activate(press);
   await page.waitForURL(url + 'press/');
@@ -610,6 +617,7 @@ async function checkEnlargedMenu(page) {
 }
 
 async function checkEditorialGrouping(page) {
+  await page.goto(url + '#media');
   const title = page.locator('#media-title');
   const mobile = page.viewportSize().width < 600;
   const [beforeConjunction, afterConjunction] = await renderedWordGaps(title);
@@ -622,7 +630,7 @@ async function checkEditorialGrouping(page) {
     range.selectNodeContents(element.firstChild);
     return new Set([...range.getClientRects()].filter(rect => rect.width > 0).map(rect => Math.round(rect.top))).size;
   });
-  const specialTitle = page.locator('.home-issue h4').filter({hasText: /A–Focus.*предприни/u});
+  const specialTitle = page.locator('.home-issue h3').filter({hasText: /A–Focus.*предприни/u});
   const markedWord = specialTitle.locator('.wrap-group');
   if (await specialTitle.count()) assert.equal(await renderedLines(markedWord), 1,
     'Keep the full word «предпринимателя» on a fresh line when it fits in the A–Focus title');
@@ -645,6 +653,7 @@ async function checkEditorialGrouping(page) {
       await page.setViewportSize(viewport);
     }
   }
+  await page.goto(url);
   const festival = page.locator('.home-gathering').filter({ hasText: 'A–Fest' });
   const countLines = await festival.locator('p').last().evaluate(async el => {
     await document.fonts.ready;
@@ -669,7 +678,7 @@ async function checkEditorialGrouping(page) {
     const number = label.getBoundingClientRect();
     const story = el.querySelector('.home-issue-story').getBoundingClientRect();
     return { gap: number.left - cover.right, offset: number.top - cover.top, storyOffset: story.top - cover.top,
-      titleBottom: el.querySelector('h4').getBoundingClientRect().bottom, coverTop: cover.top, small: matchMedia('(max-width: 48em)').matches, em: parseFloat(getComputedStyle(label).fontSize) };
+      titleBottom: el.querySelector('.home-issue-title h3').getBoundingClientRect().bottom, coverTop: cover.top, small: matchMedia('(max-width: 48em)').matches, em: parseFloat(getComputedStyle(label).fontSize) };
   });
   if (group.small) assert.ok(group.titleBottom < group.coverTop && Math.abs(group.storyOffset) < group.em,
     'On the phone the full title introduces the cover and the adjacent story');
@@ -927,12 +936,13 @@ async function checkHomeRoutes(page, mobile) {
   await page.waitForURL(url + 'press/#print-archive');
   assert.ok(await page.locator('#print-archive .press-file').first().isVisible());
   await page.goBack();
-  const archiveLink = page.locator('.footer-meta a[href$="/archive/"]');
-  await archiveLink.press('Enter');
-  await page.waitForURL(url + 'archive/');
-  assert.ok(await page.getByRole('heading', {name:'Архив сайта A–House',level:1}).isVisible());
+  assert.equal(await page.locator('#t-header a[href$="/archive/"], #t-footer a[href$="/archive/"]').count(), 0);
+  const pastEvents = page.locator('#gatherings a[href$="calendar/#past"]');
+  await pastEvents.press('Enter');
+  await page.waitForURL(url + 'calendar/#past');
+  assert.ok(await page.getByRole('heading', {name:'Прошедшие события',exact:true}).isVisible());
   await page.goBack();
-  await page.waitForFunction(() => document.activeElement?.matches('.footer-meta a[href$="/archive/"]'));
+  await page.waitForFunction(() => document.activeElement?.matches('#gatherings a[href$="calendar/#past"]'));
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   assert.equal(await menu.isVisible(), mobile, 'Only a compact header needs a menu toggle');
   assert.equal(await choice('media').isVisible(), !mobile, 'Desktop sections should be visible before interaction');
@@ -972,11 +982,19 @@ async function checkHomeRoutes(page, mobile) {
   await choice('media').click();
   await section('media').waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'media-title');
   const readingGap = await headingGap('media');
   assert.equal(await choice('media').getAttribute('aria-current'), 'true');
   assert.equal(await section('program').isVisible(), false);
-  const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
+  assert.equal(await section('media').getByRole('heading', {name: 'A–Index', exact: true}).count(), 0);
+  const jumpToNews = section('media').getByRole('link', {name: 'К онлайн-журналу A–News'});
+  await (mobile ? jumpToNews.tap() : jumpToNews.press('Enter'));
+  await page.waitForURL(url + '#a-news');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'a-news');
+  const article = section('media').getByRole('article', {name: 'A–News'}).locator('.project-examples a').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
+  await page.goBack();
+  await page.waitForURL(url + '#media');
   assert.equal(await section('media').locator('.publication-list, .home-archived-issue').count(), 0);
   await page.evaluate(() => { location.hash = 'publication-archive-design'; });
   await page.waitForURL(url + 'archive/design/');

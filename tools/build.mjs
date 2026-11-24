@@ -286,7 +286,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/<!-- REPORT (\d{4}) -->/g, (_, year) => renderReportYear(reportYears[year], year, page.slug))
       .replaceAll('{{eventsLabel}}', 'События')
       .replaceAll('{{housesLabel}}', 'Дома и адреса')
-      .replaceAll('{{bureausLabel}}', '<span class="wrap-group">Архитек&shy;турные</span> бюро')
       .replaceAll('{{mediaLabel}}', 'Журнал <span class="wrap-group media-title-phrase">и <wbr><span>издательство</span></span>')
       .replaceAll('{{projectsLabel}}', 'Все проекты')
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))

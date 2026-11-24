@@ -7,10 +7,11 @@
       {
         "name": "A–Index",
         "overview": "directory",
+        "bookmark": "project-stories",
         "works": [
           {"title": "Главный архитектор в «Сфера групп»", "date": "2026-11-18", "source": "Вакансия в A–Index", "href": "https://aindexproject.com/vacancies/glavnyj-arhitektor/"}
         ],
-        "description": "Справочник архитектурных бюро, дизайнеров и подрядчиков. Здесь можно посмотреть портфолио, найти контакты команды или вакансию.",
+        "description": "Цифровой справочник архитектурных бюро, дизайнеров и подрядчиков. Здесь можно посмотреть портфолио, связаться с командой или найти вакансию.",
         "href": "https://aindexproject.com/",
         "feature": {
           "portfolios": [
@@ -58,6 +59,7 @@
       {
         "name": "A–News",
         "overview": "news",
+        "bookmark": "a-news",
         "works": [
           {"title": "«Парфенон» в миниатюре", "date": "2026-11-20", "text": "К пятилетию ювелирного дома Joser вышла булавка, в которой можно узнать пропорции античных колонн.", "href": "https://news.ahouseproject.com/yuvelirnomu-domu-joser-5-let/"},
           {"title": "Новая арена для «Милана» и «Интера»", "date": "2026-11-19", "text": "В проекте Foster + Partners и MANICA трибуны укрыты кровлей, а поле остаётся под открытым небом.", "href": "https://news.ahouseproject.com/foster-partners-i-manica-pokazali-zamenu-san-siro/"}
