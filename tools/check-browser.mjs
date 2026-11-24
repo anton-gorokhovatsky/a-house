@@ -337,12 +337,12 @@ async function checkVisitorLinks(page, mobile) {
   await page.goBack();
   await page.waitForFunction(() => document.activeElement?.pathname.endsWith('/about/'));
   assert.equal(await page.locator('#publication-archive').isVisible(), false);
-  assert.equal(await page.locator('#projects .home-direction:visible').count(), 0);
+  assert.equal(await page.locator('#projects').isVisible(), false, 'The catalogue opens from navigation as its own view');
   const projects = projectGroups.flatMap(group => group.projects);
   const selected = ['directory','news'].map(key => projects.find(project => project.overview === key));
   const features = page.locator('.home-project-feature:visible');
   assert.deepEqual(await page.locator('#overview > [data-home-section]:visible').evaluateAll(items => items.map(item => item.id)),
-    ['program', 'visit', 'media', 'gatherings', 'projects']);
+    ['program', 'visit', 'media', 'gatherings']);
   assert.ok(await page.locator('#collection-community a[href$="/club/"]').isVisible());
   assert.equal(await page.locator('main a[href*="/member/"]').count(), 0, 'The homepage introduces the club before asking for an application');
   assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
@@ -386,7 +386,8 @@ async function checkVisitorLinks(page, mobile) {
     return top >= 0 && top < innerHeight / 2;
   });
   await page.goto(url);
-  await activate(page.getByRole('main').getByRole('link', { name: 'Все проекты A–House', exact: true }));
+  if (mobile) await page.locator('.site-menu-toggle').tap();
+  await activate(page.locator('#site-navigation a[href="#projects"]'));
   await page.waitForURL(url + '#projects');
   assert.equal(await page.locator('#projects .home-project-row:visible').count(), projects.length);
   assert.equal(await page.getByRole('link', { name: 'Спецпроекты и мероприятия' }).getAttribute('href'), new URL('special_projects/', url).pathname);

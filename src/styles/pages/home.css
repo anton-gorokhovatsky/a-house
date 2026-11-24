@@ -245,7 +245,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-visit-info { max-inline-size: 39em; }
 .home-page .home-visit .project-examples { margin-block-start: var(--story-gap); }
 .home-places .project-examples p { max-width: 44ch; color: var(--quiet); }
-.home-page .home-editorial :is(.home-places h3, .editorial-pair-title, .home-community h3, .home-gathering h3, .home-print > h2, .home-directory h2) a {
+.home-page .home-editorial :is(.home-places h3, .editorial-pair-title, .home-community h3, .home-gathering h3, .home-print > h2) a {
   color: inherit; text-decoration: underline; text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset); text-decoration-thickness: 1px;
 }
 .venue-program ul { list-style: none; margin: 0; padding: 0; }
@@ -261,8 +261,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .reading-highlights { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--chapter); }
 .home-editorial:not([data-view]) #media:not(:target) #media-heading,
 .home-editorial:not([data-view]) #media:is(:target, :has(#a-news:target)) .home-overview-only { display: none; }
-.home-editorial:not([data-view]) .home-directory:is(:target, :has(.home-detail :target, #projects-heading:target)) .home-overview-only,
-.home-editorial:not([data-view]) .home-directory:not(:target):not(:has(.home-detail :target, #projects-heading:target)) .home-detail { display: none; }
+.home-editorial:not([data-view]) .home-directory:not(:target, :has(:target)) { display: none; }
 .home-project-navigation { display: flex; flex-wrap: wrap; gap: 0 1.5em; margin-block: -.6rem var(--group); }
 .home-page .home-editorial :is(.home-project-navigation a,.home-project-name) {
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset);
@@ -344,7 +343,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 }
 @container projects (max-width: 16em) {
   .home-direction, .home-project-row > span { min-inline-size: 0; overflow-wrap: anywhere; }
-  .home-direction .project-name, .home-project-navigation .project-name, #projects-heading .project-name { white-space: normal; overflow-wrap: anywhere; }
+  .home-direction .project-name, .home-project-navigation .project-name { white-space: normal; overflow-wrap: anywhere; }
 }
 @media (hover: hover) and (pointer: fine) {
   .home-page .home-editorial :is(.home-project-navigation a:hover,.home-project-row:hover .home-project-name) { text-decoration-color: currentColor; }
