@@ -228,22 +228,32 @@ window.addEventListener('pageshow', event => {
   delete state.visitorReturn;
   history.replaceState(state, '');
   if (entry.from && entry.from !== location.href) return;
-  if (entry.restoreAutomaticScroll) history.scrollRestoration = 'auto';
-  if (!returning) return;
+  if (!returning) {
+    if (entry.restoreAutomaticScroll) history.scrollRestoration = 'auto';
+    return;
+  }
   const link = [...document.links].filter(item => item.href === entry.href)[entry.occurrence];
   const input = new AbortController();
-  for (const type of ['keydown', 'pointerdown', 'wheel', 'pagehide']) {
+  for (const type of ['keydown', 'pointerdown', 'wheel']) {
     window.addEventListener(type, () => input.abort(), { capture: true, passive: true, signal: input.signal });
   }
+  let ownsScroll = entry.restoreAutomaticScroll;
+  function finishRestoring() {
+    input.abort();
+    if (ownsScroll && entry.from === location.href) history.scrollRestoration = 'auto';
+    ownsScroll = false;
+    window.removeEventListener('pagehide', finishRestoring);
+  }
+  window.addEventListener('pagehide', finishRestoring, { once: true });
   requestAnimationFrame(async () => {
-    if (entry.restoreAutomaticScroll && link && !input.signal.aborted) {
+    if (ownsScroll && link) {
       // On a recreated WebKit page, layout and the sticky header can still be using fallback fonts.
       link.getBoundingClientRect();
       await document.fonts.ready;
       await new Promise(resolve => requestAnimationFrame(resolve));
     }
     const interrupted = input.signal.aborted;
-    input.abort();
+    finishRestoring();
     if (!link || interrupted || (entry.from && entry.from !== location.href)) return;
     for (let details = link.closest('details'); details; details = details.parentElement.closest('details')) details.open = true;
     let target = link;
