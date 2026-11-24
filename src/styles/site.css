@@ -55,7 +55,7 @@ main:focus { outline: none; }
 }
 #t-footer .footer-legal :is(ul, li, dl, dt, dd, p) { margin: 0; padding: 0; }
 #t-footer .footer-legal ul { list-style: none; }
-#t-footer .footer-legal a {
+#t-footer .footer-legal nav a {
   display: inline-block;
   max-width: 100%;
   padding-block: .23em;
@@ -63,9 +63,22 @@ main:focus { outline: none; }
   text-decoration: underline 1px #858585;
   text-underline-offset: .2em;
 }
-#t-footer .footer-legal a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-#t-footer .footer-legal a:hover { text-decoration-color: currentColor; }
-.footer-registration div { display: flex; flex-wrap: wrap; column-gap: .4em; }
+#t-footer .footer-legal nav a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+#t-footer .footer-legal nav a:hover { text-decoration-color: currentColor; }
+.footer-registration > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: .6em;
+}
+.footer-registration > div + div { margin-block-start: .12em; }
+.footer-registration dt { flex: 0 0 3em; }
+.footer-registration dd {
+  /* Both rows wrap together when the 13-digit registration number needs its own line. */
+  flex: 0 1 13ch;
+  max-inline-size: 100%;
+  font-variant-numeric: tabular-nums;
+}
 #t-footer .footer-legal .footer-registration { margin-top: .3em; }
 #t-footer .footer-legal .footer-legal-notice {
   max-width: 61ch;
@@ -75,7 +88,7 @@ main:focus { outline: none; }
   line-height: 1.45;
 }
 @media (pointer: coarse) {
-  #t-footer .footer-legal a {
+  #t-footer .footer-legal nav a {
     box-sizing: border-box;
     min-height: 44px;
     align-content: center;

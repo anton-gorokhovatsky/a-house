@@ -94,6 +94,15 @@ function fitReadingText() {
 fitReadingText();
 reduced.addEventListener('change', fitReadingText);
 
+// Automatic positioning yields as soon as the reader takes control.
+function cancelPositioningOnInput() {
+  const input = new AbortController();
+  for (const type of ['keydown', 'pointerdown', 'touchstart', 'wheel', 'hashchange', 'pagehide']) {
+    window.addEventListener(type, () => input.abort(), { capture: true, passive: true, signal: input.signal });
+  }
+  return input;
+}
+
 const header = document.querySelector('.site-header');
 if (header) {
   const menu = header.querySelector('.site-navigation');
@@ -127,15 +136,37 @@ if (header) {
       openSubmenu(false);
     }
   }
+  let entryBookmark = null;
   function measureHeader() {
     fitReadingText();
     document.documentElement.style.setProperty('--site-header-height', header.getBoundingClientRect().height + 'px');
+    // Mobile text sizing can finish after fonts.ready, changing the sticky header again.
+    if (entryBookmark?.getClientRects().length) entryBookmark.scrollIntoView({ block: 'start', behavior: 'instant' });
   }
 
   header.dataset.navReady = '';
   openMenu(false);
   measureHeader();
   new ResizeObserver(measureHeader).observe(header);
+  // The home page handles its own routes. Other pages use native section bookmarks.
+  if (location.hash && !document.getElementById('overview') && performance.getEntriesByType('navigation')[0]?.type === 'navigate') {
+    const input = cancelPositioningOnInput();
+    input.signal.addEventListener('abort', () => { entryBookmark = null; }, { once: true });
+    window.addEventListener('pageshow', () => requestAnimationFrame(async () => {
+      const bookmark = document.querySelector('main :is(section, article, h1, h2, h3, h4):target');
+      if (!bookmark) {
+        input.abort();
+        return;
+      }
+      // Late type metrics can move a bookmarked heading by several screens.
+      bookmark.getBoundingClientRect();
+      await document.fonts.ready;
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      if (input.signal.aborted || !bookmark.matches(':target')) return;
+      entryBookmark = bookmark;
+      measureHeader();
+    }), { once: true, signal: input.signal });
+  }
   compact.addEventListener('change', () => {
     if (compact.matches && menu.contains(document.activeElement)) toggle.focus({preventScroll: true});
     const focused = document.activeElement;
@@ -233,10 +264,7 @@ window.addEventListener('pageshow', event => {
     return;
   }
   const link = [...document.links].filter(item => item.href === entry.href)[entry.occurrence];
-  const input = new AbortController();
-  for (const type of ['keydown', 'pointerdown', 'wheel']) {
-    window.addEventListener(type, () => input.abort(), { capture: true, passive: true, signal: input.signal });
-  }
+  const input = cancelPositioningOnInput();
   let ownsScroll = entry.restoreAutomaticScroll;
   function finishRestoring() {
     input.abort();

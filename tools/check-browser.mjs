@@ -453,6 +453,15 @@ async function checkFooterDocuments(page, mobile) {
     assert.equal(await links.count(), 4);
     for (const link of await links.all()) assert.ok(await link.isVisible());
     assert.ok(await footer.getByRole('heading', {name: 'Реквизиты'}).isVisible());
+    const registry = footer.locator('.footer-registration');
+    assert.equal(await registry.getByRole('link').count(), 0);
+    const rows = await registry.locator('div').evaluateAll(items => items.map(row => {
+      const label = row.querySelector('dt').getBoundingClientRect();
+      const value = row.querySelector('dd').getBoundingClientRect();
+      return { labelTop: label.top, valueTop: value.top, valueLeft: value.left };
+    }));
+    assert.ok(rows.every(row => Math.abs(row.labelTop - row.valueTop) < 1));
+    assert.ok(Math.abs(rows[0].valueLeft - rows[1].valueLeft) < 1);
     assert.equal(await footer.locator('.footer-channels a').count(), 3);
     assert.ok(await footer.locator('.footer-wordmark img').isVisible());
     assert.ok(await footer.getByRole('radio', {name: 'Как в системе'}).isVisible());
@@ -577,6 +586,21 @@ async function checkEnlargedMenu(page) {
   assert.ok(await toggle.evaluate(el => el === document.activeElement));
   assert.ok(Math.abs(await page.evaluate(() => scrollY) - readingPosition) < 2,
     'Opening the mobile menu and closing it must preserve the position in the issue archive');
+
+  await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.style.fontSize = '200%';
+  }, { once: true }));
+  for (const bookmark of ['about/#principles', 'calendar/#past']) {
+    await page.goto(url + bookmark);
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForFunction(() => {
+      const title = document.querySelector('main :target h2');
+      if (!title) return false;
+      const top = title.getBoundingClientRect().top;
+      const header = document.querySelector('#t-header').getBoundingClientRect();
+      return top >= header.bottom - 1 && top < innerHeight - 24;
+    });
+  }
 }
 
 async function checkEditorialGrouping(page) {

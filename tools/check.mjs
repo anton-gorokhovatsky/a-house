@@ -74,6 +74,9 @@ for (const file of htmlFiles) {
   if (!files.has(file)) { errors.push('Missing page '+file);continue; }
   const source=await readFile(path.join(dist,file),'utf8');
   documents.set(file, source);
+  if (!source.includes('<meta name="format-detection" content="telephone=no">')) {
+    errors.push(file+' must keep company identifiers as text in iOS Safari');
+  }
   if (!/<meta\b[^>]*\bname="robots"[^>]*\bcontent="[^"]*\bnoindex\b/i.test(source)) errors.push(file+' lacks noindex');
   if (!/<h1\b|role="heading" aria-level="1"/i.test(source)) errors.push(file+' lacks its page heading');
   if (source.includes('@@ROOT@@') || /\{\{[\w.]+\}\}/.test(source)) errors.push(file+' has an unresolved template');
