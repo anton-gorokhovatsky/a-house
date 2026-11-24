@@ -472,13 +472,25 @@ async function checkFooterDocuments(page, mobile) {
     const rows = await registry.locator('div').evaluateAll(async items => {
       items[0].getBoundingClientRect();
       await document.fonts.ready;
+      // Baseline-aligned text can have different box tops when glyph metrics differ.
+      const marker = document.createElement('span');
+      marker.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
       return items.map(row => {
-        const label = row.querySelector('dt').getBoundingClientRect();
-        const value = row.querySelector('dd').getBoundingClientRect();
-        return { labelTop: label.top, valueTop: value.top, valueLeft: value.left, rowWidth: row.clientWidth };
+        const label = row.querySelector('dt');
+        const value = row.querySelector('dd');
+        const labelMarker = label.insertBefore(marker.cloneNode(), label.firstChild);
+        const valueMarker = value.insertBefore(marker.cloneNode(), value.firstChild);
+        const measurement = {
+          labelBaseline: labelMarker.getBoundingClientRect().bottom,
+          valueBaseline: valueMarker.getBoundingClientRect().bottom,
+          valueLeft: value.getBoundingClientRect().left
+        };
+        labelMarker.remove();
+        valueMarker.remove();
+        return measurement;
       });
     });
-    assert.ok(rows.every(row => Math.abs(row.labelTop - row.valueTop) < 1),
+    assert.ok(rows.every(row => Math.abs(row.labelBaseline - row.valueBaseline) < 1),
       'Registration labels and values must share a line at ' + page.viewportSize().width + ' px on ' + origin + ': ' + JSON.stringify(rows));
     assert.ok(Math.abs(rows[0].valueLeft - rows[1].valueLeft) < 1);
     assert.equal(await footer.locator('.footer-channels a').count(), 3);
