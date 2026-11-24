@@ -1,24 +1,24 @@
 [
   {
-    "id": "a-news-01", "edition": "A–News", "title": "Дом", "published": "2024-05-20", "coverWidth": 552,
+    "id": "a-news-01", "seriesId": "a-news", "edition": "A–News", "title": "Дом", "published": "2024-05-20", "coverWidth": 552,
     "latest": { "anchor": "friend-a-news", "number": 8, "topic": "«Бумага»" },
     "description": "В первом номере газеты — интервью с Дарьей Беляковой и гид по Венеции.",
     "files": [{"name": "a-news-01.pdf", "label": "Читать номер"}]
   },
   {
-    "id": "a-kids-01", "edition": "A–Kids", "title": "Дом", "published": "2024-11-07", "coverWidth": 529,
+    "id": "a-kids-01", "seriesId": "a-kids", "edition": "A–Kids", "title": "Дом", "published": "2024-11-07", "coverWidth": 529,
     "latest": { "anchor": "friend-a-kids", "number": 7, "topic": "о дизайне" },
     "description": "С одной стороны журнала — путеводитель по Петербургу для взрослых, с другой — словарь и задания для детей.",
     "files": [{"name": "a-kids-01-adult.pdf", "label": "Для взрослых"}, {"name": "a-kids-01-child.pdf", "label": "Для детей"}]
   },
   {
-    "id": "a-sport-01", "edition": "A–Sport", "title": "Лыжи", "published": "2024-12-15", "coverWidth": 391,
+    "id": "a-sport-01", "seriesId": "a-sport", "edition": "A–Sport", "title": "Лыжи", "published": "2024-12-15", "coverWidth": 391,
     "latest": { "anchor": "friend-a-sport", "number": 4, "topic": "«Глубина»" },
     "description": "Первый номер газеты посвящён лыжам. Один из его материалов — «Лыжи и архитектура».",
     "files": [{"name": "a-sport-01.pdf", "label": "Читать номер"}]
   },
   {
-    "id": "a-state-01", "edition": "A–State", "title": "Дальний Восток", "published": "2025-08-20", "coverWidth": 552,
+    "id": "a-state-01", "seriesId": "a-state", "edition": "A–State", "title": "Дальний Восток", "published": "2025-08-20", "coverWidth": 552,
     "latest": { "anchor": "friend-a-state", "number": 3, "topic": "«Северный Кавказ»" },
     "description": "Жители Дальнего Востока рассказывают о регионе. Музыкант L’One ведёт читателя по Якутску.",
     "files": [{"name": "a-state-01.pdf", "label": "Читать номер"}]

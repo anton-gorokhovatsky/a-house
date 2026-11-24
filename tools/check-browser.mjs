@@ -63,8 +63,9 @@ async function checkMobileExhibition(page) {
   await page.clock.setFixedTime(new Date(feature.start + 'T12:00:00+03:00'));
   await page.goto(url);
   const poster = page.locator('[data-home-now]');
-  for (const [width, height] of [[320, 480], [320, 568], [375, 560], [390, 664]]) {
+  for (const [width, height] of [[320, 480], [320, 568], [375, 560], [390, 664], [390, 740], [390, 844]]) {
     await page.setViewportSize({ width, height });
+    await page.evaluate(() => scrollTo({top:0, behavior:'instant'}));
     const picture = poster.locator('img:visible');
     const frame = await picture.evaluate(async element => {
       await document.fonts.ready;
@@ -79,9 +80,16 @@ async function checkMobileExhibition(page) {
     const heading = await poster.getByRole('heading', { name: feature.title }).boundingBox();
     const place = await poster.locator('.home-venue-link').boundingBox();
     const button = await action.boundingBox();
-    assert.ok(frame.bottom <= heading.y && heading.y + heading.height <= place.y
-      && place.y + place.height <= button.y && button.height >= 44 && button.y + button.height <= height,
-      'The exhibition title, venue and booking action must follow the picture and fit on a short phone');
+    const intro = await page.locator('.home-introduction').boundingBox();
+    const events = page.locator('.home-program-head');
+    assert.ok(intro.y + intro.height <= (await events.boundingBox()).y && frame.bottom <= heading.y &&
+      heading.y + heading.height <= height && heading.y + heading.height <= place.y &&
+      place.y + place.height <= button.y && button.height >= 44,
+      'A first visit introduces A–House, then shows the exhibition photograph and its complete title');
+    if (height >= 740) assert.ok(button.y + button.height <= height, 'Booking is visible on a regular phone');
+    await events.evaluate(el => el.scrollIntoView({block:'start', behavior:'instant'}));
+    const atProgram = await action.boundingBox();
+    assert.ok(atProgram.y >= 0 && atProgram.y + atProgram.height <= height, 'Even on a short phone the opening programme fits with its booking action');
   }
 }
 
@@ -322,6 +330,17 @@ async function checkVisitorLinks(page, mobile) {
   await activate(press);
   await page.waitForURL(url + 'press/');
   assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
+  const printArchive = page.locator('#print-archive');
+  const issueCards = printArchive.locator('.print-issue');
+  assert.deepEqual(await issueCards.evaluateAll(items => items.map(item => [...item.querySelectorAll('a')].map(link => link.pathname.split('/').pop()))), [
+    ['a-news-01.pdf'], ['a-kids-01-adult.pdf', 'a-kids-01-child.pdf'], ['a-sport-01.pdf'], ['a-state-01.pdf']
+  ], 'The archive offers each early issue for reading, including both sides of A–Kids');
+  assert.equal(await page.locator('main a[href$="#services-checkout"]').count(), 1, 'Subscriptions belong to the archive as a whole');
+  await activate(printArchive.locator('a[href$="#services-checkout"]'));
+  await page.waitForURL(url + '#services-checkout');
+  assert.ok(await page.locator('#friend-form').isVisible());
+  await page.goBack();
+  await page.waitForURL(url + 'press/');
   await page.goBack();
   await page.waitForFunction(() => document.activeElement?.matches('#a-media .home-project-row[href$="/press/"]'));
   await activate(page.locator('.home-project-navigation a[href="#a-media"]'));
@@ -497,10 +516,11 @@ async function checkEditorialGrouping(page) {
       'The first lines of the two smaller event titles must share a text baseline');
     const entries = await list.locator(':scope > article:visible').evaluateAll(cards => cards.map(card => {
       const link = card.querySelector('.home-event-link');
-      const entry = { top: card.getBoundingClientRect().top, paid: Boolean(link?.innerText.includes('₽')) };
+      const entry = { top: card.getBoundingClientRect().top, paid: Boolean(card.querySelector('.home-event-amount')) };
       if (!entry.paid) return entry;
-      const price = link.querySelector('.home-event-price');
-      const description = link.querySelector('.home-event-info > p:last-child');
+      const price = card.querySelector('.home-event-amount');
+      const address = card.querySelector('.home-detail');
+      const description = address?.getClientRects().length ? address : link.querySelector('.home-event-info > p:last-child');
       if (!price || !description) return entry;
       const text = document.createRange();
       text.selectNodeContents(price);

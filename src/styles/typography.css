@@ -12,6 +12,8 @@
   --type-brand: 1.5rem;
 }
 .project-name { white-space: nowrap; word-break: normal; overflow-wrap: normal; hyphens: none; }
+.legal-name { display: inline-block; max-inline-size: 100%; overflow-wrap: break-word; hyphens: manual; vertical-align: top; }
+.legal-name > span { white-space: nowrap; }
 
 /* Imported CSS uses a different record ID on every page. Scope these role
    rules through the shared content landmark so one change reaches all copies. */

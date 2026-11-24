@@ -2,14 +2,15 @@ import { appendFile, cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'n
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { keepProjectNames, typesetHomeText } from './typography.mjs';
+import { typesetText } from './typography.mjs';
+import { formatDocumentTables } from './legal-documents.mjs';
 import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
 import { loadImageDelivery } from './images.mjs';
 import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } from './calendar.mjs';
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { archiveFragment, archiveFragmentStyles, collectArchive, renderArchiveCatalog, renderSubscriptionEntries, renderSubscriptionLink } from './archive.mjs';
+import { archiveFragment, archiveFragmentStyles, collectArchive, renderArchiveCatalog, renderSubscriptionEntries } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 
@@ -77,11 +78,10 @@ function renderMembership(kind, template, agreementTemplate, settings) {
   const fields = {
     formAttributes: settings ? `method="post" action="${escape(settings.action)}"` : 'method="dialog"',
     availability: settings ? '' : `<p class="membership-status">${status}</p>`,
-    agreements: settings ? agreementTemplate.replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : friend ? `<div class="membership-field">
-      <label class="order-consent"><input type="checkbox" name="consent" value="1" required aria-describedby="friend-consent-error"><span>Даю согласие на обработку персональных данных и принимаю <a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="friend-documents">политику конфиденциальности</a>.</span></label>
-      <p id="friend-documents" class="membership-hint">Документ откроется в новой вкладке.</p>
-      <p id="friend-consent-error" class="membership-error" data-field-error="consent" hidden></p>
-    </div>` : '',
+    agreements: settings ? agreementTemplate.replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : `<div class="membership-field">
+      <p class="home-links"><a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${kind}-documents">Политика обработки персональных данных</a></p>
+      <p id="${kind}-documents" class="membership-hint">Документ откроется в новой вкладке.</p>
+    </div>`,
     submitState: settings ? '' : ' disabled'
   };
   return template.replace(/\{\{(formAttributes|availability|agreements|submitState)\}\}/g, (_, key) => fields[key]);
@@ -147,10 +147,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       const size = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(bytes / 1e6);
       return `<a href="@@ROOT@@${pdf}">${escape(item.label)}<span class="screen-reader-only"> · ${escape(issue.edition)} № 1</span> <small>PDF · ${size} МБ</small></a>`;
     }));
-    return `<article id="${escape(issue.id)}" class="print-issue">
-      <img src="@@ROOT@@media/print/${issue.id}.jpg" alt="Обложка ${escape(issue.edition)} № 1" width="${issue.coverWidth}" height="780" loading="lazy">
-      <div><p class="home-kicker">${escape(issue.edition)} № 1 · <time datetime="${issue.published}">${issue.published.slice(0, 4)}</time></p><h3>${escape(issue.title)}</h3><p>${escape(issue.description)}</p>
-      <div class="press-page-links">${files.join('')}</div>${renderSubscriptionLink(issue)}</div></article>`;
+    return `<article id="${escape(issue.id)}" class="print-issue" aria-labelledby="${issue.seriesId}-heading">
+      <img id="${issue.seriesId}" src="@@ROOT@@media/print/${issue.id}.jpg" alt="Обложка ${escape(issue.edition)} № 1" width="${issue.coverWidth}" height="780" loading="lazy">
+      <div><p class="home-kicker">${escape(issue.edition)} № 1 · <time datetime="${issue.published}">${issue.published.slice(0, 4)}</time></p><h3 id="${issue.seriesId}-heading">${escape(issue.title)}<span class="screen-reader-only"> · ${escape(issue.edition)} № 1</span></h3><p>${escape(issue.description)}</p>
+      <div class="press-page-links">${files.join('')}</div></div></article>`;
   }));
   const projectGroups = directions.map(group => {
     const {id, name, intro} = group;
@@ -314,8 +314,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => themeControl);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');
     else themedBody = body + '<footer class="theme-footer">' + themeControl + '</footer>';
-    const pageBody = prepareConsentDocuments(themedBody);
-    const typeset = documents.has(page.slug) ? keepProjectNames(pageBody) : typesetHomeText(pageBody);
+    const pageBody = prepareConsentDocuments(themedBody.replaceAll('{{themeLabel}}', 'Тема сайта'));
+    const typeset = typesetText(documents.has(page.slug) ? formatDocumentTables(pageBody) : pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')

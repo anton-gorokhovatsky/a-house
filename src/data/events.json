@@ -41,7 +41,8 @@
     "start": "2026-11-26", "end": "2026-11-26", "time": "19:00",
     "kind": "Мастермайнд", "venue": "Дом предпринимателя", "address": "Зал Строгановых, Малый Каретный пер., 11, стр. 10",
     "summary": "Встреча с командой Точка Банка о том, как предпринимателям привлекать клиентов.",
-    "home": "card", "price": "Участие 4 000 ₽",
+    "home": "card", "price": "4 000 ₽",
+    "booking": { "url": "https://dompred.ru/events/marketing-mastermind#marketing-mastermind", "label": "Записаться" },
     "links": [{ "url": "https://dompred.ru/events/marketing-mastermind", "label": "Страница встречи", "role": "event-page" }]
   },
   {

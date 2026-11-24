@@ -12,11 +12,9 @@ const monthYear = new RegExp('(?<!\\p{L})(' + month + ') (?=\\d{4}(?!\\d))', 'gi
 const shortWord = /(?<![\p{L}\p{N}@./_–-])(а|в|и|к|о|с|у|во|до|за|из|ко|на|об|от|по|со|без|для|при) (?=[«„(]?[\p{L}\d№])/giu;
 
 function wrapNames(text, pattern) {
-  return text.replace(pattern, name => '<span class="project-name">' + name + '</span>');
-}
-
-export function keepProjectNames(html) {
-  return html.replace(htmlTokens, token => token.startsWith('<') ? token : wrapNames(token, projectName));
+  return text.replace(pattern, name => '<span class="project-name">' + name + '</span>')
+    .replace(/«([АA][-‑–—]ком)(мью)(ни)(кейшнс)»/giu,
+      '<span class="legal-name"><span>«$1</span>&shy;$2&shy;$3&shy;$4»</span>');
 }
 
 function russianSpacing(text) {
@@ -28,14 +26,14 @@ function russianSpacing(text) {
     .replace(/(?<=№)[ \u00a0](?=\d)/gu, '\u202f')
     .replace(/(?<=\d)[ \u00a0](?=\d{3}(?:[ \u00a0\u202f]\d{3})*(?:[,.]\d+)?[ \u00a0]₽)/gu, '\u202f')
     .replace(/(?<=\d) (?=₽|%|(?:минут[ауы]?|час(?:а|ов)?|год(?:а|у)?|лет|г\.)(?!\p{L}))/giu, '\u00a0')
-    .replace(/(?<!\p{L})((?:пер|д|стр|ст|ч)\.,?) (?=\d)/giu, '$1\u00a0')
+    .replace(/(?<!\p{L})((?:пер|д|стр|ст|ч|п|пп|подп|абз)\.,?) (?=\d)/giu, '$1\u00a0')
     .replace(/(?<=\S) (?=[—·](?:\s|$))/gu, '\u00a0');
 }
 
 // Join a paragraph's text across inline tags, including links and <time>,
 // then put its characters back in the original text nodes. This keeps both
 // sides of a link and its complete opening tag exactly where the author put them.
-export function typesetHomeText(html) {
+export function typesetText(html) {
   const tokens = html.match(htmlTokens) ?? [];
   const run = [];
   let excludedDepth = 0;

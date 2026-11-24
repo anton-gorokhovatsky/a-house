@@ -3,7 +3,7 @@ import path from 'node:path';
 import { membershipSettings, projectRoot, siteBase } from './build.mjs';
 import { eventDestination, routesWithEvents } from './calendar.mjs';
 import { collectArchive } from './archive.mjs';
-import { keepProjectNames, typesetHomeText } from './typography.mjs';
+import { typesetText } from './typography.mjs';
 
 const dist = path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist'));
 const base = siteBase(process.env.SITE_BASE);
@@ -15,8 +15,8 @@ const linkTag = '<a title="Вход в Дом" href="/visit/">';
 const form = '<dialog><form><label>Вход в Дом <input value="№ 2"></label></form></dialog>';
 const sample = '<p>В ' + linkTag + 'Доме</a> до <time>29</time> ноября 2026, 19:30. Билет — 4 000 ₽. Выпуск № 2.</p>' + form;
 const typesetSample = '<p>В\u00a0' + linkTag + 'Доме</a> до\u00a0<time>29</time>\u00a0ноября\u00a02026, 19:30. Билет\u00a0— 4\u202f000\u00a0₽. Выпуск №\u202f2.</p>' + form;
-if (typesetHomeText(sample) !== typesetSample || keepProjectNames(sample) !== sample) {
-  errors.push('Homepage typography must preserve inline markup, imported pages and form values');
+if (typesetText(sample) !== typesetSample || typesetText('<p>(п. 2.4.1)</p>') !== '<p>(п.\u00a02.4.1)</p>') {
+  errors.push('Typography must preserve inline markup, clause references and form values');
 }
 
 const files = new Set();

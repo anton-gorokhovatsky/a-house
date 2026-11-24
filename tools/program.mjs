@@ -29,6 +29,11 @@ function attributes(event, today) {
 
 function eventCard(event, today, base) {
   const href = eventDestination(event, base + 'calendar/');
+  const amount = event.price ? '<span class="home-event-amount">' + esc(event.price) + '</span>' : '';
+  const admission = event.booking
+    ? '<a class="home-event-admission" href="' + esc(event.booking.url) + '">' + esc(event.booking.label) +
+      (amount ? ' — ' + amount : '') + '</a>'
+    : amount;
   return `<article class="home-event" ${attributes(event, today)}>
     <a class="home-event-link" href="${esc(href)}">
       <p class="home-meta"><span>${dateLine(event, today)}</span> <span class="home-event-venue">${esc(event.shortVenue || event.venue)}</span></p>
@@ -36,9 +41,9 @@ function eventCard(event, today, base) {
         <h3${event.legacyHeading ? ' id="' + esc(event.legacyHeading) + '"' : ''}>${esc(event.title)}</h3>
         <p>${esc(event.summary)}</p>
       </div>
-      ${event.price ? '<p class="home-event-price">' + esc(event.price) + '</p>' : ''}
     </a>
     ${event.address ? '<p class="home-detail">' + esc(event.address) + '.</p>' : ''}
+    ${admission ? '<p class="home-event-price">' + admission + '</p>' : ''}
   </article>`;
 }
 

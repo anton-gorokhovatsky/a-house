@@ -14,6 +14,7 @@
   --measure: 94rem;
   --chapter: clamp(4.5rem, 8.4vw, 9rem);
   --group: clamp(1.75rem, 3.6vw, 3.8rem);
+  --story-gap: clamp(1.25rem, 2.2vw, 2rem);
   --display: 'Noto Serif', Georgia, serif;
   --text: Arial, Helvetica, sans-serif;
   --lead-size: clamp(2.25rem, 1.78rem + 3.7vw, 5.35rem);
@@ -95,12 +96,12 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 @media (scripting: enabled) {
   #overview:not([data-view]):not(:has(:target)) .home-feature-slot .home-detail { display: none; }
 }
-.home-section, .home-ways {
+.home-section, .home-ways, .home-introduction {
   max-width: var(--measure); margin-inline: auto; padding-inline: var(--edge);
 }
 .home-section { padding-block: var(--group) var(--chapter); }
-.home-introduction { margin-block: calc(-.45 * var(--group)) var(--group); }
-.home-page .home-introduction p { max-inline-size: 76ch; text-wrap: pretty; }
+.home-introduction { padding-block-start: .35rem; }
+.home-page .home-introduction p { max-inline-size: 64ch; font-size: var(--type-lead); line-height: 1.4; text-wrap: pretty; }
 .home-editorial :is(.home-meta,.home-kicker,.home-where,.home-address,figcaption) { color: var(--quiet); }
 .home-editorial :is(.home-meta,.home-kicker,figcaption) { font-size: var(--note-size); font-weight: 400; line-height: 1.4; }
 .home-editorial figcaption { font-size: .83rem; }
@@ -111,7 +112,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-links > a, .home-section-tail > a, .home-section-head > a,
 .home-editorial .home-action { display: inline-block; padding-block: .42rem; }
 .home-page .home-editorial .home-links > a:not(:first-child) { color: var(--quiet); }
-.home-page .home-editorial :is(.home-links > a,.home-section-tail > a,.home-section-head > a,.home-program-links a,.home-venue-link,.home-places .home-address a,.home-dispatches article > a) {
+.home-page .home-editorial :is(.home-introduction a,.home-links > a,.home-section-tail > a,.home-section-head > a,.home-program-links a,.home-venue-link,.home-places .home-address a,.home-dispatches article > a) {
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .19em;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 }
@@ -153,7 +154,9 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-event .home-meta { display: flex; flex-wrap: wrap; gap: .12rem .9rem; }
 .home-event .home-meta + .home-event-info { margin-top: .32rem; }
 .home-page .home-event h3 + p { margin-top: .48rem; max-width: 30em; }
-.home-page .home-event .home-event-price { margin-top: .75rem; color: var(--quiet); font-size: var(--note-size); line-height: 1.4; }
+.home-page .home-event .home-event-price { margin-top: .6rem; font-size: var(--type-body); line-height: 1.4; }
+.home-page .home-editorial .home-event-admission { display: inline-block; min-height: 44px; align-content: center; text-decoration: underline; text-underline-offset: .18em; }
+.home-event-amount { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
 .home-page .home-event p.home-detail { margin-top: .35rem; color: var(--quiet); }
 .home-season .home-events:not(:has(> article:not([hidden]))) { display: none; }
 .home-events .home-feature { display: block; }
@@ -218,12 +221,13 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-editorial :is(.home-dispatches,.home-pair,.home-places) article > p:not(.home-kicker) { max-width: 39em; }
 .home-pair .home-links, .home-places .home-links { margin-top: .65rem; }
 .home-place-media img { width: 100%; aspect-ratio: 1.65; height: auto; object-fit: cover; }
+.home-place-media figcaption { margin-block-start: .35rem; }
 .home-page .home-places h3 { margin-bottom: .35rem; }
 .home-page .home-places .home-place-media { margin-top: 1.25rem; }
 .home-page .home-places .home-address { margin-bottom: .55rem; }
 .home-places .home-map-link { display: inline-block; min-block-size: 44px; align-content: center; }
 .home-visit-info { max-inline-size: 39em; }
-.home-places .project-examples { margin-top: .6rem; }
+.home-page .home-visit .project-examples { margin-block-start: var(--story-gap); }
 .home-places .project-examples p { max-width: 44ch; color: var(--quiet); }
 .home-page .home-editorial :is(.home-places h3, .project-intro h3, .home-community h3, .home-gathering h3, .home-print h3) a {
   color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: .17em; text-decoration-thickness: 1px;
@@ -269,17 +273,19 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-project-feature figcaption { max-inline-size: 52ch; margin-top: .4rem; }
 .home-project-feature-copy { grid-area: copy; max-inline-size: 45ch; text-wrap: pretty; }
 .home-page .home-project-feature-copy .project-examples { margin-block-start: .55em; }
-.project-examples li + li { margin-top: 1em; }
+.project-examples li + li { margin-block-start: var(--story-gap); }
 .project-examples li > a { display: inline-block; font-weight: 600; padding-block: .2em; }
 .home-page .home-editorial :is(.project-examples, .home-edition-brief h4, .home-project-feature figcaption, .editions-access) a, .home-page .home-gathering > a {
   text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb,currentColor 52%,transparent); text-underline-offset: .18em;
 }
 .home-page .home-project-feature figcaption a { padding-top: 0; }
 .home-community, .home-gatherings, .home-editions { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,19rem),1fr)); align-items: start; gap: var(--group); }
-.home-community, .home-editions { margin-block-start: var(--group); }
+.home-community { margin-block-start: clamp(3rem, 5.2vw, 5rem); }
+.home-editions { margin-block-start: var(--group); }
 .home-page .home-print > h3 { margin-bottom: 1em; }
-.home-page .home-community-project > p { margin-block: .4em; max-inline-size: 47ch; }
-.home-page .home-community-project .project-examples { margin-top: .75em; max-inline-size: 47ch; }
+.home-page .home-community-project > p { margin-block-start: .5em; max-inline-size: 47ch; }
+.home-community-project .home-links { margin-block-start: .45em; }
+.home-community-project .project-examples { max-inline-size: 47ch; }
 .home-page .home-gathering .home-meta { margin-top: .3em; }
 .home-page .home-gathering > .home-meta + p { margin-top: .4em; max-inline-size: 48ch; }
 .home-page .home-gathering > a { display: inline-block; margin-block-start: .15em; min-block-size: 44px; align-content: center; }
@@ -374,7 +380,8 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   .home-events > article { display: grid; grid-template-rows: subgrid; grid-row: span 4; grid-column: 1; }
   .home-events > article:nth-child(even of :not([hidden])) { grid-column: 2; }
   .home-events > article:nth-child(n+3 of :not([hidden])) { margin-top: var(--group); }
-  .home-event-link { display: grid; grid-template-rows: subgrid; grid-row: span 3; align-items: start; }
+  .home-event-link { display: grid; grid-template-rows: subgrid; grid-row: span 2; align-items: start; }
+  .home-events > .home-event > .home-event-price { grid-row: 4; }
   .home-event-link > .home-meta, .home-events .home-feature-heading > .home-meta { align-self: end; }
   .home-event .home-meta + .home-event-info { align-self: first baseline; margin-top: .32rem; }
   .home-events .home-feature { display: grid; grid-template-columns: minmax(0,1fr); grid-template-areas: none; gap: 0; }
@@ -386,7 +393,8 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   .home-ways.home-overview-only { display: none; }
 }
 @media(max-width:48em) {
-  .home-program { padding-top: .35rem; }
+  .home-page .home-introduction p { font-size: var(--copy-size); }
+  .home-program { padding-top: var(--group); }
   .home-program-head { align-items: center; margin-bottom: .65rem; gap: .1rem 1rem; }
   .home-feature-slot .home-feature {
     grid-template-columns: minmax(0, 1fr); grid-template-areas: "photo" "heading" "visit" "report"; gap: 0;
@@ -432,10 +440,12 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
   .home-issue-cover { width: min(55%, 11rem); }
 }
 @media (max-width: 48em) and (max-height: 37.5em) {
-  .home-program { padding-top: 0; }
+  .home-program { padding-top: var(--story-gap); }
   .home-photo-pair img.home-photo-lead { max-height: 27svh; }
   .home-program-head { margin-bottom: .35rem; }
   .home-feature-slot .home-photo-pair { margin-bottom: .5rem; }
+  .home-feature-slot .home-feature-heading { display: flex; flex-direction: column; gap: .35rem; }
+  .home-page .home-feature-slot .home-feature-heading h3 { order: -1; margin-top: 0; }
   .home-feature-slot .home-feature-visit { padding-top: .35rem; }
   .home-page .home-feature-slot a.home-action { margin-top: .4rem; }
   .home-page .home-feature-slot .home-feature-access { order: 1; margin-top: .65rem; }

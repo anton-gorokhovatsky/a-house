@@ -22,7 +22,7 @@
       control.querySelector('input[value="' + value + '"]').checked = true;
       const state = control.querySelector('.theme-system-state');
       state.hidden = value !== 'system';
-      state.textContent = systemScheme.matches ? ' · сейчас тёмная тема' : ' · сейчас светлая тема';
+      state.textContent = value === 'system' ? (systemScheme.matches ? 'Сейчас тёмная' : 'Сейчас светлая') : '';
     }
   }
 
