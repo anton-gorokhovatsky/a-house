@@ -30,7 +30,7 @@ function sectionContent(section) {
     <p class="institution-film-status" role="status"></p>
     <a class="institution-film-link" href="https://www.youtube.com/watch?v=${escape(section.video)}">Смотреть фильм на YouTube</a>` : '';
   const program = section.program ? '<!-- VENUE PROGRAM ' + section.program + ' -->' : '';
-  return paragraphs + program + items + people + photos + video + links(section.links);
+  return paragraphs + program + items + people + links(section.links) + photos + video;
 }
 
 export function isInstitutionPage(slug) {

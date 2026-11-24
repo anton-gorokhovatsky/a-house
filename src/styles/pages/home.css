@@ -302,7 +302,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-project-feature .editorial-pair-title { grid-area: heading; scroll-margin-block-start: var(--page-entry); }
 .home-project-feature > figure, .home-project-portfolios { grid-area: photo; min-inline-size: 0; }
 .project-intro { grid-area: intro; max-inline-size: 45ch; text-wrap: pretty; }
-.home-editorial :is(.publisher-head, .project-intro, .home-community-project, .home-places) .home-links > a {
+.home-editorial :is(.publisher-head, .project-intro, .home-community-project, .home-places, .home-partnership .home-section-head) .home-links > a {
   min-block-size: 44px; align-content: center;
 }
 .home-project-portfolios { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--story-gap); align-items: start; }
