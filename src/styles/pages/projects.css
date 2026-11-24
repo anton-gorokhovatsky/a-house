@@ -1,5 +1,8 @@
 .project-story { padding: var(--group) var(--edge) var(--chapter); }
-.project-inner { max-inline-size: 76rem; margin-inline: auto; container: project-content / inline-size; }
+.project-inner {
+  max-inline-size: 76rem; margin-inline: auto; container: project-content / inline-size;
+  --column-title-size: min(var(--lead-size), max(1.5rem, 11cqi));
+}
 .project-story :is(p,ul,ol,dl), .project-panel > p { max-inline-size: 68ch; }
 .home-page .project-opening h1 {
   margin-block: .12em .34em; max-inline-size: 23ch;
@@ -85,6 +88,8 @@
   padding: clamp(1rem,4vw,3.5rem); color: var(--ink); background: linear-gradient(160deg,#a7b9e7,#eeedf5 75%);
 }
 .research-opening { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap: var(--group); }
+.research-opening > div { container-type: inline-size; }
+.home-page .research-opening h1 { font-size: var(--column-title-size); }
 .research-opening .project-signature { filter: invert(calc(1 - var(--wordmark-inversion))); }
 .research-opening figure img { max-height: 24rem; width: auto; max-width: 100%; }
 .city-opening { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--group); align-items: start; }
@@ -101,7 +106,7 @@
 .home-page :is(.story-report,.story-report__) .project-opening h1 { font-size: var(--type-display); }
 @container project-content (max-width: 18rem) {
   .home-page .project-story .project-opening:not(.city-opening) h1 {
-    font-size: min(var(--lead-size),max(1.5rem,11cqi));
+    font-size: var(--column-title-size);
   }
   .home-page :is(.story-report,.story-report__) .project-opening { padding-inline: min(var(--group),5cqi); }
 }

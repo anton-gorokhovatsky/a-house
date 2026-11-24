@@ -351,6 +351,16 @@ async function checkFooterDocuments(page, mobile) {
 
 async function checkSpecialProjectPrograms(page, mobile) {
   const activate = element => mobile ? element.tap() : element.press('Enter');
+  await page.goto(url + 'longevity/');
+  const researchTitleFits = await page.locator('.research-opening h1').evaluate(async heading => {
+    await document.fonts.ready;
+    const column = heading.parentElement.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(heading);
+    return [...range.getClientRects()].every(line => line.right <= column.right + 1);
+  });
+  assert.ok(researchTitleFits, 'The research title must fit its own column beside the illustration');
+
   await page.goto(url + 't_private/');
   if (mobile) {
     assert.equal(await page.getByRole('dialog').count(), 0,
