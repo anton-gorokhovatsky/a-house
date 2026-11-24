@@ -3,7 +3,7 @@
     <header id="rec2308376891">
       <h1>Издательство A–Press</h1>
       <p>Мы выпускаем книги, газеты и журналы об архитектуре, дизайне и городской жизни.</p>
-      <nav class="press-page-links" aria-label="На странице издательства"><a href="#print-archive">Архив печатных номеров</a><a href="#editions">Книги и газета A–Focus</a><a href="#distribution">Где найти печатный номер</a><a href="#online">Онлайн-медиа</a></nav>
+      <nav class="press-page-links" aria-label="На странице издательства"><a href="#print-archive">Архив газет и журналов</a><a href="#books">Книги</a><a href="#distribution">Где найти печатный номер</a><a href="#online">Онлайн-журнал A–News</a></nav>
       <div id="rec2308376911" class="press-opening-image"><picture>
           <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/gen2-05cd05f38630.webp">
           <img src="@@ROOT@@media/gen2-05cd05f38630.gif" width="1680" height="900" alt="Обложки и развороты печатных изданий A–House" fetchpriority="high" decoding="async">
@@ -13,6 +13,17 @@
       <h2 id="print-archive-title">Архив печатных номеров</h2>
       <p class="print-archive-intro">Предыдущие номера можно прочитать здесь бесплатно. Свежие выпуски {{digitalEditions}} доступны в приложении A–House. <a href="@@ROOT@@#services-checkout">{{friendAction}}</a></p>
       <!-- PRINT ISSUES -->
+      <aside class="press-partner-edition" id="a-focus" aria-labelledby="a-focus-heading">
+        <picture>
+          <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/focus-cf4cfaa096c3.webp">
+          <img src="@@ROOT@@media/focus-cf4cfaa096c3.gif" width="1155" height="1155" alt="Выпуски партнёрской газеты A–Focus" loading="lazy" decoding="async">
+        </picture>
+        <div>
+          <h3 id="a-focus-heading">Выпустить газету A–Focus</h3>
+          <p>Редакция готовит отдельную газету для партнёра. Вместе выбирают тему и формат выпуска, редакция отвечает за материалы и оформление.</p>
+          <div class="press-page-links"><a href="#a-focus-archive">Выпуски A–Focus в архиве</a><a href="https://disk.360.yandex.ru/d/owUTpo00J2bXrQ/A-Press%20price.pdf">Условия и стоимость выпуска</a></div>
+        </div>
+      </aside>
       <nav class="print-stories" aria-labelledby="print-stories-title">
         <h3 id="print-stories-title">О выпусках и их героях</h3>
         <ul class="press-page-links">
@@ -25,29 +36,13 @@
         </ul>
       </nav>
     </section>
-    <section id="editions" aria-labelledby="press-editions-title">
-      <h2 id="press-editions-title">Книги и газета A–Focus</h2>
-      <div class="press-editions" id="rec2308376921">
-        <article id="books" aria-labelledby="books-heading">
-          <picture>
-            <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/wl-86ca908e370a.webp">
-            <img src="@@ROOT@@media/wl-86ca908e370a.gif" width="1155" height="1155" alt="Книги издательства A–Press" loading="lazy" decoding="async">
-          </picture>
-          <h3 id="books-heading">Книги</h3>
-          <p>A–Press выпускает книги об архитектуре, дизайне и искусстве. С издательством можно обсудить тему, подготовку материалов и печать.</p>
-          <div class="press-page-links"><a href="mailto:partners@ahouseproject.com">Предложить книгу издательству</a></div>
-        </article>
-        <article id="a-focus" aria-labelledby="a-focus-heading">
-          <picture>
-            <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/focus-cf4cfaa096c3.webp">
-            <img src="@@ROOT@@media/focus-cf4cfaa096c3.gif" width="1155" height="1155" alt="Выпуски партнёрской газеты A–Focus" loading="lazy" decoding="async">
-          </picture>
-          <h3 id="a-focus-heading">Газета A–Focus</h3>
-          <p>Редакция готовит отдельную газету для партнёра. Вместе выбирают тему и формат выпуска, редакция отвечает за материалы и оформление.</p>
-          <div class="press-page-links"><a href="#a-focus-archive">Выпуски A–Focus в архиве</a><a href="https://disk.360.yandex.ru/d/owUTpo00J2bXrQ/A-Press%20price.pdf">Условия и стоимость выпуска</a></div>
-        </article>
+    <section id="books" aria-labelledby="books-heading">
+      <div id="editions"><h2 id="books-heading"><span id="press-editions-title">Книги</span></h2></div>
+      <div class="book-list" id="rec2308376921"><!-- PUBLISHER BOOKS --></div>
+      <div class="press-page-links publisher-services">
+        <a href="mailto:partners@ahouseproject.com">Предложить книгу издательству</a>
+        <a href="https://disk.360.yandex.ru/i/ItqdNVYlSPB1SQ">Медиакит A–Press</a>
       </div>
-      <div class="press-page-links"><a href="https://disk.360.yandex.ru/i/ItqdNVYlSPB1SQ">Медиакит A–Press</a></div>
     </section>
     <section id="distribution" class="press-distribution" aria-labelledby="distribution-title">
       <div id="rec2308376941">
@@ -58,7 +53,7 @@
       <img src="@@ROOT@@media/onair_all_22-258420ca76e8.png" width="1134" height="1411" alt="Карта распространения изданий A–House" loading="lazy">
     </section>
     <section id="online" aria-labelledby="press-online-heading">
-      <h2 id="press-online-heading">Онлайн-медиа A–News</h2>
+      <h2 id="press-online-heading">Онлайн-журнал A–News</h2>
       <p>Редакция пишет о новых зданиях и интерьерах, разговаривает с архитекторами и художниками, публикует репортажи с фестивалей и ярмарок.</p>
       <div class="press-page-links"><a href="https://news.ahouseproject.com/">Читать A–News</a></div>
     </section>

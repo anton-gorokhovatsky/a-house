@@ -9,19 +9,27 @@
         "overview": "directory",
         "bookmark": "project-stories",
         "works": [
+          {"title": "Studio 911", "source": "Макетная мастерская", "text": "В мастерской Виктора Крылова делают макеты и инсталляции для бюро и музеев. Детали печатают на 3D-принтере или отливают из бетона и пластика.", "href": "https://aindexproject.com/organisations/studio-911/"},
           {"title": "Главный архитектор в «Сфера групп»", "date": "2026-11-18", "source": "Вакансия в A–Index", "href": "https://aindexproject.com/vacancies/glavnyj-arhitektor/"}
         ],
         "description": "Цифровой справочник архитектурных бюро, дизайнеров и подрядчиков. Здесь можно посмотреть портфолио, связаться с командой или найти вакансию.",
         "href": "https://aindexproject.com/",
         "feature": {
+          "specialties": [
+            {"title": "Макетные мастерские", "href": "https://aindexproject.com/services/maketnye-masterskie/"},
+            {"title": "Студии светодизайна", "href": "https://aindexproject.com/services/light/"},
+            {"title": "Архитектурные фотографы", "href": "https://aindexproject.com/services/fotografiya/"}
+          ],
           "portfolios": [
             {
               "studio": "Arch(e)type", "href": "https://aindexproject.com/organisations/archetype/",
-              "photo": { "src": "media/home/a-index-urban-villas-640.webp", "width": 640, "height": 640, "large": "media/home/a-index-urban-villas-1200.webp", "largeWidth": 1200, "alt": "Белые террасы жилого дома рядом с водонапорной башней", "caption": "«Урбан виллы». Концепция в Адлере, 2022." }
+              "text": "В портфолио бюро Дарьи Беляковой — жилые комплексы, квартиры и московская студия Up To Yoga.",
+              "photo": { "src": "media/home/a-index-urban-villas-640.webp", "width": 640, "height": 640, "large": "media/home/a-index-urban-villas-1200.webp", "largeWidth": 1200, "alt": "Белые террасы жилого дома рядом с водонапорной башней", "caption": "«Урбан виллы». Концепция для Адлера, 2022." }
             },
             {
               "studio": "figura A", "href": "https://aindexproject.com/organisations/figura-a/",
-              "photo": { "src": "media/home/figura-a-model.jpg", "width": 644, "height": 800, "alt": "Деревянный макет в разрезе. На трёх этажах видны зелёные столы и стулья.", "caption": "Как архитекторы проверяют конструкцию на макетах", "href": "https://t.me/ahouseproject/10756", "published": "2026-11-23" }
+              "text": "Архитекторы Арина Червякова и Николай Югай работают со зданиями, интерьерами и предметами.",
+              "photo": { "src": "media/home/figura-a-model.jpg", "width": 644, "height": 800, "alt": "Деревянный макет в разрезе. На трёх этажах видны зелёные столы и стулья.", "caption": "Как бюро проверяет пропорции на макетах", "href": "https://t.me/ahouseproject/10756", "published": "2026-11-23" }
             }
           ]
         }
@@ -61,13 +69,15 @@
         "overview": "news",
         "bookmark": "a-news",
         "works": [
-          {"title": "«Парфенон» в миниатюре", "date": "2026-11-20", "text": "К пятилетию ювелирного дома Joser вышла булавка, в которой можно узнать пропорции античных колонн.", "href": "https://news.ahouseproject.com/yuvelirnomu-domu-joser-5-let/"},
-          {"title": "Новая арена для «Милана» и «Интера»", "date": "2026-11-19", "text": "В проекте Foster + Partners и MANICA трибуны укрыты кровлей, а поле остаётся под открытым небом.", "href": "https://news.ahouseproject.com/foster-partners-i-manica-pokazali-zamenu-san-siro/"}
+          {"title": "«Парфенон» в миниатюре", "date": "2026-11-20", "source": "Дизайн", "text": "Булавка, которую Дарья Белякова придумала к пятилетию Joser, повторяет сечение колонны Парфенона.", "href": "https://news.ahouseproject.com/yuvelirnomu-domu-joser-5-let/"},
+          {"title": "Новая арена для «Милана» и «Интера»", "date": "2026-11-19", "source": "Архитектура", "text": "В проекте Foster + Partners и MANICA трибуны укрыты кровлей, а поле остаётся под открытым небом.", "href": "https://news.ahouseproject.com/foster-partners-i-manica-pokazali-zamenu-san-siro/"},
+          {"title": "Как ярмарка |catalog| выбирает галереи", "date": "2026-11-17", "source": "Интервью", "text": "Соосновательница ярмарки Алина Крюкова рассказывает, почему от приглашений перешли к открытому конкурсу.", "href": "https://news.ahouseproject.com/alina-kryukova-o-budushhem-yarmarki-catalog/"}
         ],
-        "description": "Онлайн-журнал об архитектуре и дизайне. Редакция показывает новые здания и интерьеры, беседует с их авторами и рассказывает, какие выставки стоит увидеть.",
+        "description": "Онлайн-журнал об архитектуре, дизайне и культуре. Редакция показывает здания и интерьеры, беседует с авторами проектов и публикует репортажи с ярмарок.",
         "href": "https://news.ahouseproject.com/",
         "feature": {
-          "photo": { "src": "media/home/a-news-ibiza-640-1e4170bc3dc0.webp", "width": 640, "height": 422, "large": "media/home/a-news-ibiza-1200-146d877d0d56.webp", "largeWidth": 1200, "alt": "Синие стулья и полосатые столики в кафе на Ибице", "caption": "Кафе Seth & Manni’s на Ибице. Фото Nacho Dorado.", "href": "https://news.ahouseproject.com/memfis-na-ibicze-otkrytie-seth-mannis/" }
+          "story": { "title": "«Мемфис» на Ибице", "href": "https://news.ahouseproject.com/memfis-na-ibicze-otkrytie-seth-mannis/", "text": "Тоби Голи и Memphis Milano собрали в кафе предметы группы «Мемфис». Среди них — стеллажи Этторе Соттсасса и табурет First Микеле де Лукки." },
+          "photo": { "src": "media/home/a-news-ibiza-640-1e4170bc3dc0.webp", "width": 640, "height": 422, "large": "media/home/a-news-ibiza-1200-146d877d0d56.webp", "largeWidth": 1200, "alt": "Синие стулья и полосатые столики в кафе на Ибице", "caption": "Кафе Seth & Manni’s. Фото Nacho Dorado." }
         }
       },
       {
@@ -81,7 +91,7 @@
         "works": [
           {"title": "№ 2. Коллекциониро\u00adвание", "text": "Основательницы ярмарки blazar и кураторы её секции дизайна рассказывают, как новые имена попадают на ярмарку.", "href": "@@ROOT@@tpost/f0997i9441-anews-2/"}
         ],
-        "description": "Второй номер посвящён коллекционированию. Среди его героев — основательницы ярмарки blazar и кураторы её секции «Дизайн».",
+        "description": "Газета об архитектуре, дизайне, девелопменте и культуре. У каждого выпуска своя тема — от дома до коллекционирования.",
         "href": "@@ROOT@@press/#a-news"
       },
       {

@@ -1,0 +1,28 @@
+[
+  {
+    "title": "Архитектура 1.0",
+    "description": "В сборник к первому A–Fest вошли эссе Анны Броновицкой и Кирилла Асса, а также интервью с фотографом Юрием Пальминым.",
+    "href": "https://arch-e-type.net/projects/d/a-book-book-design/?lang=ru",
+    "linkLabel": "Развороты в галерее Arch(e)type",
+    "cover": {
+      "src": "media/press/book-architecture-1.webp",
+      "width": 609,
+      "height": 800,
+      "alt": "Белая обложка с вертикальной надписью «Архитектура 1.0»"
+    }
+  },
+  {
+    "title": "Москва нового времени",
+    "subtitle": "Архитектурные проекты Москвы",
+    "description": "Один из разворотов альбома посвящён кампусу Сколтеха в Сколкове. Рядом с фотографией здания — адрес, имена архитекторов и история проекта.",
+    "href": "https://s3.regru.cloud/aindex-media/uploads/2024/04/archetype_portfolio_2026-1.pdf#page=55",
+    "linkLabel": "Развороты в портфолио Arch(e)type",
+    "metadata": "PDF · 35 МБ · с. 55",
+    "cover": {
+      "src": "media/press/book-moscow-new-time.webp",
+      "width": 634,
+      "height": 800,
+      "alt": "Тёмно-серая обложка с серебристой фигурой и названием «Москва нового времени»"
+    }
+  }
+]

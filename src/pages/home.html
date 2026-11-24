@@ -71,23 +71,36 @@
         </div>
       </section>
       <div id="media" class="home-section home-reading" data-home-section data-overview-section data-home-title="media-title" tabindex="-1">
+        <h2 class="home-overview-only screen-reader-only">Издательство, справочник и онлайн-журнал</h2>
         <div id="media-heading" class="home-section-head home-detail">
           <h2 id="media-title">{{mediaLabel}}</h2>
           <a href="#a-news">К онлайн-журналу A–News</a>
         </div>
         <div class="reading-highlights">
           <section class="home-print" aria-labelledby="collection-editions">
-            <h2 id="collection-editions"><a href="@@ROOT@@press/">A–Press</a></h2>
-            <div class="press-highlights"><!-- CURRENT PRINT ISSUES --></div>
-            <div class="editions-access">
-              <p>Предыдущие номера можно бесплатно прочитать в архиве. Свежие выпуски {{digitalEditions}} доступны по подписке в приложении A–House.</p>
-              <div class="home-section-tail">
-                <a href="@@ROOT@@press/#print-archive">Архив печатных номеров</a>
-                <a href="#services-checkout">{{friendAction}}</a>
-                <a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a>
+            <header class="home-section-head publisher-head">
+              <h3 id="collection-editions" class="editorial-pair-title"><a href="@@ROOT@@press/">A–Press</a></h3>
+              <a href="#home-books">К книгам издательства</a>
+            </header>
+            <section class="publisher-shelf" aria-labelledby="home-periodicals">
+              <h4 id="home-periodicals" class="publisher-shelf-title">Газеты и журналы</h4>
+              <div>
+                <div class="press-highlights"><!-- CURRENT PRINT ISSUES --></div>
+                <div class="editions-access">
+                  <p>Предыдущие номера можно бесплатно прочитать в архиве. Свежие выпуски {{digitalEditions}} доступны по подписке в приложении A–House.</p>
+                  <div class="home-section-tail">
+                    <a href="@@ROOT@@press/#print-archive">Архив печатных номеров</a>
+                    <a href="#services-checkout">{{friendAction}}</a>
+                    <a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a>
+                  </div>
+                </div>
+                <div class="home-editions"><!-- PROJECTS editions --></div>
               </div>
-            </div>
-            <div class="home-editions"><!-- PROJECTS editions --></div>
+            </section>
+            <section class="publisher-shelf home-books" aria-labelledby="home-books">
+              <h4 id="home-books" class="publisher-shelf-title" tabindex="-1">Книги</h4>
+              <div class="book-list"><!-- HOME BOOKS --></div>
+            </section>
           </section>
           <div class="home-overview-only"><!-- PROJECTS directory --></div>
           <!-- PROJECTS news -->

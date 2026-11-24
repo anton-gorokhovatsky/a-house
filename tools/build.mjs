@@ -11,7 +11,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { collectArchive, renderMovedPublicationLinks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
+import { collectArchive, renderMovedPublicationLinks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 
@@ -161,6 +161,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const houseProjects = projects.filter(project => project.venue);
   const sportStory = projects.flatMap(project => project.works || []).find(work => work.id === 'issue-a-sport');
   const printEditions = JSON.parse(await source('data/print-editions.json'));
+  const pressBooks = JSON.parse(await source('data/press-books.json'));
   const printDirectory = file('media/print');
   const publicPrintFiles = printArchiveFileNames(printEditions);
   const printArchive = await renderPrintArchive(printEditions, async name => (await stat(path.join(printDirectory, name))).size);
@@ -305,6 +306,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
       .replace('{{sportStoryHref}}', () => escape(sportStory.href))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(printEditions, projects))
+      .replace('<!-- HOME BOOKS -->', () => renderPressBooks(pressBooks, 'h5'))
+      .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks, 'h3'))
       .replaceAll('{{friendAction}}', friendAction)
       .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@media/press/a-news-01-daria-belyakova.pdf', 'Читать интервью', 'PDF, с. 24–25'))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)

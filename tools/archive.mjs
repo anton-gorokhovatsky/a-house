@@ -82,7 +82,7 @@ export function renderCurrentPrintIssues(issues, projects) {
     return `<article class="home-issue ${index === 0 ? 'home-current-issue' : 'home-companion-issue'} editorial-pair">
       ${cover ? `<figure class="home-issue-cover"><img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy"></figure>` : ''}
       <div class="home-issue-copy">
-        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h3>${title}</h3></div>
+        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h5>${title}</h5></div>
         <div class="home-issue-story">${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}${articleLink}</div>
       </div>
     </article>`;
@@ -94,6 +94,18 @@ export function renderSubscriptionEntries(issues) {
     <a class="friend-archive-return" href="@@ROOT@@press/#${escape(issue.seriesId)}">К архиву ${escape(issue.edition)}</a>
     <p class="home-kicker">В подписке — ${escape(issue.edition)} № ${escape(issue.latest.number)} ${escape(issue.latest.topic)}</p>
   </div>`).join('\n');
+}
+
+export function renderPressBooks(books, heading) {
+  return books.map(({title, subtitle, description, cover, href, linkLabel, metadata}) => `<article class="press-book">
+    <img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy" decoding="async">
+    <div><${heading} class="press-book-title">${escape(title)}</${heading}>
+      ${subtitle ? '<p class="book-subtitle">' + escape(subtitle) + '</p>' : ''}
+      <p>${escape(description)}</p>
+      <div class="book-preview">${metadata ? renderPrintFileLink(href, linkLabel, metadata, title)
+        : '<a href="' + escape(href) + '">' + escape(linkLabel) + '<span class="screen-reader-only"> · ' + escape(title) + '</span></a>'}</div>
+    </div>
+  </article>`).join('\n');
 }
 
 const dateFormat = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
