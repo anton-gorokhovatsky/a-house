@@ -28,9 +28,10 @@ python3 tools/import_media.py --workers 6 --python-deps /путь/к/Pillow-font
 
 ### Фотографии проектов на главной
 
-Для каждого снимка в `home/` сохранены две версии WebP шириной 640 и 1200 пикселей. Весь кадр и исходное соотношение сторон сохранены.
+Для крупных фотографий проектов подготовлены версии WebP шириной 640 и 1200 пикселей. Весь кадр и исходное соотношение сторон сохранены.
 
-- **A–Index**. Белая лестница иллюстрирует раздел «Архитектура» на сайте самого справочника. [A–Index](https://aindexproject.com/) · [Исходное изображение](https://s3.regru.cloud/aindex-media/uploads/2026/04/rectangle-919.png)
+- **A–Index, Arch(e)type.** «Урбан виллы», Адлер, 2022. Концепция из портфолио бюро. [Карточка Arch(e)type](https://aindexproject.com/organisations/archetype/)
+- **A–Index, figura A.** Макет из рассказа бюро о работе с физическими моделями. Файл `home/figura-a-model.jpg` сохраняет фотографию размером 644 × 800 пикселей из альбома A–House. [Публикация бюро](https://t.me/ahouseproject/10756) · [Фотография](https://t.me/ahouseproject/10759?single)
 - **A–News**. Интерьер кафе Seth & Manni’s на Ибице из материала редакции. Фотограф Nacho Dorado указан в подписи на главной. [Статья](https://news.ahouseproject.com/memfis-na-ibicze-otkrytie-seth-mannis/) · [Исходная фотография](https://s3.regru.cloud/ahouse-media/uploads/2026/10/03-2.jpg)
 - **Дом предпринимателя**. Лекционный зал в Малом Каретном переулке из фотосерии Дома. [Фотосерия A–House](https://ahouseproject.com/dompredprinimatelya) · [Исходная фотография](https://static.tildacdn.com/tild3631-3561-4238-b931-393939316138/DI_09068-2_1.png)
 - **A–Fest**. Работа Manuel Herz Architects на выставке «Архитектура 2.0» из программы фестиваля 2026 года. [A–Fest](https://aindexproject.com/fest/) · [Исходная фотография](https://s3.regru.cloud/aindex-media/uploads/2026/05/dscf0502-1.png)

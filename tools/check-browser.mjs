@@ -16,6 +16,32 @@ const url = 'http://127.0.0.1:' + server.address().port + base;
 const jobCatalog = JSON.parse(await readFile(path.join(projectRoot, 'src/data/jobs.json'), 'utf8')).jobs;
 const projectGroups = JSON.parse(await readFile(path.join(projectRoot, 'src/data/projects.json'), 'utf8'));
 
+async function renderedWordGaps(locator) {
+  return locator.evaluate(async element => {
+    await document.fonts.ready;
+    const nodes = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    const gaps = [];
+    let previous;
+    let space = false;
+    for (let node = nodes.nextNode(); node; node = nodes.nextNode()) {
+      for (let index = 0; index < node.length; index++) {
+        if (/\s/.test(node.data[index])) {
+          space = true;
+          continue;
+        }
+        range.setStart(node, index);
+        range.setEnd(node, index + 1);
+        const rect = range.getBoundingClientRect();
+        if (space && previous) gaps.push(rect.top >= previous.bottom ? null : rect.left - previous.right);
+        previous = rect;
+        space = false;
+      }
+    }
+    return gaps;
+  });
+}
+
 async function checkHouseVisit(page) {
   const pageBody = page.getByRole('main');
   const photo = pageBody.locator('.institution-opening img');
@@ -84,7 +110,7 @@ async function checkProjectMotion(page) {
 }
 
 async function checkExpiredProgram(page) {
-  await page.goto(url + '#program');
+  await page.goto(url);
   const endDates = await page.locator('#program [data-event-end]').evaluateAll(items => items.map(item => item.dataset.eventEnd));
   if (!endDates.length) return;
   const afterProgram = new Date(endDates.sort().at(-1) + 'T12:00:00+03:00');
@@ -153,8 +179,8 @@ async function checkCalendar(page, mobile) {
     })
   );
   await page.goto(url + '#program');
-  await activate(page.locator('.home-calendar-link'));
   await page.waitForURL(url + 'calendar/');
+  assert.ok(await page.locator('#upcoming').isVisible() && await page.locator('#past').isVisible());
   await kids.waitFor();
   await page.evaluate(() => document.fonts.ready);
   const positions = await controlsAndResults();
@@ -256,8 +282,13 @@ async function checkVisitorLinks(page, mobile) {
     projects.filter(project => project.feature && project.overview === key).sort((a, b) => a.feature.order - b.feature.order));
   const features = page.locator('#projects .home-project-feature');
   assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
-  assert.deepEqual(await features.locator('.home-project-action').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
-  assert.equal(await page.locator('.home-project-features article:visible').count(), projects.length);
+  assert.deepEqual(await features.locator('.home-project-action, .portfolio-intro h3 a').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
+  assert.equal(await page.locator('.home-project-features article:visible').count(), projects.filter(project => project.overview).length);
+  const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
+  assert.deepEqual(await features.locator('.home-project-portfolios strong a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
+  const editions = page.locator('section[aria-labelledby="collection-editions"]');
+  assert.deepEqual(await editions.locator('article h4').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
+  assert.equal(await editions.locator('.editions-access a[href="#services-checkout"]').count(), 1);
   for (const work of projects.flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
     const example = page.locator('.project-examples a').filter({hasText: work.title});
     assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
@@ -265,7 +296,7 @@ async function checkVisitorLinks(page, mobile) {
   const forum = page.locator('.home-project-feature').filter({has: page.getByRole('heading', {name:'A–Forum', exact:true})});
   assert.equal(await forum.getByRole('link', {name:/Итоги форума/}).getAttribute('href'), 'https://t.me/ahouseproject/10590');
   for (const feature of await features.all()) {
-    const image = await feature.locator('img').boundingBox();
+    const image = await feature.locator('img').first().boundingBox();
     const title = await feature.locator('.editorial-pair-title').boundingBox();
     assert.ok(image.width > 0 && image.height > 0, 'Reserve the space for each photograph before scrolling to it');
     assert.ok(mobile ? title.y + title.height <= image.y + 1 : Math.abs(title.y - image.y) < 2);
@@ -632,6 +663,7 @@ async function checkHomeRoutes(page, mobile) {
   await page.goto(url);
   await checkEditorialGrouping(page);
   const menu = page.locator('.site-menu-toggle');
+  const calendarLink = page.locator('.site-navigation a[href$="/calendar/"]');
   assert.equal(await section('program').isVisible(), true);
   assert.equal(await section('media').isVisible(), true);
   assert.equal(await section('club').isVisible(), false, 'The overview must keep club details in their own view');
@@ -663,13 +695,12 @@ async function checkHomeRoutes(page, mobile) {
     assert.equal(await menu.getAttribute('aria-expanded'), 'false');
     assert.ok(await menu.evaluate(el => el === document.activeElement), 'Escape must return focus to the menu toggle');
     await page.keyboard.press('Enter');
-    const programLink = page.locator('.site-navigation a[href="#program"]');
-    await programLink.focus();
-    await page.keyboard.press('Enter');
-    await page.waitForFunction(() => document.querySelector('#program').contains(document.activeElement));
+    await calendarLink.press('Enter');
+    await page.waitForURL(url + 'calendar/');
     assert.equal(await menu.getAttribute('aria-expanded'), 'false', 'Choosing a section must close the mobile menu');
+    await page.goBack();
   }
-  if (mobile) await menu.click();
+  if (mobile && await menu.getAttribute('aria-expanded') !== 'true') await menu.click();
   await choice('media').click();
   await section('media').waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media');
@@ -678,11 +709,9 @@ async function checkHomeRoutes(page, mobile) {
   const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
   if (mobile) await menu.click();
-  await choice('program').focus();
-  await page.keyboard.press('Enter');
-  await section('program').waitFor({ state: 'visible' });
-  assert.equal(new URL(page.url()).hash, '#program');
-  assert.ok(await section('program').locator('a[href^="https://"]:visible').first().isVisible(), 'The program must identify where an external event continues');
+  await calendarLink.press('Enter');
+  await page.waitForURL(url + 'calendar/');
+  assert.ok(await page.locator('#upcoming').isVisible() && await page.locator('#past').isVisible());
   await page.goBack();
   await section('media').waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media', 'Back must restore the chosen reading view');
@@ -720,23 +749,7 @@ try {
     });
     await checkHomeRoutes(page, mobile);
     const link = page.getByRole('main').getByRole('heading', { name: /^Дом\s+A[–‑-]House$/i, level: 1 });
-    const gap = await link.evaluate(async element => {
-      await document.fonts.ready;
-      // Measure the two letters themselves, including when markup splits the label.
-      const text = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-      const letters = [];
-      for (let node = text.nextNode(); node; node = text.nextNode()) {
-        for (let i = 0; i < node.length; i++) {
-          const range = new Range();
-          range.setStart(node, i);
-          range.setEnd(node, i + 1);
-          letters.push(range.getBoundingClientRect());
-        }
-      }
-      const a = element.textContent.indexOf('A');
-      const m = element.textContent.indexOf('м');
-      return letters[a].left - letters[m].right;
-    });
+    const [gap] = await renderedWordGaps(link);
     assert.ok(gap > 1, 'Missing visible space in «Дом A–House» at ' + width + ' px');
     await checkHouseVisit(page);
     if (mobile) {
@@ -759,6 +772,11 @@ try {
     }
     await checkArchiveReading(page);
     await checkCalendar(page, mobile);
+    await page.goto(url + 'calendar/a-forum-2026/');
+    const report = page.getByRole('main').getByRole('link', {name: 'Репортаж A–House On Air'});
+    const reportGaps = await renderedWordGaps(report);
+    assert.equal(reportGaps.length, 3);
+    assert.ok(reportGaps.every(gap => gap > 1), 'All three word spaces in the A–Forum report link must be visible');
     await checkVisitorLinks(page, mobile);
     await checkFooterDocuments(page, mobile);
     await checkSpecialProjectPrograms(page, mobile);

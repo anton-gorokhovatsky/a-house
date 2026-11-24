@@ -17,6 +17,7 @@
       { "file": "media/home/exhibition-architecture-602.webp", "width": 602, "height": 800, "alt": "Архитектурный снимок на деревянном стенде с надписью A–House в выставочном зале" },
       { "file": "media/home/exhibition-light-of-time-602.webp", "width": 602, "height": 800, "alt": "Пейзажные фотографии на соседних стендах", "mobileLead": true }
     ],
+    "links": [{ "url": "https://t.me/ahouseproject/10736?single", "label": "Фотографии с выставки", "role": "report" }],
     "access": "Экскурсия с медиатором длится 40 минут. Вход по записи.",
     "booking": { "url": "https://ahouse.timepad.ru/event/4293210/", "label": "Записаться на экскурсию" }
   },
@@ -30,8 +31,9 @@
       "Уличные художники расписывают стены заброшенных строек и устраивают перформансы в пустующих цехах. На заключительной встрече цикла «Архитектура стратегий» обсудят, как такие работы меняют отношение горожан к этим местам и может ли искусство повлиять на судьбу здания.",
       "В дискуссии участвует Марта Вяземская, основательница арт-кластера «НИИ Снегири». В 2024 году её команда начала обживать пустовавшее здание института на Варшавском шоссе. Там появились мастерские художников и две галереи."
     ],
-    "home": "card", "legacyHeading": "rec2309679131", "price": "По программе ММОМА — 300 ₽",
-    "links": [{ "url": "https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description", "label": "Программа ММОМА" }]
+    "home": "card", "legacyHeading": "rec2309679131", "price": "300 ₽",
+    "booking": { "url": "https://mmoma.timepad.ru/event/4137675/#register", "label": "Купить билет" },
+    "links": [{ "url": "https://mmoma.ru/learn/lectures/special_courses/mmoma_x_a-house/description", "label": "О программе" }]
   },
   {
     "id": "marketing-mastermind",

@@ -3,16 +3,16 @@
     <div class="site-header-bar">
       <{{wordmarkTag}} class="home-wordmark"><a class="site-header-brand" href="@@ROOT@@" aria-label="A–House, на главную"><img src="@@ROOT@@media/ah_logo-d765e23d69d9.svg" width="469" height="89" alt="A–House"></a></{{wordmarkTag}}>
       <div class="home-tools">
-        <a href="{{home}}#visit">Как попасть</a>
+        <a href="{{home}}#visit">{{housesLabel}}</a>
         <button type="button" class="site-menu-toggle" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-navigation"><span class="home-open-label">Меню</span><span class="home-close-label">Закрыть</span></button>
       </div>
     </div>
     <nav id="site-navigation" class="site-navigation" aria-label="Разделы A–House">
       <ul>
         <li class="home-menu-extra"><a data-home-view href="{{home}}#overview">Главная</a></li>
-        <li><a data-home-view href="{{home}}#program"{{programCurrent}}>{{eventsLabel}}</a></li>
+        <li><a href="@@ROOT@@calendar/"{{programCurrent}}>{{eventsLabel}}</a></li>
         <li><a data-home-view href="{{home}}#media">Издания и&nbsp;статьи</a></li>
-        <li><a data-home-view href="{{home}}#visit">Как попасть</a></li>
+        <li><a data-home-view href="{{home}}#visit">{{housesLabel}}</a></li>
         <li><a data-home-view href="{{home}}#industry">Бюро и&nbsp;вакансии</a></li>
         <li><a data-home-view href="{{home}}#club"{{clubCurrent}}>Клуб и&nbsp;подписка</a></li>
         <li><a data-home-view href="{{home}}#partnership">Сотрудничество</a></li>

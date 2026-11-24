@@ -169,7 +169,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     footerContent.set(name, content);
   }
   const friendPrice = 12000;
-  const friendEditions = 'Полные выпуски A–News, A–Kids, A–Sport и A–State в PDF можно читать в приложении A–House.';
+  const digitalEditions = 'A–News, A–Kids, A–Sport и A–State';
+  const friendEditions = `Полные выпуски ${digitalEditions} в PDF можно читать в приложении A–House.`;
   const friendExtras = 'В подписку также входят путеводители, подборки фильмов, ресторанов и спектаклей, дайджесты событий, трансляции с международных площадок и приглашения на выставки A–House.';
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
   const period = env.A_FRIEND_PERIOD?.trim();
@@ -251,6 +252,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
       .replace(/<!-- REPORT (\d{4}) -->/g, (_, year) => renderReportYear(reportYears[year], year, page.slug))
       .replaceAll('{{eventsLabel}}', 'События')
+      .replaceAll('{{housesLabel}}', 'Дома и адреса')
       .replaceAll('{{projectsLabel}}', 'Все проекты')
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
@@ -271,6 +273,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('{{comfortDate}}', () => escape(comfort.start.slice(5).split('-').reverse().join('.')))
       .replace('{{comfortTitle}}', () => escape(comfort.title))
       .replaceAll('{{friendEditions}}', friendEditions)
+      .replaceAll('{{digitalEditions}}', digitalEditions)
       .replaceAll('{{friendExtras}}', friendExtras)
       .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
       .replace('<!-- FOOTER -->', () => homeFooterTemplate)

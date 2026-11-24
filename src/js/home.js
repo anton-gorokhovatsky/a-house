@@ -6,8 +6,17 @@
   const links = [...document.querySelectorAll('a')];
   let restoreFrame = 0;
 
+  function followCalendarBookmark() {
+    if (location.hash !== '#program') return false;
+    const calendar = new URL(document.querySelector('.home-calendar-link').href);
+    calendar.search = location.search;
+    location.replace(calendar.href);
+    return true;
+  }
+  if (followCalendarBookmark()) return;
+
   function viewFor(target) {
-    if (target?.closest('.home-overview-only')) return null;
+    if (target?.closest('.home-overview-only, #program')) return null;
     return target?.closest('[data-home-section]') || null;
   }
 
@@ -64,6 +73,7 @@
   }
 
   function restoreHistoryEntry() {
+    if (followCalendarBookmark()) return;
     const target = hashTarget();
     if (openArchivedEvent(target)) return;
     const previousView = overview.dataset.view;

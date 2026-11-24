@@ -129,7 +129,7 @@ export function renderEventPage(event, base, now = new Date()) {
   if (event.price) access.push('<p class="event-price">' + escape(event.price) + '</p>');
   if (event.access) access.push('<p>' + escape(event.access) + '</p>');
   const fallback = !past && (access.length || event.booking)
-    ? '<noscript>' + access.join('') + (event.booking ? '<a href="' + escape(event.booking.url) + '">Расписание у организатора</a>' : '') + '</noscript>' : '';
+    ? '<noscript>' + access.join('') + (event.booking ? reference(event.booking) : '') + '</noscript>' : '';
   if (event.booking) access.push('<a class="home-action" href="' + escape(event.booking.url) + '">' + escape(event.booking.label) + '</a>');
   return `<article class="event-article" data-event-detail data-end="${escape(end)}">
     <a class="event-calendar-link" data-event-calendar href="${escape(calendar + '#' + event.id)}">Календарь событий</a>

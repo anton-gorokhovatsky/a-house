@@ -8,14 +8,22 @@
         "name": "A–Index",
         "overview": "primary",
         "works": [
-          {"title": "Макеты бюро figura A", "date": "2026-11-23", "source": "A–House в Telegram", "text": "Архитекторы показывают, как проверяют пропорции и конструкцию на физических моделях.", "href": "https://t.me/ahouseproject/10756"},
           {"title": "Главный архитектор в «Сфера групп»", "date": "2026-11-18", "source": "Вакансия в A–Index", "href": "https://aindexproject.com/vacancies/glavnyj-arhitektor/"}
         ],
         "description": "Справочник архитектурных бюро, дизайнеров и подрядчиков. Здесь можно посмотреть портфолио, найти контакты команды или вакансию.",
         "href": "https://aindexproject.com/",
         "feature": {
-          "order": 1, "action": "Открыть справочник A–Index",
-          "photo": { "src": "media/home/a-index-urban-villas-640.webp", "width": 640, "height": 640, "large": "media/home/a-index-urban-villas-1200.webp", "largeWidth": 1200, "alt": "Белые террасы жилого дома среди деревьев рядом с водонапорной башней", "caption": "«Урбан виллы», Адлер, 2022. Концепция Arch(e)type.", "href": "https://aindexproject.com/organisations/archetype/" }
+          "order": 1,
+          "portfolios": [
+            {
+              "studio": "Arch(e)type", "href": "https://aindexproject.com/organisations/archetype/",
+              "photo": { "src": "media/home/a-index-urban-villas-640.webp", "width": 640, "height": 640, "large": "media/home/a-index-urban-villas-1200.webp", "largeWidth": 1200, "alt": "Белые террасы жилого дома рядом с водонапорной башней", "caption": "«Урбан виллы». Концепция в Адлере, 2022." }
+            },
+            {
+              "studio": "figura A", "href": "https://aindexproject.com/organisations/figura-a/",
+              "photo": { "src": "media/home/figura-a-model.jpg", "width": 644, "height": 800, "alt": "Деревянный макет в разрезе. На трёх этажах видны зелёные столы и стулья.", "caption": "Как архитекторы проверяют конструкцию на макетах", "href": "https://t.me/ahouseproject/10756", "published": "2026-11-23" }
+            }
+          ]
         }
       },
       {
@@ -72,10 +80,6 @@
       },
       {
         "name": "A–Press",
-        "overview": "editions",
-        "works": [
-          {"title": "Где взять печатные издания", "text": "Издательские газеты и журналы можно найти в ММОМА, отеле «Рихтер» и кафе кинотеатра «Художественный». На карте издательства есть и другие адреса.", "href": "@@ROOT@@press/#distribution"}
-        ],
         "description": "Издательство A–House выпускает книги, каталоги и периодику. На его странице можно посмотреть издания и найти места, где есть печатные номера.",
         "href": "@@ROOT@@press/"
       },
@@ -135,28 +139,16 @@
       },
       {
         "name": "Канал A–House",
-        "overview": "channels",
-        "works": [
-          {"title": "Архитектурная фотография на выставке «Свет времени»", "text": "Команда показывает, как работы участников конкурса мобильной фотографии выглядят в зале Дома.", "href": "https://t.me/ahouseproject/10736?single"}
-        ],
         "description": "В Telegram команда объявляет встречи в Доме и публикует фотографии с выставок. Здесь же выходят заметки архитекторов о своей работе.",
         "href": "https://t.me/s/ahouseproject"
       },
       {
         "name": "A–House On Air",
-        "overview": "channels",
-        "works": [
-          {"title": "«Мемфис» на ярмарке NOMAD в Абу-Даби", "date": "2026-11-20", "text": "В фоторепортаже со стенда — мебель Этторе Соттсасса и ковёр Натали дю Паскье.", "href": "https://t.me/ahouseonair/416"}
-        ],
         "description": "Канал репортажей с ярмарок и форумов. В ленте сохранилась трансляция первого A–Forum о гостиничной индустрии.",
         "href": "https://t.me/s/ahouseonair"
       },
       {
         "name": "Канал A–Kids",
-        "overview": "channels",
-        "works": [
-          {"title": "Как дети собирали собственные макеты", "date": "2024-11-11", "text": "На встрече в бюро Arch(e)type дети познакомились с работой архитекторов. На фотографиях — мастерская и макеты участников.", "href": "https://t.me/ahousekids/143"}
-        ],
         "description": "Архив семейного канала в Telegram. В нём собраны идеи для занятий, детские выставки и разговоры с детьми об искусстве.",
         "href": "https://t.me/s/ahousekids"
       }
@@ -178,10 +170,6 @@
       },
       {
         "name": "A–Friend",
-        "overview": "editions",
-        "works": [
-          {"title": "Четыре издания в одной подписке", "text": "В приложении доступны полные PDF-выпуски A–News, A–Kids, A–Sport и A–State. Здесь можно посмотреть условия и оформить подписку."}
-        ],
         "description": "Подписка на полные выпуски A–News, A–Kids, A–Sport и A–State. Их можно читать в PDF в приложении A–House.",
         "href": "#services-checkout"
       }
