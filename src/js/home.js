@@ -1,6 +1,6 @@
 (() => {
   const overview = document.getElementById('overview');
-  const issue = document.querySelector('.home-issue');
+  const readingHighlights = document.querySelector('.reading-highlights');
   const sections = [...document.querySelectorAll('[data-home-section]')];
   const choices = [...document.querySelectorAll('[data-home-view]')];
   const links = [...document.querySelectorAll('a')];
@@ -24,7 +24,7 @@
     const context = target?.closest('.home-footer') ? document.getElementById(history.state?.homeContext || '') : target;
     const selected = viewFor(context);
     overview.dataset.view = selected?.id || 'overview';
-    issue.hidden = context?.id === 'publications';
+    readingHighlights.hidden = context?.id === 'publications';
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
@@ -77,13 +77,14 @@
     const target = hashTarget();
     if (openArchivedEvent(target)) return;
     const previousView = overview.dataset.view;
+    const previousHighlights = readingHighlights.hidden;
     const wasHidden = target && !target.getClientRects().length;
     displayView(target);
     cancelAnimationFrame(restoreFrame);
     const entry = history.state?.homeReturn;
     if (!entry) {
       // A pasted fragment can point into a view that was hidden during native scrolling.
-      if (target && (wasHidden || previousView !== overview.dataset.view)) scrollToTarget(target);
+      if (target && (wasHidden || previousView !== overview.dataset.view || previousHighlights !== readingHighlights.hidden)) scrollToTarget(target);
       return;
     }
     const destination = location.href;
@@ -129,19 +130,6 @@
   const entries = [...document.querySelectorAll('#program [data-event-end]')];
   const spotlight = document.querySelector('[data-home-now]');
   const featured = spotlight.querySelector('[data-event-end]');
-  const program = spotlight.parentElement;
-  const introduction = overview.querySelector('.home-introduction');
-  const compact = matchMedia('(max-width: 48em)');
-  // Keep the About link in visual reading order when the two opening sections swap places.
-  function orderIntroduction() {
-    const before = compact.matches ? program.nextElementSibling : program;
-    if (before === introduction || introduction.nextElementSibling === before) return;
-    const focused = introduction.contains(document.activeElement) ? document.activeElement : null;
-    overview.insertBefore(introduction, before);
-    focused?.focus({preventScroll: true});
-  }
-  orderIntroduction();
-  compact.addEventListener('change', orderIntroduction);
   const calendar = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
   });
@@ -160,7 +148,6 @@
     displayedDay = today;
     const featureIsCurrent = featured && featured.dataset.eventStart <= today && today <= featured.dataset.eventEnd;
     spotlight.hidden = !featureIsCurrent;
-    document.querySelector('[data-home-intro]').hidden = !!featureIsCurrent;
     for (const item of entries) {
       const expired = item.dataset.eventEnd < today;
       item.hidden = expired;

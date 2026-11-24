@@ -8,11 +8,13 @@ const partners = 'mailto:partners@ahouseproject.com';
 
 export const venues = {
   house: {
+    name: 'Дом A–House',
     address: 'Москва, Большой Афанасьевский пер., 14',
     map: 'https://yandex.ru/maps/213/moscow/house/bolshoy_afanasyevskiy_pereulok_14/Z04Ycw5nTE0CQFtvfXt1dnxmYA==/',
     hours: '10:00–20:00', cafeHours: '9:00–22:00'
   },
   entrepreneur: {
+    name: 'Дом предпринимателя',
     address: 'Москва, Малый Каретный пер., 11, стр. 10',
     map: 'https://yandex.ru/maps/213/moscow/house/maly_karetny_pereulok_11s10/Z04YcAZkTEECQFtvfXt2cHtnYw==/'
   }
@@ -48,12 +50,14 @@ export const institutionPages = {
         ]
       },
       {
-        id: 'house', title: 'Дом в Москве',
-        paragraphs: ['В июле 2026 года A–House открыл новую штаб-квартиру в Большом Афанасьевском переулке. Пять этажей бывшего доходного дома занимают кафе, залы для выставок и встреч, библиотека и пространства резидентов.'],
-        links: [link('Дом A–House и его резиденты', '@@ROOT@@residents/'), link('Репортаж A–News об открытии', houseStory)]
+        id: 'house', title: 'Два Дома в Москве',
+        entries: [
+          { title: venues.house.name, href: '@@ROOT@@residents/', text: 'В июле 2026 года A–House открыл штаб-квартиру в Большом Афанасьевском переулке. Пять этажей бывшего доходного дома занимают кафе, залы для выставок и встреч, библиотека и пространства резидентов.', links: [link('Репортаж A–News об открытии Дома', houseStory)] },
+          { title: venues.entrepreneur.name, href: '@@ROOT@@dompredprinimatelya/', text: 'В Малом Каретном переулке A–House и Точка Банк проводят открытые встречи для предпринимателей.', links: [link('Программа Дома предпринимателя', '@@ROOT@@dompredprinimatelya/#program-house')] }
+        ]
       },
       { id: 'film', title: 'Фильм об A–House', video: 'edWgnwrVLQo' },
-      { id: 'patrons', title: 'Патроны A–House', people: patrons, links: [link('Программы участия в клубе', '@@ROOT@@club/')] }
+      { id: 'patrons', title: 'Патроны A–House', people: patrons }
     ]
   },
   education: {
@@ -87,8 +91,9 @@ export const institutionPages = {
     lead: 'В пятиэтажном Доме в Большом Афанасьевском переулке проходят выставки, лекции и встречи клуба. Здесь работают резиденты, открыты архитектурная библиотека и кафе A–House × Finch.',
     intro: `${venues.house.address}. Часы работы Дома — ${venues.house.hours}, кафе A–House Cafe × Finch — ${venues.house.cafeHours}. Условия входа указаны на странице каждой выставки или встречи.`,
     photo: photo('home/house-facade-800.webp', 800, 600, 'Красный фасад Дома A–House с двумя чёрными маркизами', 'Фото Дианы Вешкурцевой'),
-    links: [link('Афиша A–House', '@@ROOT@@calendar/'), link('На карте', venues.house.map), link('Резиденты Дома', '#residents')],
+    links: [link('Программа Дома', '#program-house'), link('На карте', venues.house.map), link('Резиденты Дома', '#residents')],
     sections: [
+      { id: 'program-house', title: 'Программа Дома', program: 'house', links: [link('Весь календарь A–House', '@@ROOT@@calendar/')] },
       {
         id: 'inside', title: 'Внутри Дома',
         paragraphs: ['Штаб-квартира A–House занимает бывший доходный дом 1895 года. В Салоне на втором этаже проходят выставки, лекции и клубные ужины. Рядом находится Малый кабинет с архитектурными макетами.',
@@ -140,8 +145,9 @@ export const institutionPages = {
     lead: 'A–House и Точка Банк открыли Дом в Малом Каретном переулке для предпринимателей. Здесь можно провести рабочую встречу, прийти на лекцию или открыть собственный цикл событий.',
     intro: `${venues.entrepreneur.address}. Открытую программу может посетить любой желающий. Для этого не требуется быть клиентом Точка Банка или владельцем Ключа от Дома.`,
     photo: photo('DI_09068-2_1-fe7d19b5f983.webp', 3000, 2000, 'Светлый зал Дома предпринимателя с рядами кресел'),
-    links: [link('Расписание встреч и регистрация', 'https://dompred.ru/events'), link('На карте', venues.entrepreneur.map)],
+    links: [link('Программа Дома', '#program-house'), link('На карте', venues.entrepreneur.map)],
     sections: [
+      { id: 'program-house', title: 'Программа Дома', program: 'entrepreneur', links: [link('Все встречи и регистрация на сайте Дома', 'https://dompred.ru/events')] },
       {
         id: 'house', title: 'Как устроен Дом',
         entries: [

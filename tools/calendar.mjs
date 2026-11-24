@@ -75,12 +75,10 @@ function renderFilters(events, calendar) {
       <a href="${calendar}" data-calendar-audience="" aria-current="true">Все события</a>
       <a href="${calendar}?audience=kids" data-calendar-audience="kids" class="calendar-kids">Для детей</a>
     </nav>
-    <details class="calendar-months">
-      <summary><span class="when-closed" data-month-label>Все месяцы</span><span class="when-open">Закрыть список месяцев</span></summary>
-      <nav aria-label="Месяц события">
-        <a href="${calendar}" data-calendar-month="" aria-current="true">Все месяцы</a>${choices}
-      </nav>
-    </details>
+    <a class="calendar-results-shortcut" href="#calendar-results">К списку событий</a>
+    <nav class="calendar-months" aria-label="Месяц события">
+      <a href="${calendar}" data-calendar-month="" aria-current="true">Все месяцы</a>${choices}
+    </nav>
     <span data-calendar-count class="calendar-sr" role="status"></span>
   </aside>`;
 }
@@ -169,7 +167,7 @@ export function renderCalendar(events, base, now = new Date()) {
   </header>
   <div class="calendar-layout" data-calendar>
     ${renderFilters(events, calendar)}
-    <div class="calendar-stream">
+    <div class="calendar-stream" id="calendar-results" tabindex="-1">
       <div data-calendar-empty hidden><p data-empty-message></p><a href="${calendar}" data-calendar-reset>Сбросить фильтры</a></div>
       <section id="upcoming" aria-labelledby="calendar-upcoming-heading">
         <h2 id="calendar-upcoming-heading">Сейчас и скоро</h2>

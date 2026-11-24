@@ -170,9 +170,9 @@ async function checkCalendar(page, mobile) {
   const activate = locator => mobile ? locator.tap() : locator.press('Enter');
   const all = page.locator('[data-calendar-audience=""]');
   const kids = page.locator('[data-calendar-audience="kids"]');
-  const months = page.locator('details.calendar-months');
+  const months = page.getByRole('navigation', { name: 'Месяц события' });
   const rows = page.locator('[data-calendar-event]:visible');
-  const controlsAndResults = () => page.locator('.calendar-opening h1, [data-calendar-audience], .calendar-months summary, .calendar-stream').evaluateAll(elements =>
+  const controlsAndResults = () => page.locator('.calendar-opening h1, [data-calendar-audience], .calendar-months, .calendar-stream').evaluateAll(elements =>
     elements.map(element => {
       const { left, top } = element.getBoundingClientRect();
       return [left, top];
@@ -191,7 +191,7 @@ async function checkCalendar(page, mobile) {
   assert.equal(new URL(page.url()).searchParams.get('audience'), 'kids');
   assert.ok(await rows.count() >= 2);
   assert.deepEqual(await rows.evaluateAll(items => [...new Set(items.map(item => item.dataset.audience))]), ['kids']);
-  await activate(months.locator('summary'));
+  assert.ok(await months.locator('[data-calendar-month="2024-11"]').isVisible());
   await activate(months.locator('[data-calendar-month="2024-11"]'));
   const launch = page.locator('#a-kids-first-issue');
   assert.ok(await launch.isVisible());
@@ -278,23 +278,27 @@ async function checkVisitorLinks(page, mobile) {
   assert.equal(await page.locator('#publication-archive').isVisible(), false);
   assert.equal(await page.locator('#projects .home-direction:visible').count(), 0);
   const projects = projectGroups.flatMap(group => group.projects);
-  const selected = ['primary','gatherings','houses'].flatMap(key =>
-    projects.filter(project => project.feature && project.overview === key).sort((a, b) => a.feature.order - b.feature.order));
-  const features = page.locator('#projects .home-project-feature');
+  const selected = ['news','directory'].map(key => projects.find(project => project.overview === key));
+  const features = page.locator('.home-project-feature:visible');
+  assert.deepEqual(await page.locator('#overview > [data-home-section]:visible').evaluateAll(items => items.map(item => item.id)),
+    ['program', 'visit', 'media', 'projects', 'gatherings']);
+  assert.ok(await page.locator('#collection-community a[href$="/member/"]').isVisible());
   assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
-  assert.deepEqual(await features.locator('.home-project-action, .portfolio-intro h3 a').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
-  assert.equal(await page.locator('.home-project-features article:visible').count(), projects.filter(project => project.overview).length);
+  assert.deepEqual(await features.locator('.editorial-pair-title a').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
+  for (const project of selected) assert.equal(await features.locator('a[href="' + project.href + '"]').count(), 1);
   const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
   assert.deepEqual(await features.locator('.home-project-portfolios strong a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
-  assert.deepEqual(await editions.locator('article h4').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
+  assert.deepEqual(await editions.locator('.home-editions article h4').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
   assert.equal(await editions.locator('.editions-access a[href="#services-checkout"]').count(), 1);
   for (const work of projects.flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
-    const example = page.locator('.project-examples a').filter({hasText: work.title});
+    const example = page.locator('.project-examples a, .home-issue .home-primary').filter({hasText: work.title});
     assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
   }
-  const forum = page.locator('.home-project-feature').filter({has: page.getByRole('heading', {name:'A–Forum', exact:true})});
+  const forum = page.locator('.home-gathering').filter({has: page.getByRole('heading', {name:'A–Forum', exact:true})});
   assert.equal(await forum.getByRole('link', {name:/Итоги форума/}).getAttribute('href'), 'https://t.me/ahouseproject/10590');
+  assert.deepEqual(await page.locator('.home-gathering h3 a').evaluateAll(links => links.map(link => link.href)),
+    ['https://news.ahouseproject.com/forum/', 'https://aindexproject.com/fest/']);
   for (const feature of await features.all()) {
     const image = await feature.locator('img').first().boundingBox();
     const title = await feature.locator('.editorial-pair-title').boundingBox();
@@ -708,6 +712,13 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await section('program').isVisible(), false);
   const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
+  await page.evaluate(() => { location.hash = 'publications'; });
+  await page.waitForFunction(() => {
+    const first = document.querySelector('#publications h3').getBoundingClientRect();
+    return first.top >= 0 && first.top < innerHeight;
+  });
+  await page.goBack();
+  await page.waitForURL(url + '#media');
   if (mobile) await menu.click();
   await calendarLink.press('Enter');
   await page.waitForURL(url + 'calendar/');

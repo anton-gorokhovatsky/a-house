@@ -56,6 +56,17 @@ function featurePhoto(event, base) {
   return '<figure class="home-feature-photo"><div class="home-photo-pair">' + images + '</div>' + caption + '</figure>';
 }
 
+export function renderVenueProgram(events, venue, base, today = moscow.format(new Date())) {
+  const scheduled = events.filter(event => event.venue === venue && event.end >= today)
+    .sort((a, b) => a.start.localeCompare(b.start) || (a.time || '').localeCompare(b.time || ''));
+  const items = scheduled.map(event =>
+    `<li data-venue-end="${esc(event.end)}"><span class="home-meta">${dateLine(event, today)}</span>
+      <a href="${esc(eventDestination(event, base + 'calendar/'))}">${esc(event.title)}</a></li>`
+  ).join('');
+  return `<div class="venue-program" data-venue-program><ul role="list">${items}</ul>
+    <p data-venue-empty${items ? ' hidden' : ''}>Новые даты пока не объявлены.</p></div>`;
+}
+
 export function renderProgram(events, featureTemplate, base, today = moscow.format(new Date())) {
   const spotlight = events.find(event => event.home === 'feature');
   const cards = events.filter(event => event !== spotlight && (event.home === 'card' || event.end >= today));

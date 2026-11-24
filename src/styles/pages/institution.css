@@ -121,7 +121,7 @@
   line-height: 1.4;
 }
 
-.home-page .institution-page a:not(.ah-video-source) {
+.home-page .institution-page a {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
@@ -203,6 +203,9 @@
 .institution-video {
   max-width: 50rem;
 }
+.institution-film-link { display: inline-block; min-block-size: 44px; align-content: center; }
+.home-page .institution-people :is(h3, p) { hyphens: none; overflow-wrap: normal; }
+.institution-people .person-years { white-space: nowrap; }
 
 @container institution-intro (max-width: 17em) {
   .home-page .institution-intro h1 {

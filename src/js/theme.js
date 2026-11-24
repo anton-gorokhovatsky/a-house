@@ -1,6 +1,7 @@
 (() => {
   const storageKey = 'a-house:theme';
   const root = document.documentElement;
+  const systemScheme = matchMedia('(prefers-color-scheme: dark)');
   let preference = 'system';
   let control;
 
@@ -17,7 +18,12 @@
     preference = value;
     if (value === 'system') root.removeAttribute('data-theme');
     else root.dataset.theme = value;
-    if (control) control.querySelector('input[value="' + value + '"]').checked = true;
+    if (control) {
+      control.querySelector('input[value="' + value + '"]').checked = true;
+      const state = control.querySelector('.theme-system-state');
+      state.hidden = value !== 'system';
+      state.textContent = systemScheme.matches ? ' · сейчас тёмная тема' : ' · сейчас светлая тема';
+    }
   }
 
   apply(readPreference());
@@ -50,4 +56,5 @@
     if (event.key === storageKey || event.key === null) apply(readPreference());
   });
   window.addEventListener('pageshow', () => apply(readPreference()));
+  systemScheme.addEventListener('change', () => { if (preference === 'system') apply('system'); });
 })();

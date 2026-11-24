@@ -12,10 +12,29 @@ const paths = new Map([
   ['События', 'events'], ['Трансляции', 'broadcasts']
 ]);
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
+
+function issueLabel(issue) {
+  return `№ ${escape(issue.latest.number)} ${escape(issue.latest.topic)}`;
+}
+
+export function renderSubscriptionLink(issue) {
+  return `<div class="print-next">
+    <p>Свежий выпуск — ${issueLabel(issue)}.</p>
+    <a href="@@ROOT@@#${escape(issue.latest.anchor)}">Условия подписки A–Friend<span class="screen-reader-only"> для ${escape(issue.edition)}</span></a>
+  </div>`;
+}
+
+export function renderSubscriptionEntries(issues) {
+  return issues.map(issue => `<div id="${escape(issue.latest.anchor)}" class="friend-edition" tabindex="-1">
+    <a class="friend-archive-return" href="@@ROOT@@press/#${escape(issue.id)}">К первому номеру ${escape(issue.edition)}</a>
+    <p class="home-kicker">В подписке — ${escape(issue.edition)} ${issueLabel(issue)}</p>
+  </div>`).join('\n');
+}
+
 const dateFormat = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 const issueLinks = new Map([
   ['tpost/f0997i9441-anews-2', ['a-news', 'Газета A–News в каталоге A–Press']],
-  ['tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so', ['a-kids', 'Журнал A–Kids в каталоге A–Press']]
+  ['tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so', ['a-kids-01', 'Читать первый A–Kids — для взрослых и для детей']]
 ]);
 const imageDescriptions = new Map([
   ['media/1_1-28bcddfdcb71.webp', 'Обложка второго номера A–News. В старинном интерьере у стены сложены разноцветные ткани.'],

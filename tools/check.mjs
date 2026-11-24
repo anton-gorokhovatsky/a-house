@@ -28,6 +28,11 @@ async function inventory(directory) {
   }
 }
 await inventory('');
+const printIssues = JSON.parse(await readFile(path.join(projectRoot, 'src/data/print-editions.json'), 'utf8'));
+const allowedPrint = new Set(printIssues.flatMap(issue => [issue.id + '.jpg', ...issue.files.map(file => file.name)]));
+for (const file of files) {
+  if (file.startsWith('media/print/') && !allowedPrint.has(file.slice('media/print/'.length))) errors.push('Unlisted print archive file: ' + file);
+}
 const [pages, events] = await Promise.all(['routes.json', 'data/events.json'].map(async file =>
   JSON.parse(await readFile(path.join(projectRoot, 'src', file), 'utf8'))));
 const archive = await collectArchive(pages, slug => readFile(path.join(projectRoot, 'src/pages', slug + '.html'), 'utf8'));

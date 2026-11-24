@@ -19,14 +19,17 @@ function figure(photo, first = false) {
 function sectionContent(section) {
   const paragraphs = (section.paragraphs || []).map(text => '<p>' + escape(text) + '</p>').join('\n');
   const items = section.entries ? '<dl class="institution-entries">' + section.entries.map(entry =>
-    '<div><dt>' + (entry.href ? link({ href: entry.href, label: entry.title }) : escape(entry.title)) + '</dt><dd>' + escape(entry.text) + '</dd></div>'
+    '<div><dt>' + (entry.href ? link({ href: entry.href, label: entry.title }) : escape(entry.title)) + '</dt><dd>' + escape(entry.text) + links(entry.links) + '</dd></div>'
   ).join('\n') + '</dl>' : '';
   const people = section.people ? '<ul class="institution-people" role="list">' + section.people.map(person =>
-    `<li class="editorial-pair">${image(person)}<div><h3 class="editorial-pair-title">${escape(person.name)}</h3>${person.role ? '<p>' + escape(person.role) + '</p>' : ''}</div></li>`
+    `<li class="editorial-pair">${image(person)}<div><h3 class="editorial-pair-title">${escape(person.name)}</h3>${person.role ? '<p>' + escape(person.role).replace(/\(\d{4}–\d{4}\)/g, '<span class="person-years">$&</span>') + '</p>' : ''}</div></li>`
   ).join('\n') + '</ul>' : '';
   const photos = section.photos ? '<div class="institution-photos">' + section.photos.map(photo => figure(photo)).join('') + '</div>' : '';
-  const video = section.video ? `<div class="t-video-carier institution-video" data-content-video-url-youtube="${escape(section.video)}"></div><noscript><a href="https://www.youtube.com/watch?v=${escape(section.video)}">Открыть видео на YouTube</a></noscript>` : '';
-  return paragraphs + items + people + photos + video + links(section.links);
+  const video = section.video ? `<div class="t-video-carier institution-video" data-content-video-url-youtube="${escape(section.video)}" data-video-title="${escape(section.title)}" hidden>
+    <img src="@@ROOT@@media/home/about-film.jpg" width="1280" height="720" alt="" loading="lazy"></div>
+    <a class="institution-film-link" href="https://www.youtube.com/watch?v=${escape(section.video)}">Смотреть фильм на YouTube</a>` : '';
+  const program = section.program ? '<!-- VENUE PROGRAM ' + section.program + ' -->' : '';
+  return paragraphs + program + items + people + photos + video + links(section.links);
 }
 
 export function isInstitutionPage(slug) {

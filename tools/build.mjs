@@ -1,4 +1,4 @@
-import { appendFile, cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { appendFile, cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,10 +6,10 @@ import { keepProjectNames, typesetHomeText } from './typography.mjs';
 import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
 import { loadImageDelivery } from './images.mjs';
 import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } from './calendar.mjs';
-import { renderProgram } from './program.mjs';
-import { renderHomeProjects } from './home-projects.mjs';
+import { renderProgram, renderVenueProgram } from './program.mjs';
+import { renderHomeProjects, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { archiveFragment, archiveFragmentStyles, collectArchive, renderArchiveCatalog } from './archive.mjs';
+import { archiveFragment, archiveFragmentStyles, collectArchive, renderArchiveCatalog, renderSubscriptionEntries, renderSubscriptionLink } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 
@@ -134,7 +134,24 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const projectNavigation = directions.map(group =>
     `<a href="#${escape(group.id)}">${escape(group.name)}</a>`
   ).join('\n');
-  const featuredProjects = renderHomeProjects(directions, events);
+  const projects = directions.flatMap(group => group.projects);
+  const houseProjects = projects.filter(project => project.venue);
+  const leadStory = projects.find(project => project.overview === 'lead-edition').works[0];
+  const printEditions = JSON.parse(await source('data/print-editions.json'));
+  const printDirectory = file('media/print');
+  const publicPrintFiles = new Set(printEditions.flatMap(issue => [issue.id + '.jpg', ...issue.files.map(item => item.name)]));
+  const printIssues = await Promise.all(printEditions.map(async issue => {
+    const files = await Promise.all(issue.files.map(async item => {
+      const pdf = 'media/print/' + item.name;
+      const bytes = (await stat(file(pdf))).size;
+      const size = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(bytes / 1e6);
+      return `<a href="@@ROOT@@${pdf}">${escape(item.label)}<span class="screen-reader-only"> · ${escape(issue.edition)} № 1</span> <small>PDF · ${size} МБ</small></a>`;
+    }));
+    return `<article id="${escape(issue.id)}" class="print-issue">
+      <img src="@@ROOT@@media/print/${issue.id}.jpg" alt="Обложка ${escape(issue.edition)} № 1" width="${issue.coverWidth}" height="780" loading="lazy">
+      <div><p class="home-kicker">${escape(issue.edition)} № 1 · <time datetime="${issue.published}">${issue.published.slice(0, 4)}</time></p><h3>${escape(issue.title)}</h3><p>${escape(issue.description)}</p>
+      <div class="press-page-links">${files.join('')}</div>${renderSubscriptionLink(issue)}</div></article>`;
+  }));
   const projectGroups = directions.map(group => {
     const {id, name, intro} = group;
     const rows = group.projects.map(project => `<li>
@@ -184,7 +201,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   await Promise.all([
     cp(file('media'), path.join(output, 'media'), {
       recursive: true,
-      filter: source => !['README.md','provenance.json','.DS_Store'].includes(path.basename(source))
+      filter: source => {
+        if (source.startsWith(printDirectory + path.sep)) return publicPrintFiles.has(path.relative(printDirectory, source));
+        return !['README.md','provenance.json','.DS_Store'].includes(path.basename(source));
+      }
     }),
     cp(file('src/js'), path.join(output, 'js'), { recursive: true })
   ]);
@@ -259,12 +279,18 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
+      .replace(/<!-- VENUE PROGRAM (\w+) -->/g, (_, key) => renderVenueProgram(events, venues[key].name, base))
+      .replace(/<!-- HOUSE WORK (\w+) -->/g, (_, key) => renderProjectWorks(houseProjects.find(project => project.venue === key)))
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
-      .replace('<!-- FEATURED PROJECTS -->', () => featuredProjects)
+      .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
+      .replace('{{leadStoryText}}', () => escape(leadStory.text))
+      .replace('{{leadStoryHref}}', () => escape(leadStory.href))
+      .replace('{{leadStoryTitle}}', () => escape(leadStory.title))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- A-SPORT PRINT -->', () => sportPhoto)
-      .replace('{{introHidden}}', program.featureIsCurrent ? ' hidden' : '')
+      .replace('<!-- PRINT ISSUES -->', () => printIssues.join('\n'))
+      .replace('<!-- FRIEND EDITIONS -->', () => renderSubscriptionEntries(printEditions))
       .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
       .replace('{{emptyHidden}}', program.hasEvents ? ' hidden' : '')
       .replace('<!-- EVENT CALENDAR -->', () => renderCalendar(events, base))

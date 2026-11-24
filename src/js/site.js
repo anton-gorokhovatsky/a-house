@@ -1,6 +1,21 @@
 // Original compositions use a different drawing width at each breakpoint.
 // Scale the composition as a whole so photographs and their captions stay together.
 const boards = Array.from(document.querySelectorAll('.t396__artboard[data-artboard-screens]'));
+const venuePrograms = document.querySelectorAll('[data-venue-program]');
+if (venuePrograms.length) {
+  const dateInMoscow = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit' });
+  function refreshVenuePrograms() {
+    const today = dateInMoscow.format(new Date());
+    for (const program of venuePrograms) {
+      for (const item of program.querySelectorAll('[data-venue-end]')) item.hidden = item.dataset.venueEnd < today;
+      program.querySelector('[data-venue-empty]').hidden = !!program.querySelector('li:not([hidden])');
+    }
+  }
+  refreshVenuePrograms();
+  window.addEventListener('pageshow', refreshVenuePrograms);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshVenuePrograms(); });
+  window.setInterval(refreshVenuePrograms, 60000);
+}
 function fitCompositions() {
   const width = document.documentElement.clientWidth;
   for (const board of boards) {

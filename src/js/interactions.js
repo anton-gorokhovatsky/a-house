@@ -636,13 +636,24 @@
   }
 
   function setupVideo() {
-    $$('.t-video-carier[data-content-video-url-youtube]').forEach(host=>{
-      if(initialized.has(host))return;initialized.add(host);
-      const videoId=host.dataset.contentVideoUrlYoutube;if(!/^[\w-]{6,}$/.test(videoId))return;
-      host.classList.add('ah-video-player');const play=button('Воспроизвести видео','ah-video-play','Смотреть видео');
-      const fallback=document.createElement('a');fallback.href=`https://www.youtube.com/watch?v=${videoId}`;fallback.textContent='Открыть на YouTube';fallback.className='ah-video-source';fallback.target='_blank';fallback.rel='noopener';
-      host.append(play,fallback);
-      play.addEventListener('click',()=>{const frame=document.createElement('iframe');frame.src=`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;frame.title='Видео об A-House';frame.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';frame.allowFullscreen=true;host.prepend(frame);play.remove();frame.focus();});
+    $$('.t-video-carier[data-content-video-url-youtube]').forEach(host => {
+      const videoId = host.dataset.contentVideoUrlYoutube;
+      if (initialized.has(host) || !/^[\w-]{11}$/.test(videoId)) return;
+      initialized.add(host);
+      host.hidden = false;
+      host.classList.add('ah-video-player');
+      const play = button('Смотреть фильм об A–House', 'ah-video-play', 'Смотреть фильм');
+      host.append(play);
+      play.addEventListener('click', () => {
+        const frame = document.createElement('iframe');
+        frame.title = host.dataset.videoTitle;
+        frame.referrerPolicy = 'strict-origin-when-cross-origin';
+        frame.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
+        frame.allowFullscreen = true;
+        frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0`;
+        host.replaceChildren(frame);
+        frame.focus({ preventScroll: true });
+      });
     });
   }
 

@@ -1,7 +1,7 @@
 // Only visible HTML text is formatted. Attributes, artwork and native values
 // stay literal in both the editorial homepage and the imported pages.
 const htmlTokens = /<!--[\s\S]*?-->|<(script|style|svg|textarea|select)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>|<\/?[a-z][\w:-]*\b(?:[^>"']|"[^"]*"|'[^']*')*>|[^<]+|</gi;
-const names = 'House|News|Index|School|Fest|Presence|Friend|Member|Patron|Board|Press|Seasons|Kids|Shop|Media|State|Pass|Gallery|Sport|Focus|Private|Book|Concierge';
+const names = 'House|News|Index|School|Fest|Presence|Friend|Member|Patron|Board|Press|Seasons|Kids|Shop|Media|State|Pass|Gallery|Sport|Focus|Private|Book|Concierge|Room';
 const namePattern = suffixes => new RegExp('(?<![\\p{L}\\p{N}@./_-])[AА][-‑–—](?:' + suffixes + ')(?![\\p{L}\\p{N}_/-])', 'giu');
 const projectName = namePattern(names);
 const homeProjectName = namePattern(names + '|Forum|Guide|Industry|Membership');

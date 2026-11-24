@@ -3,7 +3,6 @@
   if (!calendar) return;
   const filters = document.getElementById('calendar-filters');
   const months = filters.querySelector('.calendar-months');
-  const summary = months.querySelector('summary');
   const monthLinks = [...filters.querySelectorAll('[data-calendar-month]')];
   const audienceLinks = [...filters.querySelectorAll('[data-calendar-audience]')];
   const events = [...calendar.querySelectorAll('[data-calendar-event]')];
@@ -13,7 +12,6 @@
   const moscowDate = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
   });
-  const monthName = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' });
   const chronological = (a, b) => a.dataset.start.localeCompare(b.dataset.start)
     || a.dataset.time.localeCompare(b.dataset.time);
   let lastDate;
@@ -82,12 +80,6 @@
     order(past, pastEvents.sort((a, b) => b.dataset.end.localeCompare(a.dataset.end) || chronological(b, a)));
     for (const link of monthLinks) syncLink(link, filterURL(link.dataset.calendarMonth, kids), month === link.dataset.calendarMonth);
     for (const link of audienceLinks) syncLink(link, filterURL(month, !!link.dataset.calendarAudience), kids === !!link.dataset.calendarAudience);
-    let label = 'Все месяцы';
-    if (month) {
-      const selectedMonth = monthName.format(new Date(month + '-01T12:00:00Z'));
-      label = selectedMonth[0].toLocaleUpperCase('ru') + selectedMonth.slice(1) + ' ' + month.slice(0, 4);
-    }
-    summary.querySelector('[data-month-label]').textContent = label;
     const total = visiblePast + visibleCurrent;
     const filtered = !!month || kids;
     calendar.querySelector('[data-no-upcoming]').hidden = visibleCurrent > 0;
@@ -110,16 +102,12 @@
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     event.preventDefault();
     if (link.href !== location.href) history.pushState(null, '', link.href);
-    months.open = false;
     showSelection();
-    if (link.hasAttribute('data-calendar-month')) summary.focus();
-    if (link.hasAttribute('data-calendar-reset')) audienceLinks[0].focus();
-  });
-  months.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && months.open) {
-      months.open = false;
-      summary.focus();
+    const results = calendar.querySelector('.calendar-stream');
+    if (getComputedStyle(filters).position === 'sticky' && results.getBoundingClientRect().top < 0) {
+      results.scrollIntoView({ block: 'start' });
     }
+    if (link.hasAttribute('data-calendar-reset')) audienceLinks[0].focus();
   });
 
   filters.hidden = false;
@@ -128,8 +116,7 @@
     if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     event.preventDefault();
     if (location.hash !== '#calendar-filters') history.pushState(null, '', '#calendar-filters');
-    months.open = true;
-    summary.focus({ preventScroll: true });
+    (months.querySelector('[aria-current]') || months.querySelector('a')).focus({ preventScroll: true });
     filters.scrollIntoView({ block: 'start' });
   });
   showSelection();
