@@ -1,26 +1,385 @@
 [
   {
-    "id": "a-news-01", "seriesId": "a-news", "edition": "A–News", "title": "Дом", "published": "2024-05-20", "coverWidth": 552,
-    "latest": { "anchor": "friend-a-news", "number": 8, "topic": "«Бумага»" },
-    "description": "В первом номере газеты — интервью с Дарьей Беляковой и гид по Венеции.",
-    "files": [{"name": "a-news-01.pdf", "label": "Читать номер"}]
+    "seriesId": "a-news",
+    "edition": "A–News",
+    "latest": {
+      "anchor": "friend-a-news",
+      "number": 8,
+      "topic": "«Бумага»",
+      "published": "2026-09-03"
+    },
+    "issues": [
+      {
+        "id": "a-news-07",
+        "number": 7,
+        "title": "Спокойствие",
+        "published": "2026-04-10",
+        "coverWidth": 552,
+        "description": "Весенний календарь выставок и архитектурный фестиваль A–Fest в ММОМА.",
+        "files": [
+          {
+            "name": "a-news-07.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-news-06",
+        "number": 6,
+        "title": "Предвкушение",
+        "published": "2025-12-03",
+        "coverWidth": 552,
+        "description": "Новый Дом A–House и архитектурные проекты, открытия которых редакция ждала в 2026 году.",
+        "files": [
+          {
+            "name": "a-news-06.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-news-05",
+        "number": 5,
+        "title": "Вместе",
+        "published": "2025-09-01",
+        "coverWidth": 552,
+        "description": "Совместный выпуск A–News и ярмарки современного искусства Cosmoscow.",
+        "files": [
+          {
+            "name": "a-news-05.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-news-04",
+        "number": 4,
+        "title": "Будущее",
+        "published": "2025-04-10",
+        "coverWidth": 552,
+        "description": "Эскизы и макеты современных художников в московском пространстве LOBBY.",
+        "files": [
+          {
+            "name": "a-news-04.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-news-03",
+        "number": 3,
+        "title": "Наследие",
+        "published": "2024-12-05",
+        "coverWidth": 552,
+        "description": "Ярмарка |catalog| и выставка о китче в российском искусстве.",
+        "files": [
+          {
+            "name": "a-news-03.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-news-02",
+        "number": 2,
+        "title": "Коллекционирование",
+        "published": "2024-09-11",
+        "coverWidth": 552,
+        "description": "Ярмарка blazar и интервью с основательницей Cosmoscow Маргаритой Пушкиной.",
+        "files": [
+          {
+            "name": "a-news-02.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "number": 1,
+        "id": "a-news-01",
+        "title": "Дом",
+        "published": "2024-05-20",
+        "coverWidth": 552,
+        "description": "В первом номере газеты — интервью с Дарьей Беляковой и гид по Венеции.",
+        "files": [
+          {
+            "name": "a-news-01.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      }
+    ]
   },
   {
-    "id": "a-kids-01", "seriesId": "a-kids", "edition": "A–Kids", "title": "Дом", "published": "2024-11-07", "coverWidth": 529,
-    "latest": { "anchor": "friend-a-kids", "number": 7, "topic": "о дизайне" },
-    "description": "С одной стороны журнала — путеводитель по Петербургу для взрослых, с другой — словарь и задания для детей.",
-    "files": [{"name": "a-kids-01-adult.pdf", "label": "Для взрослых"}, {"name": "a-kids-01-child.pdf", "label": "Для детей"}]
+    "seriesId": "a-kids",
+    "edition": "A–Kids",
+    "latest": {
+      "anchor": "friend-a-kids",
+      "number": 7,
+      "topic": "о дизайне",
+      "published": "2026-09-23",
+      "cover": {
+        "src": "media/press/a-kids-07-cover.jpg",
+        "width": 529,
+        "height": 780,
+        "alt": "Зелёное кресло Джаспера Моррисона на обложке A–Kids для родителей"
+      },
+      "description": "На обложке — кресло Джаспера Моррисона. Для родителей редакция подготовила гид по Милану, а для детей — задания по оригами.",
+      "announcement": "https://t.me/ahouseproject/9565"
+    },
+    "issues": [
+      {
+        "id": "a-kids-06",
+        "number": 6,
+        "title": "Дружба",
+        "published": "2026-06",
+        "coverWidth": 529,
+        "description": "Архитектурные прогулки, летние каникулы и знакомство с профессией архитектурного критика.",
+        "files": [
+          {
+            "name": "a-kids-06-adult.pdf",
+            "label": "Для взрослых"
+          },
+          {
+            "name": "a-kids-06-child.pdf",
+            "label": "Для детей"
+          }
+        ],
+        "publishedSource": "https://t.me/ahouseproject/7639"
+      },
+      {
+        "id": "a-kids-05",
+        "number": 5,
+        "title": "Новый год",
+        "published": "2025-12-19",
+        "coverWidth": 529,
+        "description": "Праздничные каникулы, письмо Деду Морозу и маска в виде ёлки, которую можно вырезать.",
+        "files": [
+          {
+            "name": "a-kids-05-adult.pdf",
+            "label": "Для взрослых"
+          },
+          {
+            "name": "a-kids-05-child.pdf",
+            "label": "Для детей"
+          }
+        ]
+      },
+      {
+        "id": "a-kids-04",
+        "number": 4,
+        "title": "Искусство",
+        "published": "2025-09-09",
+        "coverWidth": 529,
+        "description": "Культурные выходные в Петербурге, обложка-раскраска и кружочки Яёи Кусамы.",
+        "files": [
+          {
+            "name": "a-kids-04-adult.pdf",
+            "label": "Для взрослых"
+          },
+          {
+            "name": "a-kids-04-child.pdf",
+            "label": "Для детей"
+          }
+        ]
+      },
+      {
+        "id": "a-kids-03",
+        "number": 3,
+        "title": "Зелёный",
+        "published": "2025-06-04",
+        "coverWidth": 529,
+        "description": "Природа вещей, каникулы и сэндвич для летнего пикника.",
+        "files": [
+          {
+            "name": "a-kids-03-adult.pdf",
+            "label": "Для взрослых"
+          },
+          {
+            "name": "a-kids-03-child.pdf",
+            "label": "Для детей"
+          }
+        ]
+      },
+      {
+        "id": "a-kids-02",
+        "number": 2,
+        "title": "Любовь",
+        "published": "2025-02-28",
+        "coverWidth": 529,
+        "description": "Истории о любимых вещах и людях, об архитекторе Бродском и каникулах на Алтае.",
+        "files": [
+          {
+            "name": "a-kids-02-adult.pdf",
+            "label": "Для взрослых"
+          },
+          {
+            "name": "a-kids-02-child.pdf",
+            "label": "Для детей"
+          }
+        ]
+      },
+      {
+        "number": 1,
+        "id": "a-kids-01",
+        "title": "Дом",
+        "published": "2024-11-07",
+        "coverWidth": 529,
+        "description": "С одной стороны журнала — путеводитель по Петербургу для взрослых, с другой — словарь и задания для детей.",
+        "files": [
+          {
+            "name": "a-kids-01-adult.pdf",
+            "label": "Для взрослых"
+          },
+          {
+            "name": "a-kids-01-child.pdf",
+            "label": "Для детей"
+          }
+        ]
+      }
+    ]
   },
   {
-    "id": "a-sport-01", "seriesId": "a-sport", "edition": "A–Sport", "title": "Лыжи", "published": "2024-12-15", "coverWidth": 391,
-    "latest": { "anchor": "friend-a-sport", "number": 4, "topic": "«Глубина»" },
-    "description": "Первый номер газеты посвящён лыжам. Один из его материалов — «Лыжи и архитектура».",
-    "files": [{"name": "a-sport-01.pdf", "label": "Читать номер"}]
+    "seriesId": "a-sport",
+    "edition": "A–Sport",
+    "latest": {
+      "anchor": "friend-a-sport",
+      "number": 4,
+      "topic": "«Глубина»",
+      "published": "2026-09-05"
+    },
+    "issues": [
+      {
+        "id": "a-sport-03",
+        "number": 3,
+        "title": "Восстановление",
+        "published": "2026-05-20",
+        "coverWidth": 390,
+        "description": "Выпуск о восстановлении после нагрузок, подготовленный вместе с Т-Бизнесом.",
+        "files": [
+          {
+            "name": "a-sport-03.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-sport-02",
+        "number": 2,
+        "title": "Движение",
+        "published": "2025-03-26",
+        "coverWidth": 390,
+        "description": "Команда Velopraktika рассказывает, как выбрать велосипед и экипировку для первых тренировок.",
+        "files": [
+          {
+            "name": "a-sport-02.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "number": 1,
+        "id": "a-sport-01",
+        "title": "Лыжи",
+        "published": "2024-12-15",
+        "coverWidth": 391,
+        "description": "Первый номер газеты посвящён лыжам. Один из его материалов — «Лыжи и архитектура».",
+        "files": [
+          {
+            "name": "a-sport-01.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      }
+    ]
   },
   {
-    "id": "a-state-01", "seriesId": "a-state", "edition": "A–State", "title": "Дальний Восток", "published": "2025-08-20", "coverWidth": 552,
-    "latest": { "anchor": "friend-a-state", "number": 3, "topic": "«Северный Кавказ»" },
-    "description": "Жители Дальнего Востока рассказывают о регионе. Музыкант L’One ведёт читателя по Якутску.",
-    "files": [{"name": "a-state-01.pdf", "label": "Читать номер"}]
+    "seriesId": "a-state",
+    "edition": "A–State",
+    "latest": {
+      "anchor": "friend-a-state",
+      "number": 3,
+      "topic": "«Северный Кавказ»",
+      "published": "2026-04-25"
+    },
+    "issues": [
+      {
+        "id": "a-state-02",
+        "number": 2,
+        "title": "Северный Кавказ",
+        "published": "2025-11-27",
+        "coverWidth": 552,
+        "description": "Жители рассказывают о горах и своих семьях. Среди героев — художница Милана Елканова и директор кинофестиваля «Алания» Тамара Сокурова.",
+        "files": [
+          {
+            "name": "a-state-02.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "number": 1,
+        "id": "a-state-01",
+        "title": "Дальний Восток",
+        "published": "2025-08-20",
+        "coverWidth": 552,
+        "description": "Жители Дальнего Востока рассказывают о регионе. Музыкант L’One ведёт читателя по Якутску.",
+        "files": [
+          {
+            "name": "a-state-01.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "seriesId": "a-focus",
+    "edition": "A–Focus",
+    "archiveAnchor": "a-focus-archive",
+    "issues": [
+      {
+        "id": "a-focus-msk-03",
+        "number": 3,
+        "title": "Мода. Москва",
+        "published": "2025-10-10",
+        "coverWidth": 552,
+        "description": "Гид по городу от Анзора Канкулова и московские марки одежды.",
+        "files": [
+          {
+            "name": "a-focus-msk-03.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-focus-msk-02",
+        "number": 2,
+        "title": "Лето. Москва",
+        "published": "2025-07-23",
+        "coverWidth": 552,
+        "description": "Московские прогулки, пикники и вещи местных марок, которые можно взять с собой.",
+        "files": [
+          {
+            "name": "a-focus-msk-02.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      },
+      {
+        "id": "a-focus-msk-01",
+        "number": 1,
+        "title": "Дизайн. Москва",
+        "published": "2025-05-20",
+        "coverWidth": 552,
+        "description": "Где искать дизайн в Москве и какие предметы делают местные дизайнеры и бренды.",
+        "files": [
+          {
+            "name": "a-focus-msk-01.pdf",
+            "label": "Читать номер"
+          }
+        ]
+      }
+    ],
+    "archiveNote": "Газеты о Москве мы выпускаем вместе с проектом «Сделано в Москве»."
   }
 ]

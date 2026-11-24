@@ -56,8 +56,8 @@ export function renderHomeProjects(projects, events, group) {
   return entries.map(project => {
     if (project.feature) return projectFeature(project);
     if (group === 'community') {
-      return `<article class="home-community-project"><h3>${link(project.href, project.name)}</h3>
-        <p>${escape(project.description)}</p>${project.application ? '<div class="home-links">' + link(project.application.href, project.application.label) + '</div>' : ''}
+      return `<article class="home-community-project"${project.bookmark ? ' id="' + escape(project.bookmark) + '"' : ''}><h3${project.legacyBookmark ? ' id="' + escape(project.legacyBookmark) + '"' : ''}>${link(project.href, project.name)}</h3>
+        <p>${escape(project.description)}</p>
         ${renderProjectWorks(project)}</article>`;
     }
     const distinct = project.works.some(work => work.href && work.href !== project.href);

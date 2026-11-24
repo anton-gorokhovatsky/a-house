@@ -69,9 +69,59 @@
   max-block-size: min(65svh, 35rem);
   object-fit: contain;
 }
-.publication-reader .archive-gallery-controls { gap: .65rem; font-family: var(--text); }
-.publication-reader .archive-gallery-controls button { color: var(--ink); background: transparent; border-color: var(--quiet); }
-.publication-reader .archive-gallery-controls button:disabled { opacity: .4; }
+.archive-gallery-controls {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  margin-block-start: .45rem;
+}
+.archive-gallery-thumbs {
+  display: flex;
+  gap: 6px;
+  min-inline-size: 0;
+  padding: 4px;
+  margin-inline-start: -4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.archive-gallery-thumbs button {
+  position: relative;
+  flex: 0 0 60px;
+  min-block-size: 50px;
+  padding: 0 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.archive-gallery-thumbs img {
+  display: block;
+  inline-size: 60px;
+  block-size: 44px;
+  object-fit: cover;
+}
+.archive-gallery-thumbs button[aria-current]::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  border-block-end: 2px solid currentColor;
+}
+.archive-gallery-thumbs button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+@media (hover: hover) {
+  .archive-gallery-thumbs button:not([aria-current]):hover img { opacity: .78; }
+}
+.archive-gallery-controls [data-gallery-status] {
+  flex: none;
+  color: var(--quiet);
+  font: 400 var(--note-size)/1.35 var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .publication-body { overflow-wrap: anywhere; }
 .publication-reader .publication-body > :is(p, figure, blockquote) { margin: 0; }
 .home-page .publication-reader .publication-body > * + * { margin-block-start: 1em; }

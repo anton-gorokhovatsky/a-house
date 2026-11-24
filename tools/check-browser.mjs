@@ -14,6 +14,7 @@ server.listen(0, '127.0.0.1');
 await once(server, 'listening');
 const url = 'http://127.0.0.1:' + server.address().port + base;
 const jobCatalog = JSON.parse(await readFile(path.join(projectRoot, 'src/data/jobs.json'), 'utf8')).jobs;
+const printCatalog = JSON.parse(await readFile(path.join(projectRoot, 'src/data/print-editions.json'), 'utf8'));
 const projectGroups = JSON.parse(await readFile(path.join(projectRoot, 'src/data/projects.json'), 'utf8'));
 
 async function renderedWordGaps(locator) {
@@ -144,7 +145,7 @@ async function checkReadingReturn(page, mobile) {
     await page.locator('.site-menu-toggle').click();
     await page.locator('[data-home-view][href="#media"]').click();
   }
-  const subscription = page.locator('#media a[href="#friend"]');
+  const subscription = page.locator('#media a[href="#services-checkout"]');
   const originalTop = await subscription.evaluate(async link => {
     await document.fonts.ready;
     link.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -152,26 +153,21 @@ async function checkReadingReturn(page, mobile) {
     return link.getBoundingClientRect().top;
   });
   await page.keyboard.press('Enter');
-  assert.equal(new URL(page.url()).hash, '#friend');
-  const offer = page.locator('#friend a[href="#services-checkout"]');
-  await offer.press('Enter');
+  assert.equal(new URL(page.url()).hash, '#services-checkout');
   const form = page.locator('#friend-form');
   await form.waitFor();
   assert.equal(await page.locator('dialog[open]').count(), 0);
   assert.equal(await form.locator('input[name="product"]').getAttribute('value'), 'A-Friend');
-  assert.equal(await page.locator('#friend, #services-checkout').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
-  await page.goBack();
-  await page.waitForFunction(link => document.activeElement === link, await offer.elementHandle());
-  assert.equal(new URL(page.url()).hash, '#friend');
+  assert.equal(await page.locator('#services-checkout').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
   await page.goBack();
   await page.waitForFunction(({link,top}) => link === document.activeElement &&
     Math.abs(link.getBoundingClientRect().top - top) < 4, { link: await subscription.elementHandle(), top: originalTop });
   assert.equal(new URL(page.url()).hash, '#media');
   await page.goForward();
-  await offer.waitFor();
-  await page.goForward();
   await form.waitFor();
   assert.equal(new URL(page.url()).hash, '#services-checkout');
+  await page.goto(url + '#friend');
+  assert.ok(await form.isVisible(), 'The former subscription bookmark reaches the same terms and order');
 }
 
 async function checkCalendar(page, mobile) {
@@ -290,7 +286,8 @@ async function checkVisitorLinks(page, mobile) {
   const features = page.locator('.home-project-feature:visible');
   assert.deepEqual(await page.locator('#overview > [data-home-section]:visible').evaluateAll(items => items.map(item => item.id)),
     ['program', 'visit', 'media', 'projects', 'gatherings']);
-  assert.ok(await page.locator('#collection-community a[href$="/member/"]').isVisible());
+  assert.ok(await page.locator('#collection-community a[href$="/club/"]').isVisible());
+  assert.equal(await page.locator('main a[href*="/member/"]').count(), 0, 'The homepage introduces the club before asking for an application');
   assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
   assert.deepEqual(await features.locator('.editorial-pair-title a').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
   for (const project of selected) assert.equal(await features.locator('a[href="' + project.href + '"]').count(), 1);
@@ -298,9 +295,11 @@ async function checkVisitorLinks(page, mobile) {
   assert.deepEqual(await features.locator('.home-project-portfolios strong a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
   assert.deepEqual(await editions.locator('.home-editions article h4').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
+  assert.deepEqual(await editions.locator('.home-editions h4 a').evaluateAll(links => links.map(link => link.hash)),
+    printCatalog.map(series => '#' + (series.archiveAnchor || series.seriesId)), 'Every print series opens its own archive');
   assert.equal(await editions.locator('.editions-access a[href="#services-checkout"]').count(), 1);
   for (const work of projects.flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
-    const example = page.locator('.project-examples a, .home-issue .home-primary').filter({hasText: work.title});
+    const example = page.locator('.project-examples a').filter({hasText: work.title});
     assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
   }
   const forum = page.locator('.home-gathering').filter({has: page.getByRole('heading', {name:'A–Forum', exact:true})});
@@ -332,9 +331,26 @@ async function checkVisitorLinks(page, mobile) {
   assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
   const printArchive = page.locator('#print-archive');
   const issueCards = printArchive.locator('.print-issue');
-  assert.deepEqual(await issueCards.evaluateAll(items => items.map(item => [...item.querySelectorAll('a')].map(link => link.pathname.split('/').pop()))), [
-    ['a-news-01.pdf'], ['a-kids-01-adult.pdf', 'a-kids-01-child.pdf'], ['a-sport-01.pdf'], ['a-state-01.pdf']
-  ], 'The archive offers each early issue for reading, including both sides of A–Kids');
+  assert.ok(await page.locator('main .press-file').evaluateAll(links => links.every(link => {
+    const action = link.querySelector('.press-file-label');
+    const format = link.querySelector('small');
+    return action && format && action.textContent === action.textContent.trim() &&
+      getComputedStyle(action).textDecorationLine.includes('underline') &&
+      getComputedStyle(link).textDecorationLine === 'none' && getComputedStyle(format).textDecorationLine === 'none';
+  })), 'PDF labels end at the final letter and the file metadata is outside the underline');
+  assert.deepEqual(await issueCards.evaluateAll(items => items.map(item => [...item.querySelectorAll('a')].map(link => link.pathname.split('/').pop()))),
+    printCatalog.flatMap(edition => edition.issues.map(issue => issue.files.map(file => file.name))),
+    'Every archived issue offers the corresponding files in reading order');
+  await activate(printArchive.getByRole('navigation', { name: 'Издания в архиве' }).getByRole('link', { name: 'A–Kids', exact: true }));
+  await page.waitForURL(url + 'press/#a-kids');
+  const newestKids = printCatalog.find(edition => edition.seriesId === 'a-kids').issues[0];
+  assert.equal(await page.locator('#a-kids .print-issue').first().getAttribute('id'), newestKids.id);
+  assert.equal(await page.locator('#' + newestKids.id + ' a[href$=".pdf"]').count(), 2, 'Children and adults can both read the newest open A–Kids');
+  await page.goBack();
+  await page.goto(url + 'press/#a-sport-01');
+  await page.waitForFunction(() => Math.abs(document.getElementById('a-sport-01').getBoundingClientRect().top) < innerHeight / 3);
+  await page.goBack();
+  await page.waitForURL(url + 'press/');
   assert.equal(await page.locator('main a[href$="#services-checkout"]').count(), 1, 'Subscriptions belong to the archive as a whole');
   await activate(printArchive.locator('a[href$="#services-checkout"]'));
   await page.waitForURL(url + '#services-checkout');
@@ -348,6 +364,9 @@ async function checkVisitorLinks(page, mobile) {
   const register = page.locator('#a-media .home-project-entries');
   assert.ok(await register.isVisible());
   await activate(register.getByRole('link', { name: /Газета\s+A–Sport/ }));
+  await page.waitForURL(url + 'press/#a-sport');
+  assert.ok(await page.locator('#a-sport-02').isVisible());
+  await page.goto(url + '#issue-a-sport');
   assert.equal(new URL(page.url()).hash, '#issue-a-sport');
   const photo = page.locator('#issue-a-sport img');
   await photo.evaluate(image => image.decode());
@@ -474,16 +493,20 @@ async function checkEnlargedMenu(page) {
 }
 
 async function checkEditorialGrouping(page) {
-  const issue = page.locator('.home-issue');
+  const issue = page.locator('.home-current-issue');
   const group = await issue.evaluate(async el => {
     await document.fonts.ready;
     const cover = el.querySelector('figure').getBoundingClientRect();
     const label = el.querySelector('.home-kicker');
     const number = label.getBoundingClientRect();
-    return { gap: number.left - cover.right, offset: number.top - cover.top, em: parseFloat(getComputedStyle(label).fontSize) };
+    const story = el.querySelector('.home-issue-story').getBoundingClientRect();
+    return { gap: number.left - cover.right, offset: number.top - cover.top, storyOffset: story.top - cover.top,
+      titleBottom: el.querySelector('h4').getBoundingClientRect().bottom, coverTop: cover.top, small: matchMedia('(max-width: 48em)').matches, em: parseFloat(getComputedStyle(label).fontSize) };
   });
-  assert.ok(Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em,
-    'The issue number must sit beside the upper edge of its cover on the phone and desktop overview');
+  if (group.small) assert.ok(group.titleBottom < group.coverTop && Math.abs(group.storyOffset) < group.em,
+    'On the phone the full title introduces the cover and the adjacent story');
+  else assert.ok(Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em,
+    'The issue date must sit beside the upper edge of its cover');
 
   const lists = page.locator('.home-season:visible .home-events');
   for (const list of await lists.all()) {
@@ -526,11 +549,12 @@ async function checkEditorialGrouping(page) {
       text.selectNodeContents(price);
       const lines = [...text.getClientRects()].filter(rect => rect.width > 0);
       if (!lines.length) return entry;
-      return { ...entry, endOfCopy: description.getBoundingClientRect().bottom,
+      return { ...entry, regular: getComputedStyle(price).fontWeight === getComputedStyle(price.parentElement).fontWeight, endOfCopy: description.getBoundingClientRect().bottom,
         priceTop: lines[0].top, priceBottom: lines.at(-1).bottom, sameLine: lines.every(rect => Math.abs(rect.top - lines[0].top) < 1) };
     }));
     for (const [index, entry] of entries.entries()) {
       if (!entry.paid) continue;
+      assert.ok(entry.regular, 'An amount must share the weight of its booking label');
       assert.ok(entry.sameLine && entry.priceTop > entry.endOfCopy, 'Each price belongs on a separate, unbroken line under its description');
       const next = entries[index + 1];
       if (!next) continue;
@@ -582,6 +606,19 @@ async function checkArchiveReading(page) {
   assert.ok(await listing.getByRole('link', { name: title, exact: true }).isVisible(),
     'The archive must contain the same article on return');
 
+  await page.goto(url + 'tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/');
+  const covers = page.getByRole('group', { name: 'Выбрать изображение' }).getByRole('button');
+  assert.equal(await covers.count(), 2);
+  await covers.nth(1).click();
+  await page.waitForFunction(() => {
+    const track = document.querySelector('.archive-gallery-track');
+    return Math.abs(track.scrollLeft - track.clientWidth) < 2 &&
+      document.querySelector('.archive-gallery-controls [role="status"]').textContent === '2 из 2';
+  });
+  assert.equal(await covers.nth(1).getAttribute('aria-current'), 'true');
+  await covers.nth(1).press('Home');
+  assert.ok(await covers.first().evaluate(button => button.matches(':focus-visible') && button.getAttribute('aria-current') === 'true'));
+
   await page.goto(url + 'special_projects/');
   const clients = page.locator('main .partner-client-list');
   assert.ok(await clients.locator('img').evaluateAll(images => images.length > 0 && images.every(image =>
@@ -604,16 +641,15 @@ async function checkArchiveReading(page) {
 
 async function checkClubApplication(page) {
   await page.goto(url + '#club');
-  await page.locator('#club').getByRole('link', { name: /сравнить программы клуба/i }).click();
   await page.waitForURL(url + 'club/');
-  const comparison = page.getByRole('navigation', { name: 'Сравнение программ клуба' });
-  const choices = comparison.getByRole('link');
-  assert.equal(await choices.count(), 3);
-  const chosen = choices.nth(1);
-  await chosen.press('Enter');
-  const programId = new URL(page.url()).hash.slice(1);
-  const card = page.locator('main [data-catalog-card]').nth(1);
-  assert.equal(await card.getAttribute('id'), programId);
+  await page.goto(url);
+  await page.locator('#collection-community').getByRole('link', {name:'Клуб A–House'}).click();
+  await page.waitForURL(url + 'club/');
+  await page.getByRole('link', {name:'Программы участия'}).press('Enter');
+  await page.waitForURL(url + 'club/#programs');
+  const programs = page.locator('#programs [data-catalog-card]');
+  assert.equal(await programs.count(), 3);
+  const card = programs.nth(1);
   const programName = await card.getByRole('heading').innerText();
   await card.getByRole('link', { name: /подать заявку/i }).click();
   await page.waitForURL(url + 'member/?offer=patron');
@@ -623,8 +659,8 @@ async function checkClubApplication(page) {
   assert.ok(await selected.isChecked(), 'The selected club program must follow the visitor into the form');
   await checkMembershipForm(page, 'member');
   await page.goBack();
-  await chosen.waitFor();
-  assert.equal(new URL(page.url()).hash, '#' + programId);
+  await card.waitFor();
+  assert.equal(new URL(page.url()).hash, '#programs');
   await page.goto(url + '#services-checkout');
   await checkMembershipForm(page, 'friend');
 }

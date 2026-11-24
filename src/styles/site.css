@@ -249,13 +249,8 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
 .archive-gallery { width: 100%; color: #222; }
 .archive-gallery-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; }
 .archive-gallery-track img { width: 100%; height: clamp(210px,50vw,520px); flex: 0 0 100%; object-fit: contain; scroll-snap-align: start; }
-.archive-gallery-controls { box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 0; font: 500 var(--type-caption,16px)/1.15 AHTimes,Arial,sans-serif; }
-.archive-gallery-controls[hidden] { display: none; }
-.archive-gallery-controls [data-gallery-status] { min-width: 3.1em; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.archive-gallery-controls button,.archive-video button { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; font: inherit; color: inherit; background: none; border: 1px solid currentColor; border-radius: 0; padding: 0 10px; min-width: 44px; min-height: 44px; cursor: pointer; touch-action: manipulation; }
-.archive-gallery-controls button { font-size: var(--type-ui,18px); }
-.archive-gallery-controls button:disabled { color: #999; cursor: default; }
-.archive-gallery-controls button:focus-visible,.archive-video button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-.archive-gallery-controls button:not(:disabled):active,.archive-video button:active { color: #fff; background: #111; }
+.archive-video button { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; font: inherit; color: inherit; background: none; border: 1px solid currentColor; border-radius: 0; padding: 0 10px; min-width: 44px; min-height: 44px; cursor: pointer; touch-action: manipulation; }
+.archive-video button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.archive-video button:active { color: #fff; background: #111; }
 .archive-video { width: 100%; display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 140px; background: #eee; font: 500 var(--type-caption,16px)/1.3 AHTimes,Arial,sans-serif; }
 .archive-video iframe { width: 100%; height: auto; aspect-ratio: 16/9; border: 0; }

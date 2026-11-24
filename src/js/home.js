@@ -6,14 +6,16 @@
   const links = [...document.querySelectorAll('a')];
   let restoreFrame = 0;
 
-  function followCalendarBookmark() {
-    if (location.hash !== '#program') return false;
-    const calendar = new URL(document.querySelector('.home-calendar-link').href);
-    calendar.search = location.search;
-    location.replace(calendar.href);
+  function followSectionBookmark() {
+    const shortcuts = { '#program': '.home-calendar-link', '#club': '#club h3 a', '#rec2309637911': '#club h3 a' };
+    const selector = shortcuts[location.hash];
+    if (!selector) return false;
+    const destination = new URL(document.querySelector(selector).href);
+    destination.search = location.search;
+    location.replace(destination.href);
     return true;
   }
-  if (followCalendarBookmark()) return;
+  if (followSectionBookmark()) return;
 
   function viewFor(target) {
     if (target?.closest('.home-overview-only, #program')) return null;
@@ -28,7 +30,7 @@
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
-    const currentSection = selected?.id === 'services-checkout' ? 'club' : selected?.id || 'overview';
+    const currentSection = selected?.id || 'overview';
     for (const choice of choices) {
       if (choice.hash === '#' + currentSection) choice.setAttribute('aria-current', 'true');
       else choice.removeAttribute('aria-current');
@@ -73,7 +75,7 @@
   }
 
   function restoreHistoryEntry() {
-    if (followCalendarBookmark()) return;
+    if (followSectionBookmark()) return;
     const target = hashTarget();
     if (openArchivedEvent(target)) return;
     const previousView = overview.dataset.view;

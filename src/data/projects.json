@@ -77,54 +77,60 @@
         "name": "Газета A–News",
         "overview": "editions",
         "works": [
-          {"title": "№ 2. Коллекциониро\u00adвание", "text": "Основательницы ярмарки blazar и кураторы её секции дизайна рассказывают, как новые имена попадают на ярмарку."}
+          {"title": "№ 2. Коллекциониро\u00adвание", "text": "Основательницы ярмарки blazar и кураторы её секции дизайна рассказывают, как новые имена попадают на ярмарку.", "href": "@@ROOT@@tpost/f0997i9441-anews-2/"}
         ],
         "description": "Второй номер посвящён коллекционированию. Среди его героев — основательницы ярмарки blazar и кураторы её секции «Дизайн».",
-        "href": "@@ROOT@@tpost/f0997i9441-anews-2/"
+        "href": "@@ROOT@@press/#a-news"
       },
       {
         "name": "Журнал A–Kids",
         "overview": "editions",
         "works": [
-          {"title": "Первый номер. Петербург с двух сторон", "text": "Взрослым — путеводитель по городу. Если перевернуть журнал, начинаются игры и задания для детей."}
+          {"title": "Первый номер. Петербург с двух сторон", "text": "Взрослым — путеводитель по городу. Если перевернуть журнал, начинаются игры и задания для детей.", "href": "@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/"}
         ],
         "description": "Журнал-перевёртыш для всей семьи. В первом номере с одной стороны — путеводитель по Петербургу для родителей, с другой — игры для детей.",
-        "href": "@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/"
+        "href": "@@ROOT@@press/#a-kids"
       },
       {
         "name": "Газета A–Sport",
-        "overview": "lead-edition",
+        "overview": "editions",
         "works": [
-          {"title": "Как выбрать велосипед и экипировку", "text": "Зачем велотуфлям шипы и что такое бибсы? Команда Velopraktika разбирает велосипед и экипировку для первых тренировок.", "href": "https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/"}
+          {"id": "issue-a-sport", "title": "Как выбрать велосипед и экипировку", "text": "Зачем велотуфлям шипы и что такое бибсы? Команда Velopraktika разбирает велосипед и экипировку для первых тренировок.", "href": "https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/"}
         ],
         "description": "Газета о спорте и культуре. В номере «Движение» команда Velopraktika помогает выбрать велосипед, одежду и обувь для тренировок.",
-        "href": "#issue-a-sport"
+        "href": "@@ROOT@@press/#a-sport"
       },
       {
         "name": "Газета A–State",
         "overview": "editions",
         "works": [
-          {"title": "Владикавказ Тамары Сокуровой", "text": "В выпуске о Северном Кавказе основательница кинофестиваля «Алания» рассказывает о своём городе."}
+          {"title": "Владикавказ Тамары Сокуровой", "text": "В выпуске о Северном Кавказе основательница кинофестиваля «Алания» рассказывает о своём городе.", "href": "https://news.ahouseproject.com/a-talks-tamara-sokurova/"}
         ],
         "description": "Каждый выпуск посвящён одному региону. В номере о Северном Кавказе Тамара Сокурова рассказывает о Владикавказе и своём кинофестивале «Алания».",
-        "href": "https://news.ahouseproject.com/a-talks-tamara-sokurova/"
+        "href": "@@ROOT@@press/#a-state"
       },
       {
-        "name": "A–Focus",
+        "name": "Партнёрская газета A–Focus",
         "overview": "editions",
+        "specialIssue": {
+          "title": "A–Focus «Дом предприни\u00adмателя»", "published": "2026-10-20",
+          "cover": { "src": "media/press/a-focus-house-entrepreneurs-cover.jpg", "width": 743, "height": 1050, "alt": "Оранжевая обложка A–Focus с названием «Дом предпринимателя»" },
+          "description": "Дарья Белякова и Андрей Завадских рассказывают, зачем A–House и Точка Банк открыли в бывшей котельной место для встреч предпринимателей.",
+          "article": { "title": "Читать интервью в A–News", "href": "https://news.ahouseproject.com/dom-predprinimatelya-intervyu-dari-belyakovoi-i-andreya-zavadskih/" }
+        },
         "works": [
-          {"title": "Номер с Archipélago", "text": "Для первого партнёрского выпуска редакция собрала истории мебельного бренда, интервью и календарь событий в предметном дизайне.", "href": "https://archipelago.studio/about/news/2250/?lang=ru"}
+          {"title": "Первый выпуск с Archipélago", "text": "Редакция и мебельный бренд собрали в одном номере интервью и календарь событий в предметном дизайне.", "href": "https://archipelago.studio/about/news/2250/?lang=ru"}
         ],
         "description": "Газета, которую A–Press делает на заказ. Первый выпуск о предметном дизайне издательство подготовило вместе с мебельным брендом Archipélago.",
-        "href": "@@ROOT@@press/#a-focus"
+        "href": "@@ROOT@@press/#a-focus-archive"
       },
       {
-        "name": "A–Guide",
+        "name": "Рубрика A–Guide",
         "overview": "editions",
         "works": [
-          {"title": "По Аэропорту с Дарьей Беляковой", "text": "Авторский маршрут ведёт от мастерских художников на Масловке к Петровскому путевому дворцу."}
+          {"title": "По Аэропорту с Дарьей Беляковой", "text": "В шестом номере A–Kids архитектор ведёт читателя от мастерских художников на Масловке к Петровскому путевому дворцу."}
         ],
-        "description": "Авторские прогулки по городу. В гиде по московскому району Аэропорт архитектор Дарья Белякова рассказывает о мастерских художников на Масловке.",
+        "description": "Рубрика изданий A–Press с авторскими путеводителями. В гиде из шестого A–Kids по московскому району Аэропорт Дарья Белякова рассказывает о мастерских художников на Масловке.",
         "href": "https://news.ahouseproject.com/a-guide-rajon-aeroport-ot-dari-belyakovoj/"
       },
       {
@@ -152,11 +158,12 @@
       {
         "name": "Клуб A–House",
         "overview": "community",
-        "application": {"label": "Подать заявку в клуб", "href": "@@ROOT@@member/"},
+        "bookmark": "club",
+        "legacyBookmark": "rec2309637911",
         "works": [
           {"title": "Luma Poetica на клубном вечере", "text": "Дарья Золотухина и Мила Миллер соединили электронную музыку и чтение стихов. Сохранился фоторепортаж с премьеры.", "href": "@@ROOT@@tpost/aftf5ucec1-novogodnii-klubnii-vecher-ahouse/"}
         ],
-        "description": "Три программы участия — A–Member, A–Patron и Patron Platinum. Участники могут приглашать в Дом гостей, а патроны — проводить собственные мероприятия.",
+        "description": "В Доме проходят закрытые встречи, лекции и выставки. Участники клуба могут приглашать гостей, а патроны — проводить собственные события.",
         "href": "@@ROOT@@club/"
       },
       {

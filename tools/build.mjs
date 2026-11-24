@@ -10,7 +10,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { archiveFragment, archiveFragmentStyles, collectArchive, renderArchiveCatalog, renderSubscriptionEntries } from './archive.mjs';
+import { archiveFragment, archiveFragmentStyles, collectArchive, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 
@@ -136,22 +136,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   ).join('\n');
   const projects = directions.flatMap(group => group.projects);
   const houseProjects = projects.filter(project => project.venue);
-  const leadStory = projects.find(project => project.overview === 'lead-edition').works[0];
+  const sportStory = projects.flatMap(project => project.works || []).find(work => work.id === 'issue-a-sport');
   const printEditions = JSON.parse(await source('data/print-editions.json'));
   const printDirectory = file('media/print');
-  const publicPrintFiles = new Set(printEditions.flatMap(issue => [issue.id + '.jpg', ...issue.files.map(item => item.name)]));
-  const printIssues = await Promise.all(printEditions.map(async issue => {
-    const files = await Promise.all(issue.files.map(async item => {
-      const pdf = 'media/print/' + item.name;
-      const bytes = (await stat(file(pdf))).size;
-      const size = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(bytes / 1e6);
-      return `<a href="@@ROOT@@${pdf}">${escape(item.label)}<span class="screen-reader-only"> · ${escape(issue.edition)} № 1</span> <small>PDF · ${size} МБ</small></a>`;
-    }));
-    return `<article id="${escape(issue.id)}" class="print-issue" aria-labelledby="${issue.seriesId}-heading">
-      <img id="${issue.seriesId}" src="@@ROOT@@media/print/${issue.id}.jpg" alt="Обложка ${escape(issue.edition)} № 1" width="${issue.coverWidth}" height="780" loading="lazy">
-      <div><p class="home-kicker">${escape(issue.edition)} № 1 · <time datetime="${issue.published}">${issue.published.slice(0, 4)}</time></p><h3 id="${issue.seriesId}-heading">${escape(issue.title)}<span class="screen-reader-only"> · ${escape(issue.edition)} № 1</span></h3><p>${escape(issue.description)}</p>
-      <div class="press-page-links">${files.join('')}</div></div></article>`;
-  }));
+  const publicPrintFiles = printArchiveFileNames(printEditions);
+  const printArchive = await renderPrintArchive(printEditions, async name => (await stat(path.join(printDirectory, name))).size);
   const projectGroups = directions.map(group => {
     const {id, name, intro} = group;
     const rows = group.projects.map(project => `<li>
@@ -186,7 +175,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     footerContent.set(name, content);
   }
   const friendPrice = 12000;
-  const digitalEditions = 'A–News, A–Kids, A–Sport и A–State';
+  const digitalEditions = new Intl.ListFormat('ru').format(printEditions.filter(issue => issue.latest).map(issue => issue.edition));
   const friendEditions = `Полные выпуски ${digitalEditions} в PDF можно читать в приложении A–House.`;
   const friendExtras = 'В подписку также входят путеводители, подборки фильмов, ресторанов и спектаклей, дайджесты событий, трансляции с международных площадок и приглашения на выставки A–House.';
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
@@ -284,12 +273,14 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
-      .replace('{{leadStoryText}}', () => escape(leadStory.text))
-      .replace('{{leadStoryHref}}', () => escape(leadStory.href))
-      .replace('{{leadStoryTitle}}', () => escape(leadStory.title))
+      .replace('{{sportStoryText}}', () => escape(sportStory.text))
+      .replace('{{sportStoryHref}}', () => escape(sportStory.href))
+      .replace('{{sportStoryTitle}}', () => escape(sportStory.title))
+      .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(printEditions, digitalEditions, projects))
+      .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@media/press/a-news-01-daria-belyakova.pdf', 'Читать интервью', 'PDF, с. 24–25'))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- A-SPORT PRINT -->', () => sportPhoto)
-      .replace('<!-- PRINT ISSUES -->', () => printIssues.join('\n'))
+      .replace('<!-- PRINT ISSUES -->', () => printArchive)
       .replace('<!-- FRIEND EDITIONS -->', () => renderSubscriptionEntries(printEditions))
       .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
       .replace('{{emptyHidden}}', program.hasEvents ? ' hidden' : '')

@@ -13,16 +13,92 @@ const paths = new Map([
 ]);
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
 
+export function renderPrintFileLink(href, label, metadata, context = '') {
+  const issue = context ? `<span class="screen-reader-only"> · ${escape(context)}</span>` : '';
+  return `<a class="press-file" href="${escape(href)}"><span class="press-file-label">${escape(label)}</span>${issue} <small>${escape(metadata)}</small></a>`;
+}
+
+export function printArchiveFileNames(editions) {
+  const names = new Set();
+  for (const edition of editions) {
+    for (const issue of edition.issues) {
+      if (edition.latest && (issue.number >= edition.latest.number || issue.published >= edition.latest.published)) {
+        throw new Error('The open archive includes a current or future issue: ' + issue.id);
+      }
+      names.add(issue.id + '.jpg');
+      for (const file of issue.files) names.add(file.name);
+    }
+  }
+  return names;
+}
+
+const archiveMonth = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const fileSizeFormat = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
+
+export async function renderPrintArchive(editions, getFileSize) {
+  const navigation = editions.map(edition =>
+    `<a href="#${escape(edition.archiveAnchor || edition.seriesId)}">${escape(edition.edition)}</a>`
+  ).join('');
+  const groups = await Promise.all(editions.map(async edition => {
+    const anchor = escape(edition.archiveAnchor || edition.seriesId);
+    const cards = await Promise.all(edition.issues.map(async issue => {
+      const id = escape(issue.id);
+      const name = edition.edition + ' № ' + issue.number;
+      const month = archiveMonth.format(new Date(issue.published.slice(0, 7) + '-01T12:00:00Z')).replace(/\s*г\.$/, '');
+      const files = await Promise.all(issue.files.map(async file => {
+        const mb = fileSizeFormat.format(await getFileSize(file.name) / 1e6);
+        return renderPrintFileLink('@@ROOT@@media/print/' + file.name, file.label, 'PDF · ' + mb + ' МБ', name);
+      }));
+      return `<article id="${id}" class="print-issue" aria-labelledby="${id}-title">
+        <img src="@@ROOT@@media/print/${id}.jpg" alt="Обложка ${escape(name)}" width="${issue.coverWidth}" height="${issue.coverHeight || 780}" loading="lazy" decoding="async">
+        <div><p class="home-kicker">№ ${issue.number} · <time datetime="${escape(issue.published)}">${escape(month)}</time></p>
+        <h4 id="${id}-title">${escape(issue.title)}<span class="screen-reader-only"> · ${escape(name)}</span></h4>
+        <p>${escape(issue.description)}</p><div class="press-page-links">${files.join('')}</div></div></article>`;
+    }));
+    return `<section id="${anchor}" class="print-series" aria-labelledby="${anchor}-heading">
+      <h3 id="${anchor}-heading">${escape(edition.edition)}</h3>
+      ${edition.archiveNote ? '<p>' + escape(edition.archiveNote) + '</p>' : ''}
+      <div class="print-issues">${cards.join('\n')}</div>
+    </section>`;
+  }));
+  return `<nav class="press-page-links print-series-nav" aria-label="Издания в архиве">${navigation}</nav>${groups.join('\n')}`;
+}
+
+export function renderCurrentPrintIssues(issues, editions, projects) {
+  const current = issues.filter(issue => issue.latest)
+    .sort((a, b) => b.latest.published.localeCompare(a.latest.published))[0];
+  const { edition, latest } = current;
+  const regular = { ...latest, title: `${edition} № ${latest.number} ${latest.topic}` };
+  const special = projects.filter(project => project.specialIssue).map(project => project.specialIssue)
+    .sort((a, b) => b.published.localeCompare(a.published))[0];
+  return [regular, special].filter(Boolean).sort((a, b) => b.published.localeCompare(a.published)).map((issue, index) => {
+    const { cover } = issue;
+    const subscriberIssue = issue === regular;
+    const more = issue.announcement ? ` <a href="${escape(issue.announcement)}">О выпуске в Telegram</a>` : '';
+    const access = subscriberIssue
+      ? `<div class="editions-access"><p>Свежие выпуски ${escape(editions)} доступны в приложении A–House по подписке.</p>
+        <div class="home-links"><a href="#services-checkout">Оформить подписку A–Friend</a><a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a><a href="@@ROOT@@press/#print-archive">Читать предыдущие номера</a></div></div>`
+      : `<div class="home-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`;
+    return `<article class="home-issue ${index === 0 ? 'home-current-issue' : 'home-companion-issue'} editorial-pair">
+      ${cover ? `<figure class="home-issue-cover"><img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy"></figure>` : ''}
+      <div class="home-issue-copy">
+        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер по подписке' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h4>${escape(issue.title)}</h4></div>
+        <div class="home-issue-story">${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}${access}</div>
+      </div>
+    </article>`;
+  }).join('\n');
+}
+
 export function renderSubscriptionEntries(issues) {
-  return issues.map(issue => `<div id="${escape(issue.latest.anchor)}" class="friend-edition" tabindex="-1">
-    <a class="friend-archive-return" href="@@ROOT@@press/#${escape(issue.id)}">К первому номеру ${escape(issue.edition)}</a>
+  return issues.filter(issue => issue.latest).map(issue => `<div id="${escape(issue.latest.anchor)}" class="friend-edition" tabindex="-1">
+    <a class="friend-archive-return" href="@@ROOT@@press/#${escape(issue.seriesId)}">К архиву ${escape(issue.edition)}</a>
     <p class="home-kicker">В подписке — ${escape(issue.edition)} № ${escape(issue.latest.number)} ${escape(issue.latest.topic)}</p>
   </div>`).join('\n');
 }
 
 const dateFormat = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 const issueLinks = new Map([
-  ['tpost/f0997i9441-anews-2', ['a-news-01', 'Читать первый номер A–News']],
+  ['tpost/f0997i9441-anews-2', ['a-news-02', 'Читать второй номер A–News']],
   ['tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so', ['a-kids-01', 'Читать первый A–Kids — для взрослых и для детей']]
 ]);
 const imageDescriptions = new Map([
@@ -80,6 +156,8 @@ function publicationCover(original) {
   const wrapper = original.match(/<div id="feed-cover"[^>]*>\s*([\s\S]*?)\s*<\/div>\s*<div class="t-feed__post-popup__date-parts-wrapper/);
   if (!wrapper) return ''; // Two source posts have an empty video cover.
   let content = wrapper[1].replace(/ class="js-feed-post-image[^"]*"/g, '');
+  // Imported posts contain their old pager. The reader builds one picker from the actual images.
+  content = content.replace(/<div class="archive-gallery-controls">[\s\S]*?<\/div>/g, '');
   if (content.startsWith('<img')) content = content.replace('loading="lazy"', 'loading="eager"');
   return '<div class="publication-cover">' + sizeImages(content) + '</div>';
 }

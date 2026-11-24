@@ -255,44 +255,74 @@ if (archiveList) {
 
 for (const gallery of document.querySelectorAll('.archive-gallery')) {
   const track = gallery.querySelector('.archive-gallery-track');
-  const controls = gallery.querySelector('.archive-gallery-controls');
-  if (!controls || !track) continue;
-  const multiple = track.children.length > 1;
-  controls.hidden = !multiple;
-  if (!multiple) track.removeAttribute('tabindex');
-  track.setAttribute('role', 'region');
-  track.setAttribute('aria-label', 'Фотографии публикации');
-  const index = () => Math.min(track.children.length - 1,
-    Math.max(0, Math.round(track.scrollLeft / Math.max(1, track.clientWidth))));
-  const update = () => {
-    const current = index();
-    controls.querySelector('[data-gallery-status]').textContent = (current + 1) + ' / ' + track.children.length;
-    controls.firstElementChild.disabled = current === 0;
-    controls.lastElementChild.disabled = current === track.children.length - 1;
-  };
-  const move = (step, instant = false) => {
-    track.scrollTo({
-      left: (index() + step) * track.clientWidth,
-      behavior: instant || reduced.matches ? 'instant' : 'smooth'
-    });
-  };
-  controls.addEventListener('click', event => {
-    const step = event.target.closest('[data-gallery-step]');
-    if (!step) return;
-    move(Number(step.dataset.galleryStep), event.detail === 0);
+  if (!track) continue;
+  const slides = [...track.querySelectorAll('img')];
+  if (slides.length < 2) {
+    track.removeAttribute('tabindex');
+    continue;
+  }
+  track.setAttribute('role', 'group');
+  track.setAttribute('aria-label', 'Просмотр изображений');
+  const controls = document.createElement('div');
+  controls.className = 'archive-gallery-controls';
+  const strip = document.createElement('div');
+  strip.className = 'archive-gallery-thumbs';
+  strip.setAttribute('role', 'group');
+  strip.setAttribute('aria-label', 'Выбрать изображение');
+  const status = document.createElement('span');
+  status.dataset.galleryStatus = '';
+  status.setAttribute('role', 'status');
+  const buttons = slides.map((slide, index) => {
+    const pick = document.createElement('button');
+    pick.type = 'button';
+    pick.tabIndex = -1;
+    const number = 'Фото ' + (index + 1) + ' из ' + slides.length;
+    pick.setAttribute('aria-label', slide.alt ? number + '. ' + slide.alt : number);
+    const thumb = document.createElement('img');
+    thumb.alt = '';
+    thumb.loading = 'lazy';
+    thumb.sizes = '60px';
+    if (slide.srcset) thumb.srcset = slide.srcset;
+    thumb.src = slide.src;
+    pick.append(thumb);
+    pick.addEventListener('click', () => show(index));
+    strip.append(pick);
+    return pick;
   });
-  track.addEventListener('keydown', event => {
-    if (event.target !== track || !multiple) return;
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    event.preventDefault();
-    if (event.key === 'Home' || event.key === 'End') {
-      track.scrollTo({
-        left: event.key === 'Home' ? 0 : track.scrollWidth,
-        behavior: 'instant'
-      });
-    } else {
-      move(event.key === 'ArrowRight' ? 1 : -1, true);
+  controls.append(strip, status);
+  gallery.append(controls);
+  let current = -1;
+  function show(index) {
+    track.scrollTo({ left: index * track.clientWidth, behavior: 'instant' });
+    update();
+  }
+  const update = () => {
+    const position = Math.max(0, Math.min(slides.length - 1, Math.round(track.scrollLeft / (track.clientWidth || 1))));
+    if (position === current) return;
+    if (current >= 0) {
+      buttons[current].removeAttribute('aria-current');
+      buttons[current].tabIndex = -1;
     }
+    current = position;
+    const selected = buttons[current];
+    selected.setAttribute('aria-current', 'true');
+    selected.tabIndex = 0;
+    status.textContent = (current + 1) + ' из ' + slides.length;
+    const item = selected.getBoundingClientRect();
+    const rail = strip.getBoundingClientRect();
+    if (item.left < rail.left + 4) strip.scrollLeft += item.left - rail.left - 4;
+    if (item.right > rail.right - 4) strip.scrollLeft += item.right - rail.right + 4;
+  };
+  gallery.addEventListener('keydown', event => {
+    const origin = buttons.indexOf(event.target);
+    if (event.target !== track && origin < 0) return;
+    const start = origin < 0 ? current : origin;
+    const next = { ArrowLeft: start - 1, ArrowRight: start + 1, Home: 0, End: slides.length - 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    const index = Math.max(0, Math.min(slides.length - 1, next));
+    show(index);
+    if (origin >= 0) buttons[index].focus({ preventScroll: true });
   });
   track.addEventListener('scroll', update, { passive: true });
   new ResizeObserver(update).observe(track);

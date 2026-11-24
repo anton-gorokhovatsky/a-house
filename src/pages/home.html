@@ -77,29 +77,27 @@
           <!-- PROJECTS news -->
           <section class="home-print" aria-labelledby="collection-editions">
             <h3 id="collection-editions"><a href="@@ROOT@@press/">A–Press</a></h3>
-            <article class="home-issue editorial-pair" id="issue-a-sport" tabindex="-1">
+            <div class="press-highlights"><!-- CURRENT PRINT ISSUES --></div>
+            <div class="home-editions"><!-- PROJECTS editions --></div>
+            <article class="home-issue home-archived-issue home-detail editorial-pair" id="issue-a-sport" tabindex="-1">
               <figure class="home-issue-cover">
                 <!-- A-SPORT PRINT -->
               </figure>
               <div class="home-issue-copy">
                 <div class="home-issue-title">
-                  <p class="home-kicker">A–Sport №&#8239;2 · весна 2025</p>
+                  <p class="home-kicker">Из архива · A–Sport №&#8239;2 · весна 2025</p>
                   <h4>Движение</h4>
                 </div>
                 <div class="home-issue-story">
-                  <p>{{leadStoryText}}<span class="home-detail"> Партнёр выпуска — Upside Development.</span></p>
+                  <p>{{sportStoryText}}<span class="home-detail"> Партнёр выпуска — Upside Development.</span></p>
                   <div class="home-links">
-                    <a class="home-primary" href="{{leadStoryHref}}">{{leadStoryTitle}}</a>
-                    <a class="home-detail" href="#friend">Полный выпуск по&nbsp;подписке A–Friend</a>
+                    <a class="home-primary" href="{{sportStoryHref}}">{{sportStoryTitle}}</a>
+                    <a href="@@ROOT@@press/#a-sport-02">Читать номер «Движение» в архиве</a>
+                    <a href="#collection-editions">К изданиям A–Press</a>
                   </div>
                 </div>
               </div>
             </article>
-            <div class="home-editions"><!-- PROJECTS editions --></div>
-            <div class="editions-access">
-              <p>Первые номера можно <a href="@@ROOT@@press/#print-archive">прочитать бесплатно</a>. Свежие выпуски {{digitalEditions}} доступны в приложении A–House <a href="#services-checkout">по подписке A–Friend</a>.</p>
-              <a href="@@ROOT@@press/#distribution">Где найти печатный номер</a>
-            </div>
           </section>
         </div>
         <div class="home-section-tail home-overview-only"><a href="#publications">Другие публикации</a></div>
@@ -134,30 +132,6 @@
               <a href="https://aindexproject.com/submit-organisation/">Представить своё&nbsp;бюро</a>
               <a href="https://aindexproject.com/vacancies/">Вакансии бюро в&nbsp;A–Index</a>
               <a href="https://aindexproject.com/subscription/">Условия размещения вакансии</a>
-            </div>
-          </article>
-        </div>
-      </section>
-      <section id="club" class="home-section home-club" data-home-section tabindex="-1" aria-labelledby="club-heading">
-        <div class="home-section-head">
-          <h2 id="club-heading">Клуб и&nbsp;подписка</h2>
-        </div>
-        <div class="home-pair">
-          <article id="rec2309637911">
-            <h3>Клуб A–House</h3>
-            <p>Участники клуба приходят на&nbsp;встречи в&nbsp;Доме. Условия участия зависят от&nbsp;программы&nbsp;— A–Member, A–Patron или Patron Platinum.</p>
-            <div class="home-links">
-              <a href="@@ROOT@@club/">Сравнить программы клуба</a>
-              <a href="@@ROOT@@member/">Анкета участника</a>
-            </div>
-          </article>
-          <article id="friend" tabindex="-1">
-            <p class="home-kicker" id="rec3091941801">Цифровая подписка</p>
-            <h3 id="rec3796030101">A–Friend</h3>
-            <p>{{friendEditions}} {{friendExtras}}</p>
-            <p>Участникам клуба A–Member подписка уже доступна.</p>
-            <div class="home-links">
-              <a class="home-primary" href="#services-checkout">Условия и оформление подписки</a>
             </div>
           </article>
         </div>
@@ -211,12 +185,12 @@
         <div class="membership-layout" id="order:A-Friend=12000" tabindex="-1">
           <header class="membership-intro" id="rec634408909">
             <!-- FRIEND EDITIONS -->
-            <p class="home-kicker">Цифровая подписка</p>
-            <h2 id="friend-heading">A–Friend</h2>
+            <p class="home-kicker" id="friend" tabindex="-1"><span id="rec3091941801">Цифровая подписка</span></p>
+            <h2 id="friend-heading"><span id="rec3796030101">A–Friend</span></h2>
             <p class="membership-lead">{{friendEditions}}</p>
             <p class="membership-benefits">{{friendExtras}}</p>
             <p class="membership-price">{{friendPrice}}</p>
-            <p class="membership-note">Для участников A–Member подписка уже включена.</p>
+            <p class="membership-note">В&nbsp;программу клуба A–Member уже входит доступ к&nbsp;приложению и&nbsp;изданиям A–House.</p>
             <a class="friend-archive-return friend-archive-all" href="@@ROOT@@press/#print-archive">К архиву печатных номеров</a>
           </header>
           <div class="membership-request" id="form634408909">

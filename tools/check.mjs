@@ -2,7 +2,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { membershipSettings, projectRoot, siteBase } from './build.mjs';
 import { eventDestination, routesWithEvents } from './calendar.mjs';
-import { collectArchive } from './archive.mjs';
+import { collectArchive, printArchiveFileNames } from './archive.mjs';
 import { typesetText } from './typography.mjs';
 
 const dist = path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist'));
@@ -28,8 +28,8 @@ async function inventory(directory) {
   }
 }
 await inventory('');
-const printIssues = JSON.parse(await readFile(path.join(projectRoot, 'src/data/print-editions.json'), 'utf8'));
-const allowedPrint = new Set(printIssues.flatMap(issue => [issue.id + '.jpg', ...issue.files.map(file => file.name)]));
+const printEditions = JSON.parse(await readFile(path.join(projectRoot, 'src/data/print-editions.json'), 'utf8'));
+const allowedPrint = printArchiveFileNames(printEditions);
 for (const file of files) {
   if (file.startsWith('media/print/') && !allowedPrint.has(file.slice('media/print/'.length))) errors.push('Unlisted print archive file: ' + file);
 }
