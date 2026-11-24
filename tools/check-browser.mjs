@@ -469,12 +469,17 @@ async function checkFooterDocuments(page, mobile) {
     assert.ok(await footer.getByRole('heading', {name: 'Реквизиты'}).isVisible());
     const registry = footer.locator('.footer-registration');
     assert.equal(await registry.getByRole('link').count(), 0);
-    const rows = await registry.locator('div').evaluateAll(items => items.map(row => {
-      const label = row.querySelector('dt').getBoundingClientRect();
-      const value = row.querySelector('dd').getBoundingClientRect();
-      return { labelTop: label.top, valueTop: value.top, valueLeft: value.left };
-    }));
-    assert.ok(rows.every(row => Math.abs(row.labelTop - row.valueTop) < 1));
+    const rows = await registry.locator('div').evaluateAll(async items => {
+      items[0].getBoundingClientRect();
+      await document.fonts.ready;
+      return items.map(row => {
+        const label = row.querySelector('dt').getBoundingClientRect();
+        const value = row.querySelector('dd').getBoundingClientRect();
+        return { labelTop: label.top, valueTop: value.top, valueLeft: value.left, rowWidth: row.clientWidth };
+      });
+    });
+    assert.ok(rows.every(row => Math.abs(row.labelTop - row.valueTop) < 1),
+      'Registration labels and values must share a line at ' + page.viewportSize().width + ' px on ' + origin + ': ' + JSON.stringify(rows));
     assert.ok(Math.abs(rows[0].valueLeft - rows[1].valueLeft) < 1);
     assert.equal(await footer.locator('.footer-channels a').count(), 3);
     assert.ok(await footer.locator('.footer-wordmark img').isVisible());
