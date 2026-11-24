@@ -112,8 +112,11 @@ for (const file of htmlFiles) {
       !styles.at(-1)[1].startsWith(base + 'styles/theme.css?')) {
     errors.push(file + ' must restore the saved theme before styles and apply the shared palette last');
   }
-  if ((source.match(/<fieldset\b[^>]*\bdata-site-theme(?=[\s>])/g) || []).length !== 1) {
-    errors.push(file + ' must have one appearance control');
+  for (const [tag, id] of [['nav', 'menu-theme'], ['footer', 'site-theme']]) {
+    const region = source.match(new RegExp('<' + tag + '\\b[^>]*>[\\s\\S]*?</' + tag + '>'))?.[0];
+    if (!region?.includes('id="' + id + '" data-site-theme')) {
+      errors.push(file + ' is missing its theme choices in the ' + tag);
+    }
   }
   // The House renovation announcement also returns HTTP 200. A consent link
   // labelled as a privacy policy must lead to the published policy itself.

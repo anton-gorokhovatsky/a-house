@@ -7,6 +7,7 @@
       {
         "name": "A–Index",
         "overview": "directory",
+        "overviewLinkLabel": "Открыть справочник A–Index",
         "bookmark": "project-stories",
         "works": [
           {"title": "Studio 911", "source": "Макетная мастерская", "text": "В мастерской Виктора Крылова делают макеты и инсталляции для бюро и музеев. Детали печатают на 3D-принтере или отливают из бетона и пластика.", "href": "https://aindexproject.com/organisations/studio-911/"},
@@ -37,6 +38,7 @@
       {
         "name": "A–School",
         "overview": "community",
+        "overviewLinkLabel": "Программа A–School",
         "works": [
           {"title": "Свет для читателя, который ходит по комнате", "text": "На дискуссии в ММОМА светодизайнер Влад Обласов разобрал задачу заказчика с непривычным способом читать книги.", "href": "https://news.ahouseproject.com/a-house-x-mmoma-ergonomika-i-sczenarii-zhizni/"}
         ],
@@ -44,18 +46,18 @@
         "href": "@@ROOT@@education/"
       },
       {
-        "name": "A–Fest",
-        "overview": "gatherings",
-        "event": "a-fest-2026",
-        "description": "Московский фестиваль архитектуры. В программу 2026 года вошли выставка «Архитектура 2.0» и экскурсии по стройплощадкам.",
-        "href": "https://aindexproject.com/fest/"
-      },
-      {
+        "id": "a-forum",
         "name": "A–Forum",
         "overview": "gatherings",
-        "event": "a-forum-2026",
-        "description": "На первом форуме архитекторы и отельеры обсуждали, как меняются гостиницы. Гости увидели выставочный номер A–Room с мебелью и светом от участников A–Index.",
-        "href": "https://news.ahouseproject.com/forum/"
+        "description": "На закрытом форуме архитекторы, отельеры и девелоперы обсуждают, как проектировать гостиницы и управлять ими.",
+        "href": "#a-forum"
+      },
+      {
+        "id": "a-fest",
+        "name": "A–Fest",
+        "overview": "gatherings",
+        "description": "Ежегодный фестиваль архитектуры в Москве. Архитекторы приглашают горожан на выставки, дискуссии и экскурсии.",
+        "href": "#a-fest"
       }
     ]
   },
@@ -67,6 +69,7 @@
       {
         "name": "A–News",
         "overview": "news",
+        "overviewLinkLabel": "Читать журнал A–News",
         "bookmark": "a-news",
         "works": [
           {"title": "«Парфенон» в миниатюре", "date": "2026-11-20", "source": "Дизайн", "text": "Булавка, которую Дарья Белякова придумала к пятилетию Joser, повторяет сечение колонны Парфенона.", "href": "https://news.ahouseproject.com/yuvelirnomu-domu-joser-5-let/"},
@@ -170,6 +173,7 @@
       {
         "name": "Клуб A–House",
         "overview": "community",
+        "overviewLinkLabel": "Программы клуба",
         "bookmark": "club",
         "legacyBookmark": "rec2309637911",
         "works": [

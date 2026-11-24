@@ -188,6 +188,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const program = renderProgram(events, await source('partials/program-feature.html'), base);
   const comfort = events.find(event => event.id === 'designing-comfort');
   const themeControl = await source('partials/theme-control.html');
+  const menuTheme = themeControl.replaceAll('{{themeId}}', 'menu-theme');
+  const footerTheme = themeControl.replaceAll('{{themeId}}', 'site-theme');
   const [shell, editorialHeader, footerTemplate, homeFooterTemplate, memberPrograms, friendTemplate, memberTemplate, agreements] = await Promise.all([
     'layout.html', 'partials/editorial-header.html', 'partials/footer.html',
     'partials/home-footer.html', 'partials/member-programs.html', 'partials/friend-order.html',
@@ -284,6 +286,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
         .replace('{{programCurrent}}', programPage ? ' aria-current="location"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
+      .replace('<!-- MENU THEME CONTROL -->', () => menuTheme)
       .replace(/<!-- REPORT (\d{4}) -->/g, (_, year) => renderReportYear(reportYears[year], year, page.slug))
       .replaceAll('{{eventsLabel}}', 'События')
       .replaceAll('{{housesLabel}}', 'Дома и адреса')
@@ -337,10 +340,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- MOVED PUBLICATION LINKS -->', () => renderMovedPublicationLinks(archive, base))
       .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic));
     let themedBody;
-    if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => themeControl);
-    else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');
-    else themedBody = body + '<footer class="theme-footer">' + themeControl + '</footer>';
-    const pageBody = prepareConsentDocuments(themedBody.replaceAll('{{themeLabel}}', 'Тема сайта'));
+    if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => footerTheme);
+    else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => footerTheme + '</footer>');
+    else themedBody = body + '<footer class="theme-footer">' + footerTheme + '</footer>';
+    const pageBody = prepareConsentDocuments(themedBody);
     const typeset = typesetText(documents.has(page.slug) ? formatDocumentTables(pageBody) : pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
     const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');

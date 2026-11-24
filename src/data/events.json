@@ -46,15 +46,16 @@
     "links": [{ "url": "https://dompred.ru/events/marketing-mastermind", "label": "Страница встречи", "role": "event-page" }]
   },
   {
-    "id": "a-forum-2026", "title": "Первый A–Forum о гостиничной индустрии",
+    "id": "a-forum-2026", "projectId": "a-forum", "title": "Первый A–Forum о гостиничной индустрии",
     "photos": [{"file": "media/home/a-forum-room-1200-3729d151a092.webp", "width": 1200, "height": 629, "alt": "Кровать, зеркало и фиолетовый диван в выставочном номере A–Room"}],
     "start": "2026-11-12", "end": "2026-11-12", "kind": "Форум",
     "venueId": "entrepreneur", "address": "Малый Каретный пер., 11, стр. 10",
     "summary": "Архитекторы и отельеры обсуждали, как перестраивать действующие гостиницы и что меняется в работе отеля, когда он открывается городу.",
     "detail": "Гости увидели выставочный гостиничный номер A–Room. На встречах с отельерами говорили о подготовке сотрудников и управлении гостиницей в кризис.",
     "links": [
+      { "url": "https://news.ahouseproject.com/forum/", "label": "Программа A–Forum 2026", "role": "edition-site" },
       { "url": "https://t.me/ahouseonair/265", "label": "Репортаж A–House On Air" },
-      { "url": "https://t.me/ahouseproject/10590", "label": "Итоги форума в Telegram", "role": "recap" }
+      { "url": "https://t.me/ahouseproject/10590", "label": "Итоги первого форума в Telegram", "role": "recap" }
     ]
   },
   {
@@ -99,13 +100,17 @@
     "links": [{ "url": "https://t.me/ahouseproject/8258", "label": "Фотографии открытия" }, { "url": "https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/", "label": "Репортаж о Доме" }]
   },
   {
-    "id": "a-fest-2026", "title": "Второй архитектурный A–Fest",
+    "id": "a-fest-2026", "projectId": "a-fest", "title": "Второй архитектурный A–Fest",
     "photos": [{"file": "media/home/a-fest-architecture-1200-a9a9cab29e25.webp", "width": 1200, "height": 1200, "alt": "Макет со стеклянными сферами у стенда Manuel Herz Architects на выставке «Архитектура 2.0»"}],
     "start": "2026-05-21", "end": "2026-06-14", "kind": "Фестиваль",
     "venue": "Образовательный центр ММОМА и площадки Москвы",
     "summary": "На фестивале прошли выставка «Архитектура 2.0», дискуссии и экскурсии. В репортаже организаторов — работы участников и встречи на городских площадках.",
     "detail": "Свои работы на выставке представили 19 архитектурных бюро. Для гостей организовали 10 экскурсий на стройплощадки.",
-    "links": [{ "url": "https://t.me/ahouseproject/7777", "label": "Фоторепортаж с фестиваля в Telegram", "role": "recap" }, { "url": "https://t.me/ahouseproject/7662", "label": "Итоги A–Fest" }]
+    "links": [
+      { "url": "https://aindexproject.com/fest/", "label": "Выставка «Архитектура 2.0»", "role": "edition-site" },
+      { "url": "https://t.me/ahouseproject/7777", "label": "Фоторепортаж со второго фестиваля в Telegram", "role": "recap" },
+      { "url": "https://t.me/ahouseproject/7662", "label": "Итоги A–Fest" }
+    ]
   },
   {
     "id": "ergonomics-and-everyday-life", "title": "Эргономика и сценарии жизни",

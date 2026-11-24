@@ -1,9 +1,8 @@
 (() => {
   const storageKey = 'a-house:theme';
   const root = document.documentElement;
-  const systemScheme = matchMedia('(prefers-color-scheme: dark)');
   let preference = 'system';
-  let control;
+  let controls = [];
 
   function readPreference() {
     try {
@@ -18,43 +17,37 @@
     preference = value;
     if (value === 'system') root.removeAttribute('data-theme');
     else root.dataset.theme = value;
-    if (control) {
+    for (const control of controls) {
       control.querySelector('input[value="' + value + '"]').checked = true;
-      const state = control.querySelector('.theme-system-state');
-      state.hidden = value !== 'system';
-      state.textContent = value === 'system' ? (systemScheme.matches ? 'Сейчас тёмная' : 'Сейчас светлая') : '';
     }
   }
 
   apply(readPreference());
 
   document.addEventListener('DOMContentLoaded', () => {
-    control = document.querySelector('[data-site-theme]');
-    if (!control) return;
+    controls = document.querySelectorAll('[data-site-theme]');
     apply(preference);
-    control.hidden = false;
-    for (const entry of document.querySelectorAll('.theme-menu-link')) entry.hidden = false;
-    control.addEventListener('focus', () => {
-      requestAnimationFrame(() => {
-        if (document.activeElement === control) control.querySelector(':checked').focus({ preventScroll: true });
+    for (const control of controls) {
+      control.hidden = false;
+      control.addEventListener('focus', () => {
+        requestAnimationFrame(() => {
+          if (document.activeElement === control) control.querySelector(':checked').focus({ preventScroll: true });
+        });
       });
-    });
-    control.addEventListener('change', event => {
-      const choice = event.target;
-      if (!choice.matches('input[name="site-theme-choice"]:checked')) return;
-      apply(choice.value);
-      try {
-        if (preference === 'system') localStorage.removeItem(storageKey);
-        else localStorage.setItem(storageKey, preference);
-      } catch {
-        // A browser can disallow storage while the current page remains usable.
-      }
-    });
+      control.addEventListener('change', event => {
+        apply(event.target.value);
+        try {
+          if (preference === 'system') localStorage.removeItem(storageKey);
+          else localStorage.setItem(storageKey, preference);
+        } catch {
+          // A browser can disallow storage while the current page remains usable.
+        }
+      });
+    }
   });
 
   window.addEventListener('storage', event => {
     if (event.key === storageKey || event.key === null) apply(readPreference());
   });
   window.addEventListener('pageshow', () => apply(readPreference()));
-  systemScheme.addEventListener('change', () => { if (preference === 'system') apply('system'); });
 })();

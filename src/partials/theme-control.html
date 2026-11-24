@@ -1,11 +1,11 @@
-<fieldset class="site-theme" id="site-theme" data-site-theme tabindex="-1" hidden>
-  <legend>{{themeLabel}}</legend>
+<fieldset class="site-theme" id="{{themeId}}" data-site-theme tabindex="-1" hidden>
+  <legend>Тема сайта</legend>
   <div class="site-theme-choices">
     <label>
-      <input type="radio" name="site-theme-choice" value="system" aria-labelledby="theme-system-label" aria-describedby="theme-system-state" checked>
-      <span><span id="theme-system-label">Как в системе</span><small class="theme-system-state" id="theme-system-state" hidden></small></span>
+      <input type="radio" name="{{themeId}}-choice" value="system" aria-labelledby="{{themeId}}-system-label" aria-describedby="{{themeId}}-system-state" checked>
+      <span><span id="{{themeId}}-system-label">Как в системе</span><small class="theme-system-state" id="{{themeId}}-system-state"><span class="system-light">В системе светлая</span><span class="system-dark">В системе тёмная</span></small></span>
     </label>
-    <label><input type="radio" name="site-theme-choice" value="light">Светлая</label>
-    <label><input type="radio" name="site-theme-choice" value="dark">Тёмная</label>
+    <label><input type="radio" name="{{themeId}}-choice" value="light">Светлая</label>
+    <label><input type="radio" name="{{themeId}}-choice" value="dark">Тёмная</label>
   </div>
 </fieldset>

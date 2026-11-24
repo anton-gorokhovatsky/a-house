@@ -244,7 +244,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-visit-info { max-inline-size: 39em; }
 .home-page .home-visit .project-examples { margin-block-start: var(--story-gap); }
 .home-places .project-examples p { max-width: 44ch; color: var(--quiet); }
-.home-page .home-editorial :is(.home-places h3, .editorial-pair-title, .home-community h3, .home-gathering h3) a {
+.home-page .home-editorial :is(.home-places h3, .editorial-pair-title, .home-community h3) a {
   color: inherit; text-decoration: underline; text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset); text-decoration-thickness: 1px;
 }
 .venue-program ul { list-style: none; margin: 0; padding: 0; }
@@ -302,10 +302,12 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-project-feature .editorial-pair-title { grid-area: heading; scroll-margin-block-start: var(--page-entry); }
 .home-project-feature > figure, .home-project-portfolios { grid-area: photo; min-inline-size: 0; }
 .project-intro { grid-area: intro; max-inline-size: 45ch; text-wrap: pretty; }
+.home-editorial :is(.publisher-head, .project-intro, .home-community-project, .home-places) .home-links > a {
+  min-block-size: 44px; align-content: center;
+}
 .home-project-portfolios { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--story-gap); align-items: start; }
 .home-project-feature figure { position: relative; min-inline-size: 0; }
 .project-photo-link::after { content: ''; position: absolute; inset: 0 0 auto; aspect-ratio: var(--photo-ratio); }
-.project-photo-link:focus-visible::after { outline: 2px solid currentColor; outline-offset: 2px; }
 .home-project-feature img { display: block; width: 100%; height: auto; }
 .home-page .home-project-feature figcaption { margin-block-start: .5rem; }
 .home-project-feature h4 {
@@ -325,7 +327,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page .home-project-feature-copy .project-examples { margin-block-start: .55em; }
 .project-examples li + li { margin-block-start: var(--story-gap); }
 .project-examples li > a { display: inline-block; font-weight: 600; padding-block: .2em; }
-.home-page .home-editorial :is(.project-examples, .project-specialties, .home-edition-brief h5, .home-project-feature figcaption, .editions-access) a, .home-page .home-gathering > a {
+.home-page .home-editorial :is(.project-examples, .project-specialties, .home-edition-brief h5, .home-project-feature figcaption, .editions-access) a {
   text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset);
 }
 .home-page .home-project-feature figcaption a { padding-top: 0; }
@@ -335,16 +337,18 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page .home-community-project > p { margin-block-start: .5em; max-inline-size: 47ch; }
 .home-community-project .home-links { margin-block-start: .45em; }
 .home-community-project .project-examples { max-inline-size: 47ch; }
-.home-page .home-gathering .home-meta { margin-top: .3em; }
-.home-page .home-gathering > .home-meta + p { margin-top: .4em; max-inline-size: 48ch; }
-.home-page .home-gathering > a { display: inline-block; margin-block-start: .15em; min-block-size: 44px; align-content: center; }
+.home-page .home-gathering { max-inline-size: 48ch; }
+.home-page .home-gathering > p { margin-block-start: .5em; }
+.home-page .home-gathering ul, .home-gathering li + li { margin-block-start: var(--story-gap); }
+.home-page .home-gathering .home-meta + p { margin-block-start: .4em; }
+.home-page .home-gathering .home-links { margin-block-start: .15em; gap: 0 1.25em; }
+.home-page .home-gathering .home-links a { min-block-size: 44px; align-content: center; }
 .editions-access { margin-block-start: var(--group); }
 .editions-access p { max-inline-size: 62ch; }
 .home-page .home-editorial .press-highlights .home-issue-story > p a { text-decoration: underline; text-underline-offset: var(--link-underline-offset); text-decoration-thickness: 1px; text-decoration-color: var(--link-underline-color); }
 .editions-access .home-section-tail { gap: 0 1.25em; margin-block-start: .35em; }
 .editions-access .home-section-tail a { min-block-size: 44px; align-content: center; }
 .home-page .home-editorial .home-edition-brief h5 { margin: 0 0 .35em; font: 400 var(--type-card)/1.2 var(--display); }
-.home-page .home-past-projects h2 a { color: inherit; text-decoration: underline; text-underline-offset: var(--link-underline-offset); text-decoration-thickness: 1px; text-decoration-color: var(--link-underline-color); }
 .home-edition-brief .project-examples p, .home-community .project-examples p { color: var(--quiet); }
 .home-project-list { display: grid; gap: var(--group); }
 .home-direction { min-width: 0; scroll-margin-block-start: 1.4rem; }

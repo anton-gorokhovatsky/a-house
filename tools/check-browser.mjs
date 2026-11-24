@@ -347,11 +347,17 @@ async function checkVisitorLinks(page, mobile) {
   assert.ok(await page.locator('#collection-community a[href$="/club/"]').isVisible());
   assert.equal(await page.locator('main a[href*="/member/"]').count(), 0, 'The homepage introduces the club before asking for an application');
   assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
-  assert.deepEqual(await features.locator('.editorial-pair-title a').evaluateAll(links => links.map(link => link.href)), selected.map(project => project.href));
+  assert.equal(await page.locator('#media h3.editorial-pair-title a, .home-community-project h3 a, .home-places h3 a').count(), 0,
+    'An open project or venue has a plain heading and a separate link to its own page');
+  for (const project of selected) {
+    const action = features.getByRole('link', { name: project.overviewLinkLabel, exact: true });
+    assert.equal(await action.getAttribute('href'), project.href);
+  }
   for (const project of selected) assert.equal(await features.locator('a[href="' + project.href + '"]').count(), 1);
   const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
   assert.deepEqual(await features.locator('.home-project-portfolios h4 a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
+  assert.equal(await editions.getByRole('link', {name:'Каталог A–Press'}).getAttribute('href'), new URL('press/', url).pathname);
   assert.deepEqual(await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts(), ['A–Press', 'A–Index', 'A–News'],
     'Each project has one heading and follows the intended order');
   const periodicals = editions.getByRole('region', {name:'Газеты и журналы', exact:true});
@@ -375,10 +381,17 @@ async function checkVisitorLinks(page, mobile) {
     const example = page.locator('.project-examples a').filter({hasText: work.title});
     assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
   }
-  const forum = page.locator('.home-gathering').filter({has: page.getByRole('heading', {name:'A–Forum', exact:true})});
-  assert.equal(await forum.getByRole('link', {name:/Итоги форума/}).getAttribute('href'), 'https://t.me/ahouseproject/10590');
-  assert.deepEqual(await page.locator('.home-gathering h3 a').evaluateAll(links => links.map(link => link.href)),
-    ['https://news.ahouseproject.com/forum/', 'https://aindexproject.com/fest/']);
+  const gatherings = page.locator('#gatherings');
+  const forum = gatherings.locator('article').filter({has: page.getByRole('heading', {name:'A–Forum', exact:true})});
+  const festival = gatherings.locator('article').filter({has: page.getByRole('heading', {name:'A–Fest', exact:true})});
+  assert.equal(await gatherings.locator('a[href$="/calendar/#past"]').count(), 0);
+  assert.equal(await gatherings.locator('h3 a').count(), 0, 'The project names introduce their articles');
+  const forum2026 = forum.getByRole('listitem').filter({has: page.locator('time[datetime="2026-11-12"]')});
+  const festival2026 = festival.getByRole('listitem').filter({has: page.locator('time[datetime="2026-05-21"]')});
+  assert.equal(await forum2026.getByRole('link', {name:'Программа A–Forum 2026'}).getAttribute('href'), 'https://news.ahouseproject.com/forum/');
+  assert.equal(await forum2026.getByRole('link', {name:/Итоги первого форума/}).getAttribute('href'), 'https://t.me/ahouseproject/10590');
+  assert.equal(await festival2026.getByRole('link', {name:'Выставка «Архитектура 2.0»'}).getAttribute('href'), 'https://aindexproject.com/fest/');
+  assert.equal(await festival2026.getByRole('link', {name:/Фоторепортаж со второго фестиваля/}).getAttribute('href'), 'https://t.me/ahouseproject/7777');
   for (const feature of await features.all()) {
     const image = await feature.locator('img').first().boundingBox();
     const title = await feature.locator('.editorial-pair-title').boundingBox();
@@ -403,6 +416,15 @@ async function checkVisitorLinks(page, mobile) {
   await activate(page.locator('#site-navigation a[href="#projects"]'));
   await page.waitForURL(url + '#projects');
   assert.equal(await page.locator('#projects .home-project-row:visible').count(), projects.length);
+  for (const id of ['a-forum','a-fest']) {
+    const project = page.locator('#projects .home-project-row[href="#' + id + '"]');
+    await activate(project);
+    await page.waitForURL(url + '#' + id);
+    assert.equal(await page.evaluate(() => document.activeElement.id), id);
+    assert.ok(await gatherings.isVisible());
+    await page.goBack();
+    await page.waitForFunction(id => document.activeElement.getAttribute('href') === '#' + id, id);
+  }
   assert.equal(await page.getByRole('link', { name: 'Спецпроекты и мероприятия' }).getAttribute('href'), new URL('special_projects/', url).pathname);
   const press = page.locator('#a-media .home-project-row[href$="/press/"]');
   await activate(press);
@@ -853,10 +875,12 @@ async function checkArchiveReading(page) {
 }
 
 async function checkClubApplication(page) {
-  await page.goto(url + '#club');
-  await page.waitForURL(url + 'club/');
+  for (const bookmark of ['#club', '#rec2309637911']) {
+    await page.goto(url + bookmark);
+    await page.waitForURL(url + 'club/');
+  }
   await page.goto(url);
-  await page.locator('#collection-community').getByRole('link', {name:'Клуб A–House'}).click();
+  await page.locator('#collection-community').getByRole('link', {name:'Программы клуба'}).click();
   await page.waitForURL(url + 'club/');
   await page.getByRole('link', {name:'Программы участия'}).press('Enter');
   await page.waitForURL(url + 'club/#programs');
@@ -985,12 +1009,6 @@ async function checkHomeRoutes(page, mobile) {
   assert.ok(await page.locator('#print-archive .press-file').first().isVisible());
   await page.goBack();
   assert.equal(await page.locator('#t-header a[href$="/archive/"], #t-footer a[href$="/archive/"]').count(), 0);
-  const pastEvents = page.locator('#gatherings a[href$="calendar/#past"]');
-  await pastEvents.press('Enter');
-  await page.waitForURL(url + 'calendar/#past');
-  assert.ok(await page.getByRole('heading', {name:'Прошедшие события',exact:true}).isVisible());
-  await page.goBack();
-  await page.waitForFunction(() => document.activeElement?.matches('#gatherings a[href$="calendar/#past"]'));
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   assert.equal(await menu.isVisible(), mobile, 'Only a compact header needs a menu toggle');
   assert.equal(await choice('media').isVisible(), !mobile, 'Desktop sections should be visible before interaction');

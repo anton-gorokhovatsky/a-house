@@ -7,7 +7,8 @@
   let restoreFrame = 0;
 
   function followSectionBookmark() {
-    const shortcuts = { '#program': '.home-calendar-link', '#club': '#club h3 a', '#rec2309637911': '#club h3 a' };
+    const clubLink = '#club .home-links > a';
+    const shortcuts = { '#program': '.home-calendar-link', '#club': clubLink, '#rec2309637911': clubLink };
     const selector = shortcuts[location.hash];
     const target = document.getElementById(location.hash.slice(1));
     const link = selector ? document.querySelector(selector) : target?.closest('.home-bookmarks a');

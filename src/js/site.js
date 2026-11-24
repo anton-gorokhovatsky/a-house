@@ -176,7 +176,11 @@ if (header) {
     openMenu(false);
   });
   window.addEventListener('pageshow', event => { if (event.persisted) openMenu(false); });
-  toggle.addEventListener('click', () => openMenu(menu.hidden));
+  toggle.addEventListener('click', () => {
+    const opening = menu.hidden;
+    openMenu(opening);
+    if (!opening) toggle.focus({ preventScroll: true });
+  });
   trigger?.addEventListener('click', () => openSubmenu(submenu.hidden));
   trigger?.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown') {
@@ -199,8 +203,8 @@ if (header) {
   // Continue into the page when the visitor tabs past the full-screen disclosure.
   menu.addEventListener('keydown', event => {
     if (event.key !== 'Tab' || event.shiftKey || toggle.getAttribute('aria-expanded') !== 'true') return;
-    const links = [...menu.querySelectorAll('a[href]')].filter(link => link.getClientRects().length);
-    if (document.activeElement !== links.at(-1)) return;
+    const stops = [...menu.querySelectorAll('a[href], button:enabled, input:checked')].filter(item => item.getClientRects().length);
+    if (document.activeElement !== stops.at(-1)) return;
     openMenu(false);
     toggle.focus({ preventScroll: true });
   });

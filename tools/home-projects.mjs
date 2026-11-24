@@ -1,4 +1,4 @@
-import { eventDate } from './calendar.mjs';
+import { eventDate, eventDestination } from './calendar.mjs';
 
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const link = (href, title, className = '') => `<a${className ? ' class="' + className + '"' : ''} href="${escape(href)}">${escape(title)}</a>`;
@@ -44,8 +44,10 @@ function projectFeature(project) {
     : newsFigure(project.feature);
   const categories = specialties ? `<div class="project-specialties"><h4>Найти команду</h4><ul role="list">${specialties.map(item => '<li>' + link(item.href, item.title) + '</li>').join('')}</ul></div>` : '';
   return `<article class="home-project-feature editorial-pair project-${escape(project.overview)}" aria-labelledby="${bookmark}">
-    <h3 id="${bookmark}" class="editorial-pair-title">${link(project.href, project.name)}</h3>
-    <p class="project-intro">${escape(project.description)}</p>
+    <h3 id="${bookmark}" class="editorial-pair-title">${escape(project.name)}</h3>
+    <div class="project-intro"><p>${escape(project.description)}</p>
+      <div class="home-links">${link(project.href, project.overviewLinkLabel)}</div>
+    </div>
     ${categories}
     ${images}
     <div class="home-project-feature-copy">${renderProjectWorks(project, project.overview === 'news')}</div>
@@ -55,20 +57,28 @@ function projectFeature(project) {
 export function renderHomeProjects(projects, events, group) {
   const entries = projects.filter(project => project.overview === group);
   if (group === 'gatherings') {
-    return entries.map(project => ({ project, event: events.find(event => event.id === project.event) }))
-      .sort((a, b) => b.event.end.localeCompare(a.event.end))
-      .map(({project, event}) => {
-        const report = event.links.find(item => item.role === 'recap');
-        return `<article class="home-gathering"><h3>${link(project.href, project.name)}</h3>
-          <p class="home-meta">${escape(event.kind)} · ${eventDate(event)}</p><p>${escape(event.detail)}</p>
-          ${link(report.url, report.label)}</article>`;
+    return entries.map(project => {
+      const bookmark = project.id ? ` id="${escape(project.id)}" tabindex="-1"` : '';
+      const editions = events.filter(event => event.projectId && event.projectId === project.id)
+        .sort((a, b) => b.start.localeCompare(a.start));
+      const items = editions.map(event => {
+        const sources = (event.links || []).filter(item => item.role === 'edition-site' || item.role === 'recap');
+        const actions = sources.length ? sources.map(item => link(item.url, item.label)).join('\n')
+          : link(eventDestination(event, '@@ROOT@@calendar/'), event.title);
+        const text = event.detail || event.summary;
+        return `<li><p class="home-meta">${eventDate(event)}</p>
+          ${text ? '<p>' + escape(text) + '</p>' : ''}<div class="home-links">${actions}</div></li>`;
       }).join('\n');
+      return `<article class="home-gathering"><h3${bookmark}>${escape(project.name)}</h3>
+        <p>${escape(project.description)}</p>${items ? '<ul role="list">' + items + '</ul>' : ''}</article>`;
+    }).join('\n');
   }
   return entries.map(project => {
     if (project.feature) return projectFeature(project);
     if (group === 'community') {
-      return `<article class="home-community-project"${project.bookmark ? ' id="' + escape(project.bookmark) + '"' : ''}><h3${project.legacyBookmark ? ' id="' + escape(project.legacyBookmark) + '"' : ''}>${link(project.href, project.name)}</h3>
+      return `<article class="home-community-project"${project.bookmark ? ' id="' + escape(project.bookmark) + '"' : ''}><h3${project.legacyBookmark ? ' id="' + escape(project.legacyBookmark) + '"' : ''}>${escape(project.name)}</h3>
         <p>${escape(project.description)}</p>
+        <div class="home-links">${link(project.href, project.overviewLinkLabel)}</div>
         ${renderProjectWorks(project)}</article>`;
     }
     const distinct = project.works.some(work => work.href && work.href !== project.href);
