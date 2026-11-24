@@ -1,7 +1,7 @@
 .home-page .institution-page {
   max-width: var(--measure);
   margin-inline: auto;
-  padding: clamp(2rem, 7vw, 6rem) var(--edge) var(--chapter);
+  padding: var(--page-entry) var(--edge) var(--chapter);
   color: var(--ink);
   overflow-wrap: normal;
   hyphens: auto;
@@ -200,9 +200,13 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.institution-video {
+.institution-page .institution-video {
   max-width: 50rem;
+  min-height: 200px;
 }
+.institution-video iframe:not(.film-ready) { opacity: 0; pointer-events: none; }
+.institution-film-status:empty { display: none; }
+.home-page .institution-copy > .institution-film-status { margin-block: .5em 0; color: var(--quiet); }
 .institution-film-link { display: inline-block; min-block-size: 44px; align-content: center; }
 .home-page .institution-people :is(h3, p) { hyphens: none; overflow-wrap: normal; }
 .institution-people .person-years { white-space: nowrap; }

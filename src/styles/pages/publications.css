@@ -1,5 +1,5 @@
 .editorial-document, .press-page, .partnership-stories, .editorial-missing {
-  padding: var(--group) var(--edge) var(--chapter);
+  padding: var(--page-entry) var(--edge) var(--chapter);
 }
 .editorial-document .document-inner, .press-inner, .partnership-inner, .editorial-missing > div {
   max-width: 72rem; margin-inline: auto;

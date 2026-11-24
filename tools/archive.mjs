@@ -77,7 +77,7 @@ export function renderCurrentPrintIssues(issues, editions, projects) {
     const more = issue.announcement ? ` <a href="${escape(issue.announcement)}">О выпуске в Telegram</a>` : '';
     const access = subscriberIssue
       ? `<div class="editions-access"><p>Свежие выпуски ${escape(editions)} доступны в приложении A–House по подписке.</p>
-        <div class="home-links"><a href="#services-checkout">Оформить подписку A–Friend</a><a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a><a href="@@ROOT@@press/#print-archive">Читать предыдущие номера</a></div></div>`
+        <div class="home-links"><a href="#services-checkout">Оформить подписку A–Friend</a><a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a></div></div>`
       : `<div class="home-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`;
     return `<article class="home-issue ${index === 0 ? 'home-current-issue' : 'home-companion-issue'} editorial-pair">
       ${cover ? `<figure class="home-issue-cover"><img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy"></figure>` : ''}

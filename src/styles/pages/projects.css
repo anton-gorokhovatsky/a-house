@@ -1,4 +1,4 @@
-.project-story { padding: var(--group) var(--edge) var(--chapter); }
+.project-story { padding: var(--page-entry) var(--edge) var(--chapter); }
 .project-inner {
   max-inline-size: 76rem; margin-inline: auto; container: project-content / inline-size;
   --column-title-size: min(var(--lead-size), max(1.5rem, 11cqi));

@@ -636,24 +636,114 @@
   }
 
   function setupVideo() {
-    $$('.t-video-carier[data-content-video-url-youtube]').forEach(host => {
+    $$('.institution-video[data-content-video-url-youtube]').forEach(host => {
       const videoId = host.dataset.contentVideoUrlYoutube;
       if (initialized.has(host) || !/^[\w-]{11}$/.test(videoId)) return;
       initialized.add(host);
       host.hidden = false;
       host.classList.add('ah-video-player');
+      const provider = 'https://www.youtube-nocookie.com';
       const play = button('Смотреть фильм об A–House', 'ah-video-play', 'Смотреть фильм');
+      const poster = $('img', host);
+      const status = host.nextElementSibling;
+      const reducedData = matchMedia('(prefers-reduced-data: reduce)');
+      let frame, handshake, timeout;
+      let seenEnough = false, onScreen = false, attempted = false, requested = false;
       host.append(play);
-      play.addEventListener('click', () => {
-        const frame = document.createElement('iframe');
+
+      function send(message) {
+        frame?.contentWindow?.postMessage(JSON.stringify({ ...message, id: frame.id, channel: 'widget' }), provider);
+      }
+
+      function clearLoading() {
+        clearInterval(handshake);
+        clearTimeout(timeout);
+      }
+
+      function showPoster(error) {
+        const returnFocus = frame && document.activeElement === frame;
+        clearLoading();
+        frame?.remove();
+        frame = null;
+        poster.hidden = false;
+        play.hidden = false;
+        play.removeAttribute('aria-disabled');
+        play.textContent = error ? 'Попробовать ещё раз' : 'Смотреть фильм';
+        play.setAttribute('aria-label', play.textContent);
+        status.textContent = error ? 'Не удалось загрузить фильм в плеере.' : '';
+        if (returnFocus) play.focus({ preventScroll: true });
+      }
+
+      window.addEventListener('message', event => {
+        if (!frame || event.source !== frame.contentWindow || event.origin !== provider) return;
+        let message;
+        try { message = JSON.parse(event.data); } catch { return; }
+        if (!message) return;
+        if (message.event === 'onError' || message.info?.videoData?.errorCode) {
+          showPoster(true);
+        } else if (message.event === 'onReady') {
+          send({ event: 'command', func: 'addEventListener', args: ['onError'] });
+          clearLoading();
+          frame.classList.add('film-ready');
+          frame.removeAttribute('aria-hidden');
+          frame.tabIndex = 0;
+          const transferFocus = requested && document.activeElement === play;
+          play.hidden = true;
+          poster.hidden = true;
+          if (transferFocus) frame.focus({ preventScroll: true });
+        }
+      });
+
+      function start(manual) {
+        if (frame) return;
+        requested = manual;
+        attempted = true;
+        status.textContent = '';
+        play.textContent = 'Загружаем фильм…';
+        play.setAttribute('aria-label', play.textContent);
+        play.setAttribute('aria-disabled', 'true');
+        frame = document.createElement('iframe');
+        frame.id = 'about-film-player';
         frame.title = host.dataset.videoTitle;
         frame.referrerPolicy = 'strict-origin-when-cross-origin';
         frame.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
         frame.allowFullscreen = true;
-        frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0`;
-        host.replaceChildren(frame);
-        frame.focus({ preventScroll: true });
-      });
+        frame.tabIndex = -1;
+        frame.setAttribute('aria-hidden', 'true');
+        const params = new URLSearchParams({ autoplay: '1', mute: '1', controls: '1', playsinline: '1', enablejsapi: '1', origin: location.origin, rel: '0' });
+        frame.src = `${provider}/embed/${videoId}?${params}`;
+        frame.addEventListener('error', event => {
+          if (event.currentTarget === frame) showPoster(true);
+        }, { once: true });
+        host.prepend(frame);
+        // The embedded player announces readiness over postMessage. The iframe's
+        // own load event can also fire for a blocked or failed document.
+        handshake = setInterval(() => send({ event: 'listening' }), 250);
+        timeout = setTimeout(() => showPoster(true), 12000);
+      }
+
+      function checkPlayback() {
+        const saveData = reducedData.matches || navigator.connection?.saveData;
+        if (document.hidden || !onScreen || reduced.matches || saveData) {
+          if (frame && !requested) {
+            if (frame.classList.contains('film-ready')) send({ event: 'command', func: 'pauseVideo', args: [] });
+            else showPoster(false);
+          }
+        } else if (!attempted && seenEnough) start(false);
+      }
+
+      play.addEventListener('click', () => start(true));
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(([entry]) => {
+          seenEnough = entry.intersectionRatio >= .5;
+          onScreen = entry.isIntersecting;
+          checkPlayback();
+        }, { threshold: [0, .5] }).observe(host);
+        document.addEventListener('visibilitychange', checkPlayback);
+        reduced.addEventListener('change', checkPlayback);
+        reducedData.addEventListener('change', checkPlayback);
+        navigator.connection?.addEventListener?.('change', checkPlayback);
+      }
     });
   }
 

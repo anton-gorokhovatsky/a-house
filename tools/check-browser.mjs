@@ -56,6 +56,37 @@ async function checkHouseVisit(page) {
   assert.ok(await residents.getByRole('link').count() >= 5, 'The House names its residents and links to them');
 }
 
+async function checkAboutFilm(page) {
+  const film = page.locator('#film');
+  const host = film.locator('.institution-video');
+  const external = film.getByRole('link', { name: 'Смотреть фильм на YouTube' });
+  const videoId = await host.getAttribute('data-content-video-url-youtube');
+  assert.equal(new URL(await external.getAttribute('href')).searchParams.get('v'), videoId);
+  const originalMotion = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await host.scrollIntoViewIfNeeded();
+  assert.equal(await host.locator('iframe').count(), 0, 'Reduced motion waits for an explicit play request');
+  const provider = 'https://www.youtube-nocookie.com/embed/';
+  const pattern = provider + '**';
+  // Exercise the site's response to an unavailable film independently of YouTube's network.
+  await page.route(pattern, route => route.fulfill({ contentType: 'text/html', body:
+    '<script>addEventListener("message", () => parent.postMessage(JSON.stringify({event:"onError",info:153}), "*"))</script>' }));
+  try {
+    const request = page.waitForRequest(req => req.url().startsWith(provider + videoId));
+    await host.getByRole('button', {name: 'Смотреть фильм об A–House'}).press('Enter');
+    const src = new URL((await request).url());
+    assert.equal(src.searchParams.get('mute'), '1');
+    assert.equal(src.searchParams.get('controls'), '1');
+    await film.getByRole('status').filter({hasText: 'Не удалось загрузить фильм'}).waitFor();
+    assert.equal(await host.locator('iframe').count(), 0);
+    assert.ok(await host.getByRole('button', {name: 'Попробовать ещё раз'}).isVisible());
+    assert.ok(await external.isVisible());
+  } finally {
+    await page.unroute(pattern);
+    await page.emulateMedia({ reducedMotion: originalMotion ? 'reduce' : 'no-preference' });
+  }
+}
+
 async function checkMobileExhibition(page) {
   const events = JSON.parse(await readFile(path.join(projectRoot, 'src/data/events.json'), 'utf8'));
   const feature = events.find(event => event.home === 'feature');
@@ -268,7 +299,7 @@ async function checkVisitorLinks(page, mobile) {
     assert.ok(await jobs.getByRole('heading', { name: 'Работа в A–House' }).isVisible());
   }
   await page.goto(url);
-  const about = page.getByRole('main').getByRole('link', {name: 'Об институции', exact: true});
+  const about = page.getByRole('main').getByRole('link', {name: 'Об A–House', exact: true});
   await about.scrollIntoViewIfNeeded();
   await activate(about);
   await page.waitForURL(url + 'about/');
@@ -276,7 +307,9 @@ async function checkVisitorLinks(page, mobile) {
   assert.ok(await page.locator('.home-masthead').isVisible());
   assert.match(await destination.getByRole('heading', {level: 1}).innerText(), /A–House/);
   assert.match(await destination.innerText(), /Architectural Association/);
-  assert.ok(await destination.locator('#patrons img').count() > 15);
+  assert.ok(await destination.locator('#principles a[href*="hf4zfkc051-otkritie-ahouse"]').isVisible());
+  assert.equal(await destination.locator('#patrons img').count(), 22);
+  if (mobile) await checkAboutFilm(page);
   await page.goBack();
   await page.waitForFunction(() => document.activeElement?.pathname.endsWith('/about/'));
   assert.equal(await page.locator('#publication-archive').isVisible(), false);
@@ -493,6 +526,22 @@ async function checkEnlargedMenu(page) {
 }
 
 async function checkEditorialGrouping(page) {
+  const festival = page.locator('.home-gathering').filter({ hasText: 'A–Fest' });
+  const countLines = await festival.locator('p').last().evaluate(async el => {
+    await document.fonts.ready;
+    const text = el.firstChild;
+    const y = offset => {
+      const range = document.createRange();
+      range.setStart(text, offset);
+      range.setEnd(text, offset + 1);
+      return range.getBoundingClientRect().top;
+    };
+    return [...text.textContent.matchAll(/(\d+)\s+(архитектурных|экскурсий)/gu)].map(match =>
+      Math.abs(y(match.index) - y(match.index + match[0].indexOf(match[2]))));
+  });
+  assert.equal(countLines.length, 2, 'Check both quantities in the A–Fest announcement');
+  assert.ok(countLines.every(delta => delta < 1), 'A quantity must share a line with the start of what it counts');
+
   const issue = page.locator('.home-current-issue');
   const group = await issue.evaluate(async el => {
     await document.fonts.ready;
@@ -719,6 +768,8 @@ async function checkConsentReturn(page) {
 async function checkHomeRoutes(page, mobile) {
   const choice = name => page.locator('[data-home-view][href="#' + name + '"]');
   const section = name => page.locator('[data-home-section][id="' + name + '"]');
+  const headingGap = name => section(name).locator('h2').first().evaluate(heading =>
+    heading.getBoundingClientRect().top - document.getElementById('t-header').getBoundingClientRect().bottom);
   await checkReadingReturn(page, mobile);
   await page.goto(url);
   await checkEditorialGrouping(page);
@@ -728,9 +779,15 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await section('media').isVisible(), true);
   assert.equal(await section('club').isVisible(), false, 'The overview must keep club details in their own view');
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  const more = page.locator('.home-section-tail a[href="#publications"]');
+  const printArchive = page.locator('.home-print').getByRole('link', {name: 'Архив печатных номеров', exact: true});
+  await printArchive.press('Enter');
+  await page.waitForURL(url + 'press/#print-archive');
+  assert.ok(await page.locator('#print-archive .press-file').first().isVisible());
+  await page.goBack();
+  const more = page.locator('#media > .home-section-head').getByRole('link', {name: 'Статьи и репортажи'});
   await more.press('Enter');
-  const publications = page.getByRole('region', { name: 'Другие публикации' });
+  const publications = page.getByRole('group', { name: 'Статьи и репортажи' });
+  assert.ok(await page.getByRole('heading', {name: 'Статьи и репортажи', exact: true}).isVisible());
   assert.equal(new URL(page.url()).hash, '#publications');
   assert.ok(await publications.locator('.home-kicker').first().evaluate(async el => {
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -764,13 +821,14 @@ async function checkHomeRoutes(page, mobile) {
   await choice('media').click();
   await section('media').waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media');
+  const readingGap = await headingGap('media');
   assert.equal(await choice('media').getAttribute('aria-current'), 'true');
   assert.equal(await section('program').isVisible(), false);
   const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
   await page.evaluate(() => { location.hash = 'publications'; });
   await page.waitForFunction(() => {
-    const first = document.querySelector('#publications h3').getBoundingClientRect();
+    const first = document.querySelector('.home-dispatches h3').getBoundingClientRect();
     return first.top >= 0 && first.top < innerHeight;
   });
   await page.goBack();
@@ -787,6 +845,8 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await page.locator('dialog[open]').count(), 0);
   await page.goto(url + '#visit');
   await section('visit').waitFor({ state: 'visible' });
+  assert.ok(readingGap > 0 && Math.abs(await headingGap('visit') - readingGap) <= 1,
+    'The house addresses and reading sections must start at the same distance below the masthead');
   await section('visit').locator('a[href$="/residents/"]').first().click();
   await page.waitForURL(url + 'residents/');
 }

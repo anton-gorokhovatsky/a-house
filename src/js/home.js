@@ -1,6 +1,9 @@
 (() => {
   const overview = document.getElementById('overview');
   const readingHighlights = document.querySelector('.reading-highlights');
+  const readingHeading = document.getElementById('publications');
+  const readingTitle = readingHeading.textContent;
+  const articlesLink = document.getElementById('reading-articles-link');
   const sections = [...document.querySelectorAll('[data-home-section]')];
   const choices = [...document.querySelectorAll('[data-home-view]')];
   const links = [...document.querySelectorAll('a')];
@@ -26,7 +29,9 @@
     const context = target?.closest('.home-footer') ? document.getElementById(history.state?.homeContext || '') : target;
     const selected = viewFor(context);
     overview.dataset.view = selected?.id || 'overview';
-    readingHighlights.hidden = context?.id === 'publications';
+    readingHighlights.hidden = context === readingHeading;
+    articlesLink.hidden = readingHighlights.hidden;
+    readingHeading.textContent = readingHighlights.hidden ? articlesLink.textContent : readingTitle;
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
@@ -51,15 +56,8 @@
   }
 
   function scrollToTarget(target, behavior = 'instant') {
-    if (target.id === 'publications') {
-      // Keep the section heading and masthead in view if the first headline fits.
-      // The same margin also applies when the browser follows the initial fragment.
-      const firstHeadline = target.querySelector('h3');
-      const fits = firstHeadline && firstHeadline.getBoundingClientRect().bottom + scrollY <= innerHeight;
-      target.style.scrollMarginBlockStart = fits ? target.getBoundingClientRect().top + scrollY + 'px' : '0px';
-    }
     // Section entries start with the masthead. A deeper link goes straight to its content.
-    if (target === overview || target.hasAttribute('data-home-section')) {
+    if (target === overview || target === readingHeading || target.hasAttribute('data-home-section')) {
       window.scrollTo({ top: 0, behavior });
     } else {
       target.scrollIntoView({ block: 'start', behavior });

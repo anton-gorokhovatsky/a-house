@@ -11,6 +11,27 @@ const dayMonth = new RegExp('(?<=\\d) (?=' + month + '(?!\\p{L}))', 'giu');
 const monthYear = new RegExp('(?<!\\p{L})(' + month + ') (?=\\d{4}(?!\\d))', 'giu');
 const shortWord = /(?<![\p{L}\p{N}@./_–-])(а|в|и|к|о|с|у|во|до|за|из|ко|на|об|от|по|со|без|для|при) (?=[«„(]?[\p{L}\d№])/giu;
 
+// A number may also be an issue number, an address or a clause reference.
+// Bind counts in editorial prose using the things the site actually counts.
+const countedTerms = [
+  'бюро', 'архитектор(?:а|ов)?', 'участник(?:а|ов)?', 'человек(?:а)?', 'команд(?:а|ы)?',
+  'куратор(?:а|ов)?', 'компани[яиюй]', 'галере[яиюй]', 'победител(?:ь|я|ей)',
+  'экскурси[яиюй]', 'лекци[яиюй]', 'встреч[ауи]?', 'выстав(?:ка|ки|ок)', 'событи[еяй]',
+  'проект(?:а|ов)?', 'работ[ауые]?', 'издани[еяй]', 'выпуск(?:а|ов)?', 'стат(?:ья|ьи|ей)',
+  'страниц[ауые]?', 'пункт(?:а|ов)?', 'мест[ао]?', 'объект(?:а|ов)?', 'высказывани[еяй]',
+  'д(?:ень|ня|ней)', 'недел[яиюь]', 'месяц(?:а|ев)?', 'век(?:а|ов)?',
+  'миллион(?:а|ов)?', 'тысяч[аиу]?', 'млн', 'тыс', 'смерт(?:ь|и|ей)'
+].join('|');
+const adjective = '[а-яё-]+(?:ая|яя|ый|ой|ий|ое|ее|ые|ие|ую|юю|ых|их|ого|его)';
+const count = new RegExp('(?<![\\p{L}\\p{N}.,:/_])' +
+  '(\\d+(?:[ \\u00a0\\u202f]\\d{3})*(?:[.,]\\d+)?) (?=(?:' + adjective + ' )?(?:' +
+  countedTerms + ')(?!\\p{L}))', 'giu');
+
+function formatCount(match, number, offset, text) {
+  if (/(?:№|(?:пп?|подп|абз|ч|ст|стр|д)\.)\s$/iu.test(text.slice(Math.max(0, offset - 12), offset))) return match;
+  return number.replace(/[ \u00a0]/gu, '\u202f') + '\u00a0';
+}
+
 function wrapNames(text, pattern) {
   return text.replace(pattern, name => '<span class="project-name">' + name + '</span>')
     .replace(/«([АA][-‑–—]ком)(мью)(ни)(кейшнс)»/giu,
@@ -23,6 +44,7 @@ function russianSpacing(text) {
   return text.replace(shortWord, '$1\u00a0')
     .replace(dayMonth, '\u00a0')
     .replace(monthYear, '$1\u00a0')
+    .replace(count, formatCount)
     .replace(/(?<=№)[ \u00a0](?=\d)/gu, '\u202f')
     .replace(/(?<=\d)[ \u00a0](?=\d{3}(?:[ \u00a0\u202f]\d{3})*(?:[,.]\d+)?[ \u00a0]₽)/gu, '\u202f')
     .replace(/(?<=\d) (?=₽|%|(?:минут[ауы]?|час(?:а|ов)?|год(?:а|у)?|лет|г\.)(?!\p{L}))/giu, '\u00a0')
@@ -49,7 +71,11 @@ export function typesetText(html) {
       const end = offset + parts[part].length;
       const result = formatted.slice(offset, end);
       // Keep the original whitespace and entities of an unchanged text node.
-      tokens[index] = wrapNames(result === parts[part] ? tokens[index] : result, homeProjectName);
+      const visible = result === parts[part] ? tokens[index] : result;
+      // The festival description, project directory and About page share this compound.
+      // Give narrow measures a word boundary before the browser breaks off its last letter.
+      tokens[index] = wrapNames(visible, homeProjectName)
+        .replace(/(?<![\p{L}\p{N}@./_-])(строй)(?=площад[ко])/giu, '$1\u00ad');
       offset = end;
     }
     run.length = 0;

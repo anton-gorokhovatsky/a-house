@@ -27,6 +27,7 @@ function sectionContent(section) {
   const photos = section.photos ? '<div class="institution-photos">' + section.photos.map(photo => figure(photo)).join('') + '</div>' : '';
   const video = section.video ? `<div class="t-video-carier institution-video" data-content-video-url-youtube="${escape(section.video)}" data-video-title="${escape(section.title)}" hidden>
     <img src="@@ROOT@@media/home/about-film.jpg" width="1280" height="720" alt="" loading="lazy"></div>
+    <p class="institution-film-status" role="status"></p>
     <a class="institution-film-link" href="https://www.youtube.com/watch?v=${escape(section.video)}">Смотреть фильм на YouTube</a>` : '';
   const program = section.program ? '<!-- VENUE PROGRAM ' + section.program + ' -->' : '';
   return paragraphs + program + items + people + photos + video + links(section.links);

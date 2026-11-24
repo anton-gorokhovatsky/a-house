@@ -1,4 +1,4 @@
-.membership-page { padding-block: clamp(2rem, 4.7vw, 5rem) var(--chapter); }
+.membership-page { padding-block: var(--page-entry) var(--chapter); }
 .membership-layout {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .87fr);
   gap: clamp(3.5rem, 8vw, 8rem); max-width: 76rem; margin-inline: auto;

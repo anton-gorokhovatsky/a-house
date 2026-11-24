@@ -4,7 +4,7 @@
   max-width: var(--measure);
   container: club-content / inline-size;
   margin-inline: auto;
-  padding: clamp(2.25rem, 5vw, 5rem) var(--edge) var(--chapter);
+  padding: var(--page-entry) var(--edge) var(--chapter);
 }
 
 .club-intro,

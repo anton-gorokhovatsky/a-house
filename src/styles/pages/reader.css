@@ -3,9 +3,10 @@
   max-inline-size: 67rem;
   min-block-size: 0;
   margin-inline: auto;
-  padding: clamp(1.25rem, 3.3vw, 3.5rem) var(--edge) var(--chapter);
+  padding: var(--page-entry) var(--edge) var(--chapter);
   font: 400 var(--copy-size)/1.48 var(--text);
 }
+.home-page .publication-reader { padding-block-start: var(--page-entry-with-back-link); }
 .home-page .publication-heading h1 {
   margin: .3em 0 0;
   color: var(--ink);

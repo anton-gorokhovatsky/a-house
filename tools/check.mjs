@@ -18,6 +18,14 @@ const typesetSample = '<p>В\u00a0' + linkTag + 'Доме</a> до\u00a0<time>29
 if (typesetText(sample) !== typesetSample || typesetText('<p>(п. 2.4.1)</p>') !== '<p>(п.\u00a02.4.1)</p>') {
   errors.push('Typography must preserve inline markup, clause references and form values');
 }
+const countSample = '<p>19 <em>архитектурных</em> бюро и 10 экскурсий. 2 000 участников. № 7 о дизайне. См. п. 2 статьи 6.</p>';
+const countExpected = '<p>19\u00a0<em>архитектурных</em> бюро и\u00a010\u00a0экскурсий. 2\u202f000\u00a0участников. №\u202f7 о\u00a0дизайне. См. п.\u00a02 статьи 6.</p>';
+if (typesetText(countSample) !== countExpected) {
+  errors.push('A count must stay with its noun or first adjective, including across markup');
+}
+if (typesetText('<p>на стройплощадки</p>') !== '<p>на\u00a0строй\u00adплощадки</p>') {
+  errors.push('Narrow screens need a natural break inside стройплощадки');
+}
 
 const files = new Set();
 async function inventory(directory) {
