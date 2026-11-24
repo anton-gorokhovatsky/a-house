@@ -348,7 +348,8 @@ async function checkVisitorLinks(page, mobile) {
   assert.deepEqual(await editions.locator('.home-editions article h4').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
   assert.deepEqual(await editions.locator('.home-editions h4 a').evaluateAll(links => links.map(link => link.hash)),
     printCatalog.map(series => '#' + (series.archiveAnchor || series.seriesId)), 'Every print series opens its own archive');
-  assert.equal(await editions.locator('.editions-access a[href="#services-checkout"]').count(), 1);
+  assert.equal(await editions.locator(':scope > .editions-access a[href="#services-checkout"]').count(), 1, 'Subscription terms belong to the publisher, outside individual issues');
+  assert.equal(await editions.locator(':scope > .editions-access a[href$="press/#distribution"]').count(), 1);
   for (const work of projects.flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
     const example = page.locator('.project-examples a').filter({hasText: work.title});
     assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
@@ -373,7 +374,7 @@ async function checkVisitorLinks(page, mobile) {
     return top >= 0 && top < innerHeight / 2;
   });
   await page.goto(url);
-  await activate(page.getByRole('main').getByRole('link', { name: 'Все проекты', exact: true }));
+  await activate(page.getByRole('main').getByRole('link', { name: 'Все проекты A–House', exact: true }));
   await page.waitForURL(url + '#projects');
   assert.equal(await page.locator('#projects .home-project-row:visible').count(), projects.length);
   const press = page.locator('#a-media .home-project-row[href$="/press/"]');
@@ -418,22 +419,22 @@ async function checkVisitorLinks(page, mobile) {
   await page.waitForURL(url + 'press/#a-sport');
   assert.ok(await page.locator('#a-sport-02').isVisible());
   await page.goto(url + '#issue-a-sport');
-  assert.equal(new URL(page.url()).hash, '#issue-a-sport');
-  const photo = page.locator('#issue-a-sport img');
-  await photo.evaluate(image => image.decode());
-  assert.deepEqual(await photo.evaluate(image => [image.naturalWidth, image.naturalHeight]), [645, 800]);
+  await page.waitForURL(url + 'press/#a-sport-02');
+  assert.ok(await page.locator('#a-sport-02 .press-file').isVisible());
   await page.goto(url + '#publications');
-  const archive = page.getByRole('region', {name: 'Архив публикаций'});
-  assert.ok(await archive.getByRole('heading', {name: 'Архив публикаций'}).isVisible());
+  await page.waitForURL(url + 'archive/');
+  const archive = page.getByRole('main');
+  assert.ok(await archive.getByRole('heading', {name: 'Архив сайта A–House', level: 1}).isVisible());
+  const all = await archive.locator('.publication-list li').count();
   const design = archive.getByRole('link', {name: 'Дизайн', exact: true});
   await activate(design);
-  await page.waitForURL(url + '#publication-archive-design');
-  const rows = archive.locator('.publication-list li:visible');
-  assert.ok(await rows.count() > 0);
+  await page.waitForURL(url + 'archive/design/');
+  const rows = archive.locator('.publication-list li');
+  assert.ok(await rows.count() > 0 && await rows.count() < all);
   assert.ok(await rows.evaluateAll(items => items.every(item => item.dataset.archiveTopics.split(' ').includes('design'))));
   await page.goBack();
-  await page.waitForURL(url + '#publications');
-  await page.waitForFunction(() => !document.querySelector('#publication-archive .publication-list [hidden]'));
+  await page.waitForURL(url + 'archive/');
+  assert.equal(await rows.count(), all);
 }
 
 async function checkFooterDocuments(page, mobile) {
@@ -541,6 +542,41 @@ async function checkEnlargedMenu(page) {
   const documents = page.getByRole('navigation', { name: 'Документы' });
   assert.equal(await documents.getByRole('link').count(), 4);
   assert.ok(await documents.getByRole('link').last().isVisible());
+
+  await page.goto(url);
+  await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+  await page.evaluate(() => document.fonts.ready);
+  const vacancies = page.locator('.home-ways a[href="#industry"]');
+  await vacancies.evaluate(el => el.scrollIntoView({block: 'center'}));
+  const lastWord = await vacancies.evaluate(el => {
+    const text = el.firstChild;
+    const word = 'вакансию';
+    const start = text.textContent.indexOf(word);
+    const range = document.createRange();
+    range.setStart(text, start);
+    range.setEnd(text, start + word.length);
+    const rect = range.getBoundingClientRect();
+    return {x: rect.x + rect.width / 2, y: rect.y + rect.height / 2};
+  });
+  await page.mouse.click(lastWord.x, lastWord.y);
+  await page.waitForURL(url + '#industry');
+
+  await page.goto(url + 'press/#a-sport');
+  await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+  await page.locator('#a-sport').evaluate(el => el.scrollIntoView({block: 'start'}));
+  await page.waitForFunction(() => {
+    const header = document.querySelector('#t-header').getBoundingClientRect();
+    return scrollY > innerHeight && Math.abs(header.top) < 1 &&
+      document.querySelector('#a-sport').getBoundingClientRect().top >= header.bottom - 1;
+  });
+  const readingPosition = await page.evaluate(() => scrollY);
+  await toggle.evaluate(el => el.focus({preventScroll:true}));
+  await page.keyboard.press('Enter');
+  assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+  await page.keyboard.press('Escape');
+  assert.ok(await toggle.evaluate(el => el === document.activeElement));
+  assert.ok(Math.abs(await page.evaluate(() => scrollY) - readingPosition) < 2,
+    'Opening the mobile menu and closing it must preserve the position in the issue archive');
 }
 
 async function checkEditorialGrouping(page) {
@@ -637,8 +673,8 @@ async function checkEditorialGrouping(page) {
 async function checkArchiveReading(page) {
   const missing = await page.goto(url + 'missing-publication-for-browser-check/');
   assert.equal(missing.status(), 404);
-  await page.getByRole('main').getByRole('link', { name: /в архив публикаций/i }).click();
-  await page.waitForURL(url + '#publication-archive');
+  await page.getByRole('main').getByRole('link', { name: /в архив сайта/i }).click();
+  await page.waitForURL(url + 'archive/');
   const listing = page.getByRole('main').getByRole('list', {name: 'Публикации', exact:true});
   const articles = listing.getByRole('link');
   const index = Math.floor(await articles.count() / 2);
@@ -668,8 +704,8 @@ async function checkArchiveReading(page) {
     assert.ok(await articles.nth(index + 1).evaluate(link => link === document.activeElement), 'Tab must continue to the next publication');
     await page.goForward();
   }
-  await main.getByRole('link', { name: /к архиву публикаций/i }).click();
-  await page.waitForURL(url + '#publication-archive');
+  await main.getByRole('link', { name: /в архив сайта/i }).click();
+  await page.waitForURL(url + 'archive/');
   assert.ok(await listing.getByRole('link', { name: title, exact: true }).isVisible(),
     'The archive must contain the same article on return');
 
@@ -721,7 +757,10 @@ async function checkClubApplication(page) {
   const memberOpen = Boolean(membershipSettings('member'));
   assert.equal(await card.locator('.club-application-status').count(), memberOpen ? 0 : 1);
   const action = memberOpen ? 'Подать заявку' : 'Посмотреть анкету';
-  await card.getByRole('link', { name: action + ' по программе ' + programName }).click();
+  const application = card.getByRole('link', { name: action + ' по программе ' + programName });
+  await application.evaluate(link => link.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  const position = await application.evaluate(link => ({ href: link.href, top: link.getBoundingClientRect().top }));
+  await application.click();
   await page.waitForURL(url + 'member/?offer=patron');
   assert.equal(await page.locator('.home-masthead').count(), 1);
   const form = page.locator('#member-form');
@@ -733,6 +772,8 @@ async function checkClubApplication(page) {
   await page.goBack();
   await card.waitFor();
   assert.equal(new URL(page.url()).hash, '#programs');
+  await page.waitForFunction(({ href, top }) => document.activeElement?.href === href &&
+    Math.abs(document.activeElement.getBoundingClientRect().top - top) <= 2 && history.scrollRestoration === 'auto', position);
   await page.goto(url + '#services-checkout');
   const friendOpen = Boolean(membershipSettings('friend'));
   assert.equal(await page.locator('#friend-availability').count(), friendOpen ? 0 : 1);
@@ -796,13 +837,14 @@ async function checkHomeRoutes(page, mobile) {
   const section = name => page.locator('[data-home-section][id="' + name + '"]');
   const headingGap = name => section(name).locator('h2').first().evaluate(heading =>
     heading.getBoundingClientRect().top - document.getElementById('t-header').getBoundingClientRect().bottom);
-  for (const anchor of ['visit', 'publications', 'services-checkout']) {
+  for (const [anchor, title] of [['visit', 'Дома и адреса'], ['media', 'Журнал и издательство'], ['services-checkout', 'A–Friend']]) {
     await page.goto(url + '#' + anchor);
+    assert.equal(await page.title(), title + ' — A–House');
     await page.locator('.skip-content').press('Enter');
     assert.equal(page.url(), url + '#' + anchor, 'Skipping the header must preserve the selected view');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'site-content');
     await page.keyboard.press('Tab');
-    const visibleSection = section(anchor === 'publications' ? 'media' : anchor);
+    const visibleSection = section(anchor);
     assert.ok(await visibleSection.evaluate(el => el.contains(document.activeElement)),
       'Reading must continue inside the original section');
   }
@@ -820,18 +862,12 @@ async function checkHomeRoutes(page, mobile) {
   await page.waitForURL(url + 'press/#print-archive');
   assert.ok(await page.locator('#print-archive .press-file').first().isVisible());
   await page.goBack();
-  const more = page.locator('#media > .home-section-head').getByRole('link', {name: 'Статьи и репортажи'});
-  await more.press('Enter');
-  const publications = page.getByRole('group', { name: 'Статьи и репортажи' });
-  assert.ok(await page.getByRole('heading', {name: 'Статьи и репортажи', exact: true}).isVisible());
-  assert.equal(new URL(page.url()).hash, '#publications');
-  assert.ok(await publications.locator('.home-kicker').first().evaluate(async el => {
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    const box = el.getBoundingClientRect();
-    return box.top >= document.querySelector('#t-header').getBoundingClientRect().bottom - 1 && box.top < innerHeight;
-  }), 'Other publications must immediately reveal the first additional article');
+  const archiveLink = page.locator('.footer-meta a[href$="/archive/"]');
+  await archiveLink.press('Enter');
+  await page.waitForURL(url + 'archive/');
+  assert.ok(await page.getByRole('heading', {name:'Архив сайта A–House',level:1}).isVisible());
   await page.goBack();
-  await page.waitForFunction(link => document.activeElement === link, await more.elementHandle());
+  await page.waitForFunction(() => document.activeElement?.matches('.footer-meta a[href$="/archive/"]'));
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   assert.equal(await menu.isVisible(), mobile, 'Only a compact header needs a menu toggle');
   assert.equal(await choice('media').isVisible(), !mobile, 'Desktop sections should be visible before interaction');
@@ -876,13 +912,12 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await section('program').isVisible(), false);
   const article = section('media').locator('a[href^="https://news.ahouseproject.com/"]:not([href="https://news.ahouseproject.com/"])').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
-  await page.evaluate(() => { location.hash = 'publications'; });
-  await page.waitForFunction(() => {
-    const first = document.querySelector('.home-dispatches h3').getBoundingClientRect();
-    return first.top >= 0 && first.top < innerHeight;
-  });
+  assert.equal(await section('media').locator('.publication-list, .home-archived-issue').count(), 0);
+  await page.evaluate(() => { location.hash = 'publication-archive-design'; });
+  await page.waitForURL(url + 'archive/design/');
   await page.goBack();
   await page.waitForURL(url + '#media');
+  await page.waitForFunction(() => document.title === 'Журнал и издательство — A–House');
   if (mobile) await menu.click();
   await calendarLink.press('Enter');
   await page.waitForURL(url + 'calendar/');

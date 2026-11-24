@@ -83,8 +83,8 @@ export async function checkTheme(browser, url) {
       }
     }
     await page.goto(url + 'archive/');
-    await page.waitForURL(url + '#publication-archive');
-    await page.locator('#publication-archive .publication-list a').first().tap();
+    await page.waitForURL(url + 'archive/');
+    await page.locator('.archive-index .publication-list a').first().tap();
     await checkReadable(page.getByRole('main').getByRole('heading', {level: 1}));
     const other = await context.newPage();
     await other.goto(url + 'member/');

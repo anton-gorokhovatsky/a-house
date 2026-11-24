@@ -1,6 +1,7 @@
 <div id="allrecords" class="t-records home-page">
   <!-- EDITORIAL HEADER -->
   <main id="site-content" tabindex="-1">
+    <!-- MOVED PUBLICATION LINKS -->
     <div id="overview" class="home-editorial" tabindex="-1">
       <div class="home-introduction home-overview-only">
         <p>A–House объединяет тех, кому интересны архитектура и дизайн. Мы проводим выставки и встречи в Москве, издаём книги и журналы. <a href="@@ROOT@@about/">Об A–House</a></p>
@@ -69,55 +70,26 @@
           <!-- PROJECTS community -->
         </div>
       </section>
-      <section id="media" class="home-section home-reading" data-home-section data-overview-section tabindex="-1" aria-labelledby="publications">
+      <section id="media" class="home-section home-reading" data-home-section data-overview-section tabindex="-1" aria-labelledby="media-title">
         <div id="media-heading" class="home-section-head">
-          <h2 id="publications" tabindex="-1">Издания и&nbsp;статьи</h2>
-          <a id="reading-articles-link" href="#publications">Статьи и репор&shy;тажи</a>
+          <h2 id="media-title">{{mediaLabel}}</h2>
         </div>
         <div class="reading-highlights">
           <!-- PROJECTS news -->
           <section class="home-print" aria-labelledby="collection-editions">
             <h3 id="collection-editions"><a href="@@ROOT@@press/">A–Press</a></h3>
             <div class="press-highlights"><!-- CURRENT PRINT ISSUES --></div>
-            <div class="home-editions"><!-- PROJECTS editions --></div>
-            <article class="home-issue home-archived-issue home-detail editorial-pair" id="issue-a-sport" tabindex="-1">
-              <figure class="home-issue-cover">
-                <!-- A-SPORT PRINT -->
-              </figure>
-              <div class="home-issue-copy">
-                <div class="home-issue-title">
-                  <p class="home-kicker">Из архива · A–Sport №&#8239;2 · весна 2025</p>
-                  <h4>Движение</h4>
-                </div>
-                <div class="home-issue-story">
-                  <p>{{sportStoryText}}<span class="home-detail"> Партнёр выпуска — Upside Development.</span></p>
-                  <div class="home-links">
-                    <a class="home-primary" href="{{sportStoryHref}}">{{sportStoryTitle}}</a>
-                    <a href="@@ROOT@@press/#a-sport-02">Читать номер «Движение» в архиве</a>
-                    <a href="#collection-editions">К изданиям A–Press</a>
-                  </div>
-                </div>
+            <div class="editions-access">
+              <p>Предыдущие номера можно бесплатно прочитать в архиве. Свежие выпуски {{digitalEditions}} доступны по подписке в приложении A–House.</p>
+              <div class="home-section-tail">
+                <a href="@@ROOT@@press/#print-archive">Архив печатных номеров</a>
+                <a href="#services-checkout">{{friendAction}}</a>
+                <a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a>
               </div>
-            </article>
-            <div class="home-section-tail"><a href="@@ROOT@@press/#print-archive">Архив печатных номеров</a></div>
+            </div>
+            <div class="home-editions"><!-- PROJECTS editions --></div>
           </section>
         </div>
-        <div class="home-dispatches home-detail" role="group" aria-labelledby="reading-articles-link">
-          <article>
-            <p class="home-kicker">A–House On Air · 20&nbsp;ноября 2026</p>
-            <h3><a href="https://t.me/ahouseonair/416">«Мемфис» на&nbsp;ярмарке NOMAD в&nbsp;Абу-Даби</a></h3>
-            <p>В&nbsp;фоторепортаже с&nbsp;ярмарки&nbsp;— мебель Этторе Соттсасса и&nbsp;ковёр Натали дю&nbsp;Паскье.</p><a href="https://news.ahouseproject.com/memfis-na-ibicze-otkrytie-seth-mannis/">«Мемфис» в&nbsp;интерьере кафе на&nbsp;Ибице</a>
-          </article>
-          <article>
-            <p class="home-kicker">A–News · 17&nbsp;ноября 2026</p>
-            <h3><a href="https://news.ahouseproject.com/alina-kryukova-o-budushhem-yarmarki-catalog/">Алина Крюкова о&nbsp;будущем ярмарки |catalog|</a></h3>
-            <p>Соосновательница ярмарки рассказывает, зачем открыли конкурс для галерей и&nbsp;как знакомиться с&nbsp;современным искусством.</p>
-          </article>
-        </div>
-        <section id="publication-archive" class="home-publication-archive home-detail" aria-labelledby="archive-heading" tabindex="-1">
-          <h3 id="archive-heading">Архив публикаций</h3>
-          <!-- PUBLICATION CATALOG -->
-        </section>
       </section>
       <section id="industry" class="home-section home-industry" data-home-section tabindex="-1" aria-labelledby="industry-heading">
         <div class="home-section-head">
@@ -164,8 +136,8 @@
       </section>
       <section id="projects" class="home-section home-directory" data-home-section data-overview-section tabindex="-1" aria-labelledby="projects-heading">
         <div class="home-section-head">
-          <h2 id="projects-heading"><span id="project-stories" class="home-overview-only">Работы бюро</span><span class="home-detail">{{projectsLabel}}</span></h2>
-          <a class="home-overview-only" href="#projects">{{projectsLabel}}</a>
+          <h2 id="projects-heading"><span id="project-stories" class="home-overview-only">Архитек&shy;турные бюро</span><span class="home-detail">{{projectsLabel}}</span></h2>
+          <a class="home-overview-only" href="#projects">Все проекты A–House</a>
           <a class="home-detail" href="@@ROOT@@about/">Об&nbsp;A–House</a>
         </div>
         <div class="home-project-features home-overview-only">
@@ -179,7 +151,10 @@
         </div>
       </section>
       <section id="gatherings" class="home-section home-past-projects home-overview-only" data-home-section data-overview-section aria-labelledby="collection-gatherings" tabindex="-1">
-        <header class="home-section-head"><h2 id="collection-gatherings"><a href="@@ROOT@@calendar/#past">Архив событий</a></h2></header>
+        <header class="home-section-head">
+          <h2 id="collection-gatherings">Форум и фестиваль</h2>
+          <a href="@@ROOT@@calendar/#past">Все прошедшие события</a>
+        </header>
         <div class="home-gatherings"><!-- PROJECTS gatherings --></div>
       </section>
       <section id="services-checkout" class="home-section membership-page" data-home-section tabindex="-1" aria-labelledby="friend-heading">

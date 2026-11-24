@@ -1,9 +1,6 @@
 (() => {
+  const homeTitle = document.title;
   const overview = document.getElementById('overview');
-  const readingHighlights = document.querySelector('.reading-highlights');
-  const readingHeading = document.getElementById('publications');
-  const readingTitle = readingHeading.textContent;
-  const articlesLink = document.getElementById('reading-articles-link');
   const sections = [...document.querySelectorAll('[data-home-section]')];
   const choices = [...document.querySelectorAll('[data-home-view]')];
   const links = [...document.querySelectorAll('a')];
@@ -12,8 +9,10 @@
   function followSectionBookmark() {
     const shortcuts = { '#program': '.home-calendar-link', '#club': '#club h3 a', '#rec2309637911': '#club h3 a' };
     const selector = shortcuts[location.hash];
-    if (!selector) return false;
-    const destination = new URL(document.querySelector(selector).href);
+    const target = document.getElementById(location.hash.slice(1));
+    const link = selector ? document.querySelector(selector) : target?.closest('.home-bookmarks a');
+    if (!link) return false;
+    const destination = new URL(link.href);
     destination.search = location.search;
     location.replace(destination.href);
     return true;
@@ -29,12 +28,14 @@
     const context = target?.closest('.home-footer') ? document.getElementById(history.state?.homeContext || '') : target;
     const selected = viewFor(context);
     overview.dataset.view = selected?.id || 'overview';
-    readingHighlights.hidden = context === readingHeading;
-    articlesLink.hidden = readingHighlights.hidden;
-    readingHeading.textContent = readingHighlights.hidden ? articlesLink.textContent : readingTitle;
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
+    const heading = selected && document.getElementById(selected.getAttribute('aria-labelledby'));
+    const sectionTitle = heading?.querySelector('.home-detail') || heading;
+    document.title = sectionTitle
+      ? sectionTitle.textContent.replaceAll('\u00ad', '').replace(/\s+/g, ' ').trim() + ' — ' + homeTitle
+      : homeTitle;
     const currentSection = selected?.id || 'overview';
     for (const choice of choices) {
       if (choice.hash === '#' + currentSection) choice.setAttribute('aria-current', 'true');
@@ -57,7 +58,7 @@
 
   function scrollToTarget(target, behavior = 'instant') {
     // Section entries start with the masthead. A deeper link goes straight to its content.
-    if (target === overview || target === readingHeading || target.hasAttribute('data-home-section')) {
+    if (target === overview || target.hasAttribute('data-home-section')) {
       window.scrollTo({ top: 0, behavior });
     } else {
       target.scrollIntoView({ block: 'start', behavior });
@@ -77,14 +78,13 @@
     const target = hashTarget();
     if (openArchivedEvent(target)) return;
     const previousView = overview.dataset.view;
-    const previousHighlights = readingHighlights.hidden;
     const wasHidden = target && !target.getClientRects().length;
     displayView(target);
     cancelAnimationFrame(restoreFrame);
     const entry = history.state?.homeReturn;
     if (!entry) {
       // A pasted fragment can point into a view that was hidden during native scrolling.
-      if (target && (wasHidden || previousView !== overview.dataset.view || previousHighlights !== readingHighlights.hidden)) scrollToTarget(target);
+      if (target && (wasHidden || previousView !== overview.dataset.view)) scrollToTarget(target);
       return;
     }
     const destination = location.href;
@@ -125,9 +125,7 @@
       history.pushState(state, '', link.hash);
     }
     displayView(target);
-    if (!link.matches('#publication-archive [data-archive-topic]')) {
-      scrollToTarget(target, previousView === overview.dataset.view ? 'auto' : 'instant');
-    }
+    scrollToTarget(target, previousView === overview.dataset.view ? 'auto' : 'instant');
     if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
     target.focus({ preventScroll: true });
   });

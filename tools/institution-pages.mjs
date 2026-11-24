@@ -49,7 +49,7 @@ export function renderInstitutionPage(slug) {
     <main id="site-content" tabindex="-1" class="home-editorial institution-page">
       <header class="institution-opening${page.photo ? ' institution-opening-photo editorial-pair' : ''}">
         <div class="institution-intro">
-          <h1 class="editorial-pair-title">${escape(page.title).replace('предпринимателя', '<span class="institution-long-word">пред&shy;при&shy;ни&shy;ма&shy;те&shy;ля</span>')}</h1>
+          <h1 class="editorial-pair-title">${escape(page.title).replace('предпринимателя', '<span class="wrap-group">пред&shy;при&shy;ни&shy;ма&shy;те&shy;ля</span>')}</h1>
           <p class="institution-lead">${escape(page.lead).replace('предпринимателей', 'пред&shy;при&shy;ни&shy;ма&shy;те&shy;лей')}</p>
           ${page.intro ? '<p>' + escape(page.intro) + '</p>' : ''}
           ${links(page.links)}

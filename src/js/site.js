@@ -212,17 +212,40 @@ document.addEventListener('click', event => {
     return;
   }
   const matches = [...document.links].filter(item => item.href === link.href);
-  const visitorReturn = { href: link.href, occurrence: matches.indexOf(link), top: link.getBoundingClientRect().top };
+  const visitorReturn = { from: location.href, href: link.href, occurrence: matches.indexOf(link), top: link.getBoundingClientRect().top };
+  // WebKit can otherwise jump back to the fragment after restoring the visible link.
+  const restoreFragment = location.hash && !header?.contains(link) && history.scrollRestoration === 'auto';
+  if (restoreFragment) visitorReturn.restoreAutomaticScroll = true;
   history.replaceState({ ...history.state, visitorReturn }, '');
+  if (restoreFragment) history.scrollRestoration = 'manual';
 });
 
 window.addEventListener('pageshow', event => {
   const entry = history.state?.visitorReturn;
-  if (!entry || !(event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) return;
+  if (!entry) return;
+  const returning = event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
+  const state = { ...history.state };
+  delete state.visitorReturn;
+  history.replaceState(state, '');
+  if (entry.from && entry.from !== location.href) return;
+  if (entry.restoreAutomaticScroll) history.scrollRestoration = 'auto';
+  if (!returning) return;
   const link = [...document.links].filter(item => item.href === entry.href)[entry.occurrence];
-  if (!link) return;
-  for (let details = link.closest('details'); details; details = details.parentElement.closest('details')) details.open = true;
-  requestAnimationFrame(() => {
+  const input = new AbortController();
+  for (const type of ['keydown', 'pointerdown', 'wheel', 'pagehide']) {
+    window.addEventListener(type, () => input.abort(), { capture: true, passive: true, signal: input.signal });
+  }
+  requestAnimationFrame(async () => {
+    if (entry.restoreAutomaticScroll && link && !input.signal.aborted) {
+      // On a recreated WebKit page, layout and the sticky header can still be using fallback fonts.
+      link.getBoundingClientRect();
+      await document.fonts.ready;
+      await new Promise(resolve => requestAnimationFrame(resolve));
+    }
+    const interrupted = input.signal.aborted;
+    input.abort();
+    if (!link || interrupted || (entry.from && entry.from !== location.href)) return;
+    for (let details = link.closest('details'); details; details = details.parentElement.closest('details')) details.open = true;
     let target = link;
     if (link.closest('.site-navigation[hidden]')) target = header?.querySelector('.site-menu-toggle');
     else if (link.closest('.site-submenu[hidden]')) target = header?.querySelector('.site-presence-toggle');

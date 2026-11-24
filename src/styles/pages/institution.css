@@ -1,4 +1,5 @@
 .home-page .institution-page {
+  inline-size: 100%;
   max-width: var(--measure);
   margin-inline: auto;
   padding: var(--page-entry) var(--edge) var(--chapter);
@@ -22,7 +23,6 @@
 .institution-intro {
   container: institution-intro / inline-size;
 }
-.institution-long-word { display: inline-block; max-inline-size: 100%; hyphens: manual; }
 
 .home-page .institution-intro h1 {
   max-inline-size: 100%;
@@ -84,6 +84,9 @@
 .home-page .institution-section h2 {
   margin: 0;
   text-align: left;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  hyphenate-limit-chars: 7 3 3;
 }
 
 .home-page .institution-copy > * + :is(p, dl, ul, .institution-photos, .institution-video) {
@@ -213,7 +216,9 @@
 
 @container institution-intro (max-width: 17em) {
   .home-page .institution-intro h1 {
-    hyphens: manual;
+    hyphens: auto;
+    hyphenate-limit-chars: 7 3 3;
+    overflow-wrap: break-word;
   }
 
   .institution-intro h1 .project-name {
@@ -226,6 +231,8 @@
 
 @media (max-width: 27em) {
   .institution-page .project-name {
+    display: inline-block;
+    max-inline-size: 100%;
     white-space: normal;
     overflow-wrap: anywhere;
   }

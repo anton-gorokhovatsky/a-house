@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { membershipSettings, projectRoot, siteBase } from './build.mjs';
+import { formatSiteVersion, membershipSettings, projectRoot, siteBase } from './build.mjs';
 import { eventDestination, routesWithEvents } from './calendar.mjs';
 import { collectArchive, printArchiveFileNames } from './archive.mjs';
 import { typesetText } from './typography.mjs';
@@ -77,6 +77,7 @@ for (const file of htmlFiles) {
   if (!/<meta\b[^>]*\bname="robots"[^>]*\bcontent="[^"]*\bnoindex\b/i.test(source)) errors.push(file+' lacks noindex');
   if (!/<h1\b|role="heading" aria-level="1"/i.test(source)) errors.push(file+' lacks its page heading');
   if (source.includes('@@ROOT@@') || /\{\{[\w.]+\}\}/.test(source)) errors.push(file+' has an unresolved template');
+  if (source.includes('#nbsp;')) errors.push(file+' contains an unconverted Tilda space');
   if (file === 'calendar/index.html') {
     for (const event of events) {
       const destination = eventDestination(event, base + 'calendar/').replaceAll('&', '&amp;');
@@ -86,10 +87,13 @@ for (const file of htmlFiles) {
     }
   }
   const topic = archive.topicRoutes.find(page => page.slug + '/index.html' === file)?.archiveTopic;
-  if (topic || file === 'index.html' || file === 'archive/index.html') {
+  if (topic || file === 'archive/index.html') {
     const articles = [...source.matchAll(/<li data-archive-topics="[^"]*">\s*(?:<time\b[^>]*>[\s\S]*?<\/time>\s*)?<div><a href="([^"]+)"/g)].map(([, url]) => url);
     const expected = (topic ? topic.articles : [...archive.articles.keys()]).map(slug => base + slug + '/');
     if (JSON.stringify(articles) !== JSON.stringify(expected)) errors.push(file + ' has an incorrect selection of publications');
+  }
+  if (file === 'index.html' && (source.includes('class="publication-catalog"') || source.includes('home-archived-issue'))) {
+    errors.push('The media overview must keep site articles and archived print issues in their own catalogues');
   }
   const head = source.slice(0, source.indexOf('</head>'));
   const styles = [...head.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)];
@@ -142,10 +146,20 @@ for (const file of htmlFiles) {
 }
 
 // Bookmarks and partner programmes can open any HTML document directly.
-const versionTag = [...documents.values()][0].match(/<p class="site-version">([^<]+)<\/p>/)?.[0];
-if (!versionTag || !/Версия сайта[\s\u00a0]+[1-9]\d*|Локальная сборка/.test(versionTag)) {
-  errors.push('Missing readable site version');
+const versionTag = [...documents.values()][0].match(/<p class="site-version">.*?<\/p>/)?.[0];
+const timestamp = versionTag?.match(/<time datetime="([^"]+)">/)?.[1];
+const localVersion = '<p class="site-version">Локальная сборка</p>';
+if (timestamp && Number.isFinite(Date.parse(timestamp))) {
+  const expected = typesetText('<p class="site-version">' + formatSiteVersion(timestamp) + '</p>');
+  if (versionTag !== expected) errors.push('The visible site version must match its machine-readable date');
+} else if (versionTag !== localVersion || process.env.GITHUB_ACTIONS === 'true') {
+  errors.push('Missing dated site version');
 }
+if (!formatSiteVersion('2026-12-31T21:07:00Z').includes('1 января 2027, 00:07 мск')) {
+  errors.push('Site versions must use the date and time in Moscow, including around midnight');
+}
+const documentsCitingOfficialSite = new Set(['politic_a-com/index.html', 'rules/index.html']);
+const citedSite = 'https://ahouseproject.com/';
 for (const [file, html] of documents) {
   if (!html.includes(versionTag) || !html.includes('class="skip-content" href="#site-content"')) {
     errors.push(file + ' is missing the shared version or the skip link');
@@ -155,9 +169,16 @@ for (const [file, html] of documents) {
       /\bclass="[^"]*\b(?:t-rec|t396__artboard)\b/.test(main)) {
     errors.push('Direct entry renders a legacy layout at ' + file);
   }
-  for (const [,href] of html.matchAll(/<a\b[^>]*?\shref="([^"]+)"/gi)) {
+  const legalCopy = documentsCitingOfficialSite.has(file) && html.match(/<div\b[^>]*\bclass="document-copy"[^>]*>[\s\S]*?<\/article>/);
+  for (const link of html.matchAll(/<a\b[^>]*?\shref="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+    const [, href, label] = link;
     const address = new URL(href.replaceAll('&amp;', '&'), 'https://preview.invalid' + base + file);
-    if (/^(?:www\.)?ahouseproject\.com$/i.test(address.hostname)) {
+    const inLegalCopy = legalCopy && link.index >= legalCopy.index && link.index < legalCopy.index + legalCopy[0].length;
+    const exactCitation = inLegalCopy && label === citedSite && href === citedSite;
+    if (inLegalCopy && (label.startsWith('https://ahouseproject.com') || label === '/') && !exactCitation) {
+      errors.push(file + ' splits the cited site address or links it to a different URL');
+    }
+    if (/^(?:www\.)?ahouseproject\.com$/i.test(address.hostname) && !exactCitation) {
       errors.push(file + ' sends the visitor to the old A–House website: ' + address.href);
     }
     if (address.origin !== 'https://preview.invalid' || !address.pathname.startsWith(base)) continue;

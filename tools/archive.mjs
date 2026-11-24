@@ -64,7 +64,7 @@ export async function renderPrintArchive(editions, getFileSize) {
   return `<nav class="press-page-links print-series-nav" aria-label="Издания в архиве">${navigation}</nav>${groups.join('\n')}`;
 }
 
-export function renderCurrentPrintIssues(issues, editions, projects) {
+export function renderCurrentPrintIssues(issues, projects) {
   const current = issues.filter(issue => issue.latest)
     .sort((a, b) => b.latest.published.localeCompare(a.latest.published))[0];
   const { edition, latest } = current;
@@ -75,15 +75,14 @@ export function renderCurrentPrintIssues(issues, editions, projects) {
     const { cover } = issue;
     const subscriberIssue = issue === regular;
     const more = issue.announcement ? ` <a href="${escape(issue.announcement)}">О выпуске в Telegram</a>` : '';
-    const access = subscriberIssue
-      ? `<div class="editions-access"><p>Свежие выпуски ${escape(editions)} доступны в приложении A–House по подписке.</p>
-        <div class="home-links"><a href="#services-checkout">{{friendAction}}</a><a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a></div></div>`
-      : `<div class="home-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`;
+    const articleLink = issue.article
+      ? `<div class="home-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`
+      : '';
     return `<article class="home-issue ${index === 0 ? 'home-current-issue' : 'home-companion-issue'} editorial-pair">
       ${cover ? `<figure class="home-issue-cover"><img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy"></figure>` : ''}
       <div class="home-issue-copy">
-        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер по подписке' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h4>${escape(issue.title)}</h4></div>
-        <div class="home-issue-story">${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}${access}</div>
+        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h4>${escape(issue.title)}</h4></div>
+        <div class="home-issue-story">${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}${articleLink}</div>
       </div>
     </article>`;
   }).join('\n');
@@ -97,11 +96,24 @@ export function renderSubscriptionEntries(issues) {
 }
 
 const dateFormat = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-const issueLinks = new Map([
-  ['tpost/f0997i9441-anews-2', ['a-news-02', 'Читать второй номер A–News']],
-  ['tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so', ['a-kids-01', 'Читать первый A–Kids — для взрослых и для детей']]
+const relatedReading = new Map([
+  ['tpost/f0997i9441-anews-2', { href: '@@ROOT@@press/#a-news-02', title: 'Читать второй номер A–News' }],
+  ['tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so', { href: '@@ROOT@@press/#a-kids-01', title: 'Читать первый A–Kids — для взрослых и для детей' }],
+  ['tpost/17xaum7r91-translyatsiya-paris-design-week', {
+    href: 'https://t.me/ahouseproject/832', title: 'Итоги Парижской недели дизайна в Telegram', published: '2023-09-18'
+  }],
+  ['tpost/pz3nj2pcg1-3daysofdesign-2024-translyatsiya-iz-kope', {
+    href: 'https://t.me/ahouseproject/1989', title: 'Первый день 3daysofdesign в Telegram', published: '2024-06-12'
+  }]
 ]);
 const imageDescriptions = new Map([
+  ['media/ALecture_0607_23_cli-6f77cadab8e4.jpg', 'Экран в тёмном зале. На заставке написано «Кинопоказ и обсуждение „Молодость“».'],
+  ['media/ALecture_0607_10-aed95ac412d5.jpg', 'За столом участница встречи жестикулирует во время разговора. На переднем плане видны слушатели.'],
+  ['media/ALecture_0607_21_cli-509881034f51.jpg', 'Лектор у экрана. На слайде написано «Хороший архитектор проектирует не пространства, а сюжеты, которые будут в них происходить».'],
+  ['media/ALecture_0607_9-5013cc391aae.jpg', 'Среди деревьев стоит тёмный павильон с узорчатым фасадом. Под карнизом светится ряд круглых окон.'],
+  ['media/ALecture_0607_22-9c2fd70a7be6.jpg', 'Гости с бокалами стоят и сидят вокруг дивана. Один из гостей снимает встречу на телефон.'],
+  ['media/ALecture_0607_19_cli-117be641a686.jpg', 'На белых подиумах выставлены цветные предметы дизайна. Справа стоит кресло с круглой красной спинкой.'],
+  ['media/pinacoteca-di-brera-64bf6fa6564f.jpeg', 'Два яруса аркад окружают внутренний двор пинакотеки Брера. В центре двора на постаменте стоит статуя.'],
   ['media/1_1-28bcddfdcb71.webp', 'Обложка второго номера A–News. В старинном интерьере у стены сложены разноцветные ткани.'],
   ['media/AKIDS_Adult_Cover-a5188dc68d2d.jpg', 'Обложка A–Kids для родителей с рисунком разноцветного куба.'],
   ['media/AKIDS_Cover-2705e2de13ce.jpg', 'Детская сторона журнала A–Kids с нарисованной парой глаз.'],
@@ -126,6 +138,28 @@ function sizeImages(html) {
   });
 }
 
+// Tilda sometimes linked a piece of punctuation separately from the name beside it.
+function rejoinPublicationLinks(paragraph) {
+  const namedDestinations = new Set();
+  for (const [, href, label] of paragraph.matchAll(/<a\b[^>]*\bhref="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+    if (/[\p{L}\p{N}]/u.test(label.replace(/<[^>]*>/g, ''))) namedDestinations.add(href);
+  }
+  const text = paragraph.replace(/<a\b[^>]*\bhref="([^"]+)"[^>]*>([\p{P}]+)<\/a>/gu,
+    (tag, href, punctuation) => namedDestinations.has(href) ? punctuation : tag);
+
+  // Adjacent parts of one label may also have been split across identical links.
+  let opening = '';
+  return text.replace(/<a\b[^>]*>|<\/a>((?:\s|&nbsp;)*)(<a\b[^>]*>)/gi, (tag, space, nextOpening) => {
+    if (!nextOpening) {
+      opening = tag;
+      return tag;
+    }
+    const sameLink = nextOpening === opening;
+    opening = nextOpening;
+    return sameLink ? space : tag;
+  });
+}
+
 // The saved feed has one editorial section per post. Keep its source links,
 // captions, quotations, inline illustrations and consent-to-play video players.
 function publicationBody(original, slug) {
@@ -137,7 +171,7 @@ function publicationBody(original, slug) {
     // The source editor sometimes gave the space next to a linked word its own link.
     .replace(/(<a href="[^"]+"(?: (?:target|rel)="[^"]*")*>)((?:\s|&nbsp;)*)([\s\S]*?)((?:\s|&nbsp;)*)<\/a>/gi,
       (_, tag, before, content, after) => before + (content ? tag + content + '</a>' : '') + after);
-  if (!body.startsWith('<')) return '<p>' + body + '</p>';
+  if (!body.startsWith('<')) return '<p>' + rejoinPublicationLinks(body) + '</p>';
   body = body.replace(/^<div class="t-redactor__tte-view">([\s\S]*)<\/div>$/, '$1')
     .replace(/<div class="t-redactor__text">([\s\S]*?)<\/div>/g, (_, block) =>
       block.split(/(?:\s*<br\s*\/?>){2,}/gi).map(part => part.trim().replace(/^(?:<br\s*\/?>\s*)+|(?:\s*<br\s*\/?>)+$/gi, ''))
@@ -152,7 +186,7 @@ function publicationBody(original, slug) {
   }
   body = body.replace(/<figure>\s*(<img\b[^>]*\bsrc="(@@ROOT@@media\/AH_Guide_[^"]+)"[^>]*>)\s*<\/figure>/g,
     '<figure><a class="publication-guide" href="$2">$1<span>Открыть гид в полном размере</span></a></figure>');
-  return sizeImages(body);
+  return sizeImages(body.replace(/<p\b[^>]*>[\s\S]*?<\/p>/gi, rejoinPublicationLinks));
 }
 
 function publicationCover(original) {
@@ -166,22 +200,23 @@ function publicationCover(original) {
 }
 
 function renderPublication(page, original, topics) {
-  const issue = issueLinks.get(page.slug);
-  const topicLinks = topics.map(topic => '<a href="@@ROOT@@#' + escape(archiveFragment(topic)) + '">' + escape(topic.title) + '</a>');
+  const related = relatedReading.get(page.slug);
+  const relatedDate = related?.published ? '<span class="publication-meta">' + dateMarkup(related.published) + '</span>' : '';
+  const topicLinks = topics.map(topic => '<a href="@@ROOT@@' + escape(topic.slug) + '/">' + escape(topic.title) + '</a>');
   const timestamps = [...original.matchAll(/<meta itemprop="date(?:Published|Modified)" content="[^"]+">/g)].map(([tag]) => tag).join('');
   return `<div class="home-page" id="allrecords">
     <!-- EDITORIAL HEADER -->
     <main id="site-content" class="home-editorial publication-reader" tabindex="-1">
       <article itemscope itemtype="https://schema.org/BlogPosting">
         ${timestamps}
-        <a class="publication-back" href="@@ROOT@@#publication-archive">К архиву публикаций</a>
+        <a class="publication-back" href="@@ROOT@@archive/">В архив сайта A–House</a>
         <header class="publication-heading">
           <div class="publication-meta">${[dateMarkup(page.published), ...topicLinks].filter(Boolean).join(' ')}</div>
           <h1 itemprop="headline">${escape(page.title)}</h1>
         </header>
         ${publicationCover(original)}
         <div class="publication-body" itemprop="articleBody">${publicationBody(original, page.slug)}</div>
-        ${issue ? '<p class="publication-issue"><a href="@@ROOT@@press/#' + issue[0] + '">' + escape(issue[1]) + '</a></p>' : ''}
+        ${related ? '<p class="publication-issue">' + relatedDate + '<a href="' + escape(related.href) + '">' + escape(related.title) + '</a></p>' : ''}
       </article>
     </main>
     <!-- FOOTER -->
@@ -216,7 +251,7 @@ export async function collectArchive(routes, readArticle) {
   }
   const main = routes.find(page => page.slug === 'archive');
   const topicRoutes = [...topics.values()].map(topic => ({
-    ...main, slug:topic.slug, archiveTopic:topic, title:topic.title + ' — Архив публикаций A–House'
+    ...main, slug:topic.slug, archiveTopic:topic, title:topic.title + ' — Архив сайта A–House'
   }));
   return {articles, topicRoutes};
 }
@@ -225,17 +260,18 @@ function topicKey(topic) {
   return topic.slug.slice('archive/'.length);
 }
 
-export function archiveFragment(topic) {
-  return topic ? 'publication-archive-' + topicKey(topic) : 'publication-archive';
-}
-
-export function archiveFragmentStyles(archive) {
-  // A shared home fragment must also filter the static HTML with JavaScript off.
-  return archive.topicRoutes.map(({archiveTopic}) => {
-    const key = topicKey(archiveTopic);
-    return '#publication-archive:not([data-enhanced]):has(#' + archiveFragment(archiveTopic) + ':target) ' +
-      '[data-archive-topics]:not([data-archive-topics~="' + key + '"]) { display: none; }';
-  }).join('\n');
+export function renderMovedPublicationLinks(archive, base) {
+  const bookmarks = [
+    ['publications', 'archive/', 'Архив сайта A–House'],
+    ['publication-archive', 'archive/', 'Архив сайта A–House'],
+    ['archive-heading', 'archive/', 'Архив сайта A–House'],
+    ['issue-a-sport', 'press/#a-sport-02', 'A–Sport № 2 «Движение»'],
+    ...archive.topicRoutes.map(({archiveTopic: topic}) =>
+      ['publication-archive-' + topicKey(topic), topic.slug + '/', topic.title])
+  ];
+  const links = bookmarks.map(([id, path, title]) =>
+    `<a id="${escape(id)}" href="${escape(base + path)}">${escape(title)}</a>`);
+  return '<div class="home-bookmarks">' + links.join('') + '</div>';
 }
 
 function renderArchiveEntries(archive, topic, base) {
@@ -250,17 +286,15 @@ function renderArchiveEntries(archive, topic, base) {
   }).join('\n');
 }
 
-export function renderArchiveCatalog(archive, base, current, inline) {
+export function renderArchiveCatalog(archive, base, current) {
   const options = [null, ...archive.topicRoutes.map(page => page.archiveTopic).sort((a,b) => a.title.localeCompare(b.title,'ru'))];
   const links = options.map(topic => {
     const key = topic ? topicKey(topic) : '';
     const slug = topic?.slug || 'archive';
-    const fragment = inline && topic ? ' id="' + escape(archiveFragment(topic)) + '"' : '';
-    const selected = !inline && topic?.slug === current?.slug ? ' aria-current="page"' : '';
-    return '<a href="' + escape(base + slug + '/') + '" data-archive-topic="' + escape(key) + '"' + fragment + selected +
-      '>' + escape(topic?.title || 'Все публикации') + '</a>';
+    const selected = topic?.slug === current?.slug ? ' aria-current="page"' : '';
+    return '<a href="' + escape(base + slug + '/') + '" data-archive-topic="' + escape(key) + '"' + selected +
+      '>' + escape(topic?.title || 'Все материалы') + '</a>';
   });
   return '<div class="publication-catalog"><nav class="archive-topics" aria-label="Рубрики архива">' + links.join('') + '</nav>' +
-    (inline ? '<p class="screen-reader-only" role="status" data-archive-count></p>' : '') +
     '<ol class="publication-list" aria-label="Публикации">' + renderArchiveEntries(archive, current, base) + '</ol></div>';
 }

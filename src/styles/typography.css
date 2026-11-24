@@ -12,6 +12,7 @@
   --type-brand: 1.5rem;
 }
 .project-name { white-space: nowrap; word-break: normal; overflow-wrap: normal; hyphens: none; }
+.wrap-group { display: inline-block; max-inline-size: 100%; hyphens: manual; }
 .legal-name { display: inline-block; max-inline-size: 100%; overflow-wrap: break-word; hyphens: manual; vertical-align: top; }
 .legal-name > span { white-space: nowrap; }
 

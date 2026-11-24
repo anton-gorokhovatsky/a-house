@@ -1,4 +1,4 @@
-import { appendFile, cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -11,7 +11,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { archiveFragment, archiveFragmentStyles, collectArchive, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
+import { collectArchive, renderMovedPublicationLinks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 
@@ -28,13 +28,20 @@ export function siteBase(value = '/a-house/') {
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const source = name => readFile(file('src', name), 'utf8');
 
+export function formatSiteVersion(timestamp) {
+  const instant = new Date(timestamp);
+  const parts = new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Europe/Moscow', day: 'numeric', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(instant);
+  const { day, month, year, hour, minute } = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `Версия от <time datetime="${instant.toISOString()}">${day} ${month} ${year}, ${hour}:${minute} мск</time>`;
+}
+
 function siteVersion() {
-  const git = args => spawnSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).stdout?.trim();
-  if (git(['rev-parse', '--is-shallow-repository']) === 'false') {
-    const count = git(['rev-list', '--first-parent', '--count', 'HEAD']);
-    if (/^[1-9]\d*$/.test(count)) return 'Версия сайта ' + count;
-  }
-  if (process.env.GITHUB_ACTIONS === 'true') throw new Error('The published site version requires the full Git history.');
+  const result = spawnSync('git', ['show', '-s', '--format=%cI', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' });
+  if (result.status === 0) return formatSiteVersion(result.stdout.trim());
+  if (process.env.GITHUB_ACTIONS === 'true') throw new Error('The published site needs the date of the Git revision.');
   return 'Локальная сборка';
 }
 
@@ -173,7 +180,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       <ul class="home-project-entries">${rows}</ul>
     </section>`;
   }).join('\n');
-  const sportPhoto = (await source('partials/a-sport-print.html')).trim();
   const pages = JSON.parse(await source('routes.json'));
   const reportYears = JSON.parse(await source('data/report-years.json'));
   const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));
@@ -226,11 +232,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     }
   }
   await styles('styles');
-  await appendFile(path.join(output, 'styles/pages/archive-list.css'), '\n' + archiveFragmentStyles(archive) + '\n');
   const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
   function scriptsFor(page) {
     if (page.layout === 'project') return ['js/site.js', ...(page.slug === 'a_pass' ? ['js/services.js'] : ['js/project-stories.js'])];
-    if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/publication-archive.js', 'js/membership.js'];
+    if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/membership.js'];
     if (page.slug === 'member') return [...scripts, 'js/membership.js'];
     if (page.slug === 'calendar') return [...scripts, 'js/calendar.js'];
     if (page.event) return [...scripts, 'js/event.js'];
@@ -253,12 +258,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     'media/fonts/ahouse-fonts.css',
     ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
     ...pageStyles(page), ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
-    ...(page.slug === 'home' || page.slug === 'archive' || page.archiveTopic ? ['styles/pages/archive-list.css'] : []),
+    ...(page.slug === 'archive' || page.archiveTopic ? ['styles/pages/archive-list.css'] : []),
     'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
-  const archiveEntry = 'js/archive-entry.js';
-  const references = new Set([nearbyImages, archiveEntry, 'js/theme.js', ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
+  const references = new Set([nearbyImages, 'js/theme.js', ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
     const bytes = await readFile(path.join(output, name));
     const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
@@ -282,6 +286,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/<!-- REPORT (\d{4}) -->/g, (_, year) => renderReportYear(reportYears[year], year, page.slug))
       .replaceAll('{{eventsLabel}}', 'События')
       .replaceAll('{{housesLabel}}', 'Дома и адреса')
+      .replaceAll('{{mediaLabel}}', 'Журнал <span class="wrap-group">и изда\u00adтель\u00adство</span>')
       .replaceAll('{{projectsLabel}}', 'Все проекты')
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
@@ -298,14 +303,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
-      .replace('{{sportStoryText}}', () => escape(sportStory.text))
       .replace('{{sportStoryHref}}', () => escape(sportStory.href))
-      .replace('{{sportStoryTitle}}', () => escape(sportStory.title))
-      .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(printEditions, digitalEditions, projects))
+      .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(printEditions, projects))
       .replaceAll('{{friendAction}}', friendAction)
       .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@media/press/a-news-01-daria-belyakova.pdf', 'Читать интервью', 'PDF, с. 24–25'))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
-      .replace('<!-- A-SPORT PRINT -->', () => sportPhoto)
       .replace('<!-- PRINT ISSUES -->', () => printArchive)
       .replace('<!-- FRIEND EDITIONS -->', () => renderSubscriptionEntries(printEditions))
       .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
@@ -326,8 +328,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       })
       .replace('{{siteVersion}}', versionLabel)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
-      .replace('{{archiveHeading}}', () => page.archiveTopic ? escape(page.archiveTopic.title) : 'Архив публикаций')
-      .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic, home));
+      .replace('<!-- ARCHIVE PARENT -->', () => page.archiveTopic
+        ? '<a class="home-kicker" href="' + base + 'archive/">Архив сайта A–House</a>' : '')
+      .replace('{{archiveHeading}}', () => page.archiveTopic ? escape(page.archiveTopic.title) : 'Архив сайта A–House')
+      .replace('<!-- MOVED PUBLICATION LINKS -->', () => renderMovedPublicationLinks(archive, base))
+      .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => themeControl);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => themeControl + '</footer>');
@@ -341,14 +346,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       : scriptTags;
     const values = {
       TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug), THEME_SCRIPT:urls.get('js/theme.js'),
-      ARCHIVE_ENTRY:page.slug === 'archive' || page.archiveTopic
-        ? '<script src="' + urls.get(archiveEntry) + '" data-destination="' + escape(base + '#' + archiveFragment(page.archiveTopic)) + '"></script>'
-        : '',
       FORM_ACTION:escape((home ? friend : page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
-    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION|THEME_SCRIPT|ARCHIVE_ENTRY)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
+    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
   }
   await writeFile(path.join(output,'.nojekyll'),'');
