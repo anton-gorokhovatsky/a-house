@@ -22,7 +22,7 @@
 .ah-image-gallery{position:relative!important;width:100%;height:100%;overflow:hidden;touch-action:pan-y pinch-zoom}
 .ah-image-slide{position:absolute;inset:0;margin:0}
 .ah-image-slide>img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
-.ah-gallery-controls,.ah-scroll-controls{box-sizing:border-box;position:absolute;z-index:3;right:16px;bottom:12px;display:flex;align-items:center;gap:4px;padding:0;background:none;color:#fff;font:500 var(--type-caption,16px)/1.15 AHTimes,Arial,sans-serif}
+.ah-gallery-controls,.ah-scroll-controls{box-sizing:border-box;position:absolute;z-index:3;right:16px;bottom:12px;display:flex;align-items:center;gap:4px;padding:0;background:none;color:#fff;font:var(--label-weight) var(--type-caption)/1.15 var(--text)}
 .ah-gallery-controls{zoom:calc(1 / var(--artboard-scale,1));max-width:calc(100% - 12px);flex-wrap:wrap;justify-content:flex-end}
 .ah-gallery-navigation{display:flex;align-items:center;gap:4px}
 .ah-gallery-controls *,.ah-scroll-controls *{box-sizing:border-box}

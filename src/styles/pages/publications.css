@@ -1,6 +1,7 @@
 .editorial-document, .press-page, .partnership-stories, .editorial-missing {
   padding: var(--page-entry) var(--edge) var(--chapter);
 }
+.editorial-document { --text: var(--pro-text); font-weight: var(--label-weight); }
 .press-page, .partnership-stories, .editorial-missing {
   inline-size: 100%; max-inline-size: var(--measure); margin-inline: auto;
 }
@@ -15,9 +16,10 @@
 @container document-content (max-width: 14em) {
   .home-page .editorial-document h1 { font-size: var(--type-card); hyphens: auto; hyphenate-limit-chars: 8 4 4; }
 }
-.home-page .editorial-document .document-issuer { display: block; margin-top: .65em; font: 400 var(--type-lead)/1.4 var(--text); }
+.home-page .editorial-document .document-issuer { display: block; margin-top: .65em; font: var(--label-weight) var(--type-lead)/var(--leading-lead) var(--text); }
 .home-page .editorial-document h2 { max-inline-size: 36ch; margin: 1.8em 0 .55em; font-size: var(--type-card); text-align: start; text-wrap: pretty; }
 .home-page .document-copy p { margin: .85em 0; }
+.home-page .document-copy :is(b,strong) { font-weight: 700; }
 .document-inner a { overflow-wrap: anywhere; }
 .document-copy + .document-copy, .document-table { margin-block: 1.6em; }
 .home-page .document-copy :is(ul,ol) { margin-block: .7em; padding-inline-start: 1.5em; }
@@ -46,7 +48,10 @@
   text-decoration-color: var(--link-underline-color);
 }
 .home-page .home-editorial :is(.document-copy,.press-page-links,.print-archive-intro,.partnership-inner,.editorial-missing-inner) a:is(:hover,:focus-visible) { text-decoration-color: currentColor; }
-.home-page :is(.press-page,.partnership-stories) header > p, .editorial-missing p { max-width: 64ch; font-size: var(--type-lead); }
+.home-page :is(.press-page,.partnership-stories) header > p, .editorial-missing p {
+  max-width: 64ch; font-size: var(--type-lead);
+  line-height: var(--leading-lead); text-wrap: pretty;
+}
 .press-page section, .partnership-stories section { margin-block-start: var(--chapter); }
 .home-page :is(.press-page,.partnership-stories) section h2 { margin-bottom: .65em; }
 .press-page picture, .press-page img { display: block; width: 100%; height: auto; }

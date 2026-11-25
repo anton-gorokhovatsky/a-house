@@ -40,7 +40,7 @@
 .home-page .calendar-page #calendar-filters [aria-current="true"] {
   text-decoration: none;
 }
-.home-page .calendar-page #calendar-filters [data-calendar-month][aria-current="true"] { font-weight: 600; }
+.home-page .calendar-page #calendar-filters [data-calendar-month][aria-current="true"] { font-weight: var(--emphasis-weight); }
 .home-page .calendar-page #calendar-filters .calendar-audience a:not([aria-current]) { color: var(--quiet); }
 .calendar-kids::before {
   content: '';

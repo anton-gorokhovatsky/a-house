@@ -41,7 +41,7 @@
 .institution-entries dd {
   max-width: 62ch;
   margin: 0;
-  line-height: 1.48;
+  line-height: var(--leading-reading);
   text-wrap: pretty;
 }
 
@@ -52,7 +52,7 @@
 .home-page .institution-intro .institution-lead {
   margin-top: 1.25rem;
   max-width: 46ch;
-  font: 400 clamp(1.2rem, 1.08rem + .65vw, 1.72rem)/1.38 var(--text);
+  font: var(--reading-weight) var(--type-lead)/var(--leading-lead) var(--text);
 }
 
 .institution-opening > figure,
@@ -72,7 +72,7 @@
 .home-page .institution-page figcaption {
   margin-top: .5rem;
   color: var(--quiet);
-  font: 400 var(--note-size)/1.3 var(--text);
+  font: var(--label-weight) var(--note-size)/1.4 var(--text);
 }
 
 .institution-section {
@@ -148,7 +148,7 @@
 }
 
 .institution-entries dt {
-  font-weight: 600;
+  font-weight: var(--emphasis-weight);
 }
 
 .institution-entries dd {

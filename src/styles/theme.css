@@ -73,7 +73,7 @@ body { background-color: var(--ah-paper); color: var(--ah-ink); }
   border: 0;
   color: #f2f0eb;
   text-align: start;
-  font: 400 1rem/1.4 Arial, Helvetica, sans-serif;
+  font: var(--label-weight) var(--type-ui)/1.4 var(--text);
   scroll-margin-block: 1rem;
 }
 .site-theme[hidden] { display: none; }
@@ -87,7 +87,7 @@ body { background-color: var(--ah-paper); color: var(--ah-ink); }
   width: 100%;
   padding: 0;
   color: inherit;
-  font: 600 1rem/1.4 Arial, Helvetica, sans-serif;
+  font: var(--emphasis-weight) var(--type-ui)/1.4 var(--text);
 }
 .site-theme-choices { clear: both; display: flex; flex-wrap: wrap; align-items: start; gap: 0 1rem; }
 .site-theme-choices label {

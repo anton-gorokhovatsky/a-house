@@ -1,14 +1,22 @@
 /* Reading sizes are shared by the main site, publications and service screens.
    The lettering inside posters, research diagrams and the wordmark is artwork. */
 :root {
+  --display: 'Times New Roman Cyr Condensed', 'Noto Serif', Georgia, serif;
+  --text: 'Apercu Condensed Pro', Arial, Helvetica, sans-serif;
+  --pro-text: 'Apercu Pro', var(--text);
+  --reading-weight: 300;
+  --label-weight: 400;
+  --emphasis-weight: 500;
+  --leading-reading: 1.53;
+  --leading-lead: 1.44;
   --type-display: clamp(2.5rem, 1.25rem + 5vw, 6.5rem);
   --type-title: clamp(2rem, 1.45rem + 2.2vw, 3.5rem);
   --type-section: clamp(1.625rem, 1.25rem + 1.3vw, 2.5rem);
   --type-card: clamp(1.25rem, 1.1rem + .65vw, 1.625rem);
   --type-lead: clamp(1.1875rem, 1.09rem + .48vw, 1.5rem);
-  --type-body: clamp(1.0625rem, 1.02rem + .22vw, 1.1875rem);
+  --type-body: clamp(1.125rem, 1.075rem + .25vw, 1.25rem);
   --type-ui: 1rem;
-  --type-caption: .875rem;
+  --type-caption: .9375rem;
   --type-brand: 1.5rem;
 }
 .project-name { white-space: nowrap; word-break: normal; overflow-wrap: normal; hyphens: none; }
@@ -24,9 +32,9 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
 @media (max-width: 61.25em) {
   #site-navigation .menu-sections { container: media-label / inline-size; font-size: var(--type-card); }
 }
-/* In the section typeface the noun measures 6.705em and the phrase 7.64em.
+/* In the section typeface the noun measures 5.02em and the phrase 5.70em.
    When only the noun fits, let «и» follow «Журнал» on the preceding line. */
-@container media-label (6.705em <= inline-size < 7.64em) {
+@container media-label (5.02em <= inline-size < 5.70em) {
   .media-title-phrase { display: inline; }
   .media-title-phrase > span { display: inline-block; }
 }
@@ -55,7 +63,7 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
 #site-content .site-address {
   margin: .55em 0 0;
   text-align: center;
-  font: 400 var(--type-body)/1.35 AHTimes, Georgia, serif;
+  font: var(--label-weight) var(--type-body)/1.35 var(--text);
   color: #111;
 }
 #site-content :is(.t058__text-impact, .js-block-header-title, .t004 .t-text, .t1241__descr, .t153__title, .t-feed__post-popup__text) :is([data-customstyle], [style*="font-size"]) {
@@ -63,12 +71,16 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
   line-height: inherit !important;
 }
 #allrecords #site-content :is(.t004 .t-text, .t1053__title, .t-feed__post-popup__text, .t-redactor__text) {
+  font-family: var(--text);
   font-size: var(--type-body);
-  line-height: 1.48;
+  font-weight: var(--reading-weight);
+  line-height: var(--leading-reading);
 }
 #allrecords #site-content :is(.t-rec:has(h1.t058__text-impact) + .t-rec .t004 .t-text, .t153__title, .t1241__descr, .t001__descr) {
+  font-family: var(--text);
   font-size: var(--type-lead);
-  line-height: 1.32;
+  font-weight: var(--reading-weight);
+  line-height: var(--leading-lead);
 }
 #allrecords #site-content .t001__title {
   margin-block: 0;
@@ -85,11 +97,15 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
 }
 .card-promise { display: block; margin-top: .25em; font-size: var(--type-body); line-height: 1.36; }
 #allrecords #site-content :is(.t786__descr, .t776__descr) {
+  font-family: var(--text);
   font-size: var(--type-body);
-  line-height: 1.38;
+  font-weight: var(--reading-weight);
+  line-height: var(--leading-reading);
 }
 #allrecords #site-content :is(.t153__descr, .t001__uptitle, .t1053__uptitle, .t-feed__post-popup__date, .t-feed__post-popup__close-text) {
+  font-family: var(--text);
   font-size: var(--type-caption);
+  font-weight: var(--label-weight);
   line-height: 1.35;
 }
 #allrecords #site-content .t-btnflex__text { font-size: var(--type-ui); line-height: 1.2; }
@@ -107,7 +123,7 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
 }
 /* Each resident poster is centred and already contains its own title. */
 [data-page="residents"] .t772 .t-card__btn-wrapper { margin-top: 0; text-align: center; }
-.missing-page, .archive-index { font-size: var(--type-body); line-height: 1.45; }
+.missing-page, .archive-index { font-size: var(--type-body); line-height: var(--leading-reading); }
 .site-wordmark, .archive-index > a { font-size: var(--type-brand); }
 .missing-page h1, .archive-index h1 {
   font-size: var(--type-display);
@@ -117,11 +133,11 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
   overflow-wrap: break-word;
 }
 .missing-page p { max-width: 50ch; }
-.missing-page .missing-code { font: 500 var(--type-caption)/1.3 AHTimes, Arial, sans-serif; }
+.missing-page .missing-code { font: var(--label-weight) var(--type-caption)/1.3 var(--text); }
 .missing-page nav { margin-top: 1.25em; gap: .5em 1.5em; }
 .missing-page nav a { display: inline-flex; align-items: center; min-block-size: 44px; }
 .archive-index ol { font-size: var(--type-card); }
-.archive-index time, .archive-index small { font: 500 var(--type-caption)/1.4 AHTimes, Arial, sans-serif; }
+.archive-index time, .archive-index small { font: var(--label-weight) var(--type-caption)/1.4 var(--text); }
 .archive-index time { padding-top: .25em; white-space: nowrap; }
 .archive-index li { grid-template-columns: max-content minmax(0,1fr); gap: 1rem; }
 .archive-index li a { overflow-wrap: break-word; }

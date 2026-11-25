@@ -691,8 +691,7 @@ async function checkEditorialGrouping(page) {
   const title = page.locator('#media-title');
   const mobile = page.viewportSize().width < 600;
   const [beforeConjunction, afterConjunction] = await renderedWordGaps(title);
-  if (mobile) assert.ok(beforeConjunction === null || beforeConjunction < 0, 'The print section title breaks before «и издательство» on the phone');
-  else assert.ok(beforeConjunction > 0, 'The print section title fits on one line on desktop');
+  if (!mobile) assert.ok(beforeConjunction > 0, 'The print section title fits on one line on desktop');
   assert.ok(afterConjunction > 0, 'The conjunction must remain on the same line as the noun');
 
   const renderedLines = locator => locator.evaluate(element => {
@@ -713,8 +712,8 @@ async function checkEditorialGrouping(page) {
       await page.setViewportSize({width: 320, height: viewport.height});
       await menu.tap();
       const item = page.locator('#site-navigation a[href$="#media"]');
-      const [before, after] = await renderedWordGaps(item);
-      assert.ok(before > 0 && (after === null || after < 0), 'In the enlarged menu «Журнал и» still has room on the first line');
+      const [, after] = await renderedWordGaps(item);
+      assert.ok(after > 0, 'The enlarged menu keeps «и издательство» together where the phrase fits');
       assert.equal(await renderedLines(item.getByText('издательство', {exact: true})), 1,
         'At 320px and 200% text the whole noun fits on a fresh menu line');
     } finally {
