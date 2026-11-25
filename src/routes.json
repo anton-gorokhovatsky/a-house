@@ -220,7 +220,7 @@
   {
     "slug": "press",
     "title": "Издательство A–Press — A–House",
-    "description": "Журналы, газеты и книги A–House. Что почитать онлайн и где найти печатные выпуски.",
+    "description": "Книги, газеты и журналы A–House. Свежие выпуски в подписке A–Friend и архив печатных номеров.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
@@ -237,6 +237,18 @@
       "styles/pages/press.css",
       "styles/chrome.css"
     ]
+  },
+  {
+    "slug": "press/archive",
+    "title": "Архив печатных номеров — A–Press",
+    "description": "Предыдущие номера газет и журналов издательства A–Press в открытом доступе.",
+    "icon": "media/favicon-2-8b77dfa15dce.ico"
+  },
+  {
+    "slug": "press/books",
+    "title": "Книги A–Press — A–House",
+    "description": "Книги издательства A–Press, обложки и развороты.",
+    "icon": "media/favicon-2-8b77dfa15dce.ico"
   },
   {
     "slug": "report",

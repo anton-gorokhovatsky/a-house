@@ -1,26 +1,21 @@
 <main id="site-content" class="home-editorial press-page" tabindex="-1" data-instant-anchors>
   <div class="press-inner">
+    <!-- PRESS BOOKMARKS -->
     <header id="rec2308376891">
       <h1><span class="wrap-group">Изда&shy;тель&shy;ство</span> A–Press</h1>
       <p>Мы выпускаем книги, газеты и журналы об архитектуре, дизайне и городской жизни.</p>
-      <nav class="press-page-links" aria-label="Разделы каталога A–Press">
-        <a href="#print-archive">Архив печатных номеров</a>
-        <a href="#books">Книги</a>
-        <a href="#distribution">Где найти печатный номер</a>
-      </nav>
-      <div class="press-page-links press-related-links">
-        <a href="https://disk.360.yandex.ru/i/ItqdNVYlSPB1SQ">Медиакит A–Press</a>
-        <a id="online" href="https://news.ahouseproject.com/">Читать онлайн-журнал A–News</a>
-      </div>
-      <div id="rec2308376911" class="press-opening-image"><picture>
-          <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/gen2-05cd05f38630.webp">
-          <img src="@@ROOT@@media/gen2-05cd05f38630.gif" width="1680" height="900" alt="Обложки и развороты печатных изданий A–House" fetchpriority="high" decoding="async">
-        </picture></div>
+      <!-- PRESS CONTENTS -->
     </header>
-    <section id="print-archive" tabindex="-1" aria-labelledby="print-archive-title">
-      <h2 id="print-archive-title">Архив печатных номеров</h2>
-      <p class="print-archive-intro">Предыдущие номера можно прочитать здесь бесплатно. Свежие выпуски {{digitalEditions}} доступны в приложении A–House. <a href="@@ROOT@@#services-checkout">{{friendAction}}</a></p>
-      <!-- PRINT ISSUES -->
+    <section class="press-friend" id="current-issues" aria-labelledby="current-issues-title">
+      <h2 id="current-issues-title">Свежие номера в A–Friend</h2>
+      <p>Полные выпуски можно читать в PDF в приложении A–House. Подписка также даёт доступ к путеводителям, подборкам и приглашениям на выставки.</p>
+      <a class="home-action" href="@@ROOT@@#services-checkout">{{friendAction}}</a>
+      <!-- CURRENT PRINT ISSUES -->
+    </section>
+    <section id="periodicals" tabindex="-1" aria-labelledby="periodicals-title">
+      <h2 id="periodicals-title">Газеты и журналы</h2>
+      <!-- FEATURED PRINT PROJECT -->
+      <div class="home-editions"><!-- PROJECTS editions --></div>
       <aside class="press-partner-edition" id="a-focus" aria-labelledby="a-focus-heading">
         <picture>
           <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/focus-cf4cfaa096c3.webp">
@@ -29,26 +24,16 @@
         <div>
           <h3 id="a-focus-heading">Выпустить газету A–Focus</h3>
           <p>Редакция готовит отдельную газету для партнёра. Вместе выбирают тему и формат выпуска, редакция отвечает за материалы и оформление.</p>
-          <div class="press-page-links"><a href="#a-focus-archive">Выпуски A–Focus в архиве</a><a href="https://disk.360.yandex.ru/d/owUTpo00J2bXrQ/A-Press%20price.pdf">Условия и стоимость выпуска</a></div>
+          <div class="press-page-links"><a href="@@ROOT@@press/archive/#a-focus-archive">Выпуски A–Focus в архиве</a><a href="https://disk.360.yandex.ru/d/owUTpo00J2bXrQ/A-Press%20price.pdf">Условия и стоимость выпуска</a></div>
         </div>
       </aside>
-      <nav class="print-stories" aria-labelledby="print-stories-title">
-        <h3 id="print-stories-title">О выпусках и их героях</h3>
-        <ul class="press-page-links">
-          <li><a href="@@ROOT@@tpost/f0997i9441-anews-2/">Ярмарка blazar во втором A–News</a></li>
-          <li><a href="@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/">Как устроен первый A–Kids</a></li>
-          <li><a href="{{sportStoryHref}}">Велосипед и экипировка в A–Sport № 2</a></li>
-          <li><a href="https://news.ahouseproject.com/a-talks-tamara-sokurova/">Владикавказ Тамары Сокуровой</a></li>
-          <li><a href="https://news.ahouseproject.com/a-talks-darya-voskresenskaya-direktor-po-produktu-mebelnogo-brenda-archipelago/">Дарья Воскресенская в выпуске «Зима. Москва»</a></li>
-          <li><a href="https://news.ahouseproject.com/a-icon-stool-60/">Табурет Алвара Аалто в спецвыпуске Archipélago</a></li>
-        </ul>
-      </nav>
-    </section>
-    <section id="books" tabindex="-1" aria-labelledby="books-heading">
-      <div id="editions"><h2 id="books-heading"><span id="press-editions-title">Книги</span></h2></div>
-      <div class="book-list" id="rec2308376921"><!-- PUBLISHER BOOKS --></div>
-      <div class="press-page-links publisher-services">
-        <a href="mailto:partners@ahouseproject.com">Предложить книгу издательству</a>
+      <div id="rec2308376911" class="press-opening-image"><picture>
+          <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/gen2-05cd05f38630.webp">
+          <img src="@@ROOT@@media/gen2-05cd05f38630.gif" width="1680" height="900" alt="Обложки и развороты печатных изданий A–House" loading="lazy" decoding="async">
+        </picture></div>
+      <div class="press-page-links press-related-links">
+        <a href="#distribution">Где найти печатный номер</a>
+        <a href="https://disk.360.yandex.ru/i/ItqdNVYlSPB1SQ">Медиакит A–Press</a>
       </div>
     </section>
     <section id="distribution" class="press-distribution" tabindex="-1" aria-labelledby="distribution-title">
@@ -58,21 +43,6 @@
         <div class="press-page-links"><a href="https://www.google.com/maps/d/viewer?mid=1RrNdxMLN1LJTjjsKRJh6HR0pBsrn20M&amp;usp=sharing">Все места на карте</a></div>
       </div>
       <img src="@@ROOT@@media/onair_all_22-258420ca76e8.png" width="1134" height="1411" alt="Карта распространения изданий A–House" loading="lazy">
-    </section>
-    <section class="press-interview" id="press-interview" aria-labelledby="press-interview-heading">
-      <figure>
-        <img src="@@ROOT@@media/press/daria-belyakova-a-news-01.jpg" width="898" height="900" alt="Чёрно-белый портрет Дарьи Беляковой" loading="lazy" decoding="async">
-        <figcaption>Дарья Белякова. Фото из A–News № 1, с. 24</figcaption>
-      </figure>
-      <div>
-        <p class="home-kicker">Из первого номера A–News «Дом», 2024</p>
-        <h2 id="press-interview-heading">«Дом для меня — это убежище»</h2>
-        <p>Дарья Белякова охотно жила бы в доме другого архитектора. В своём ей всё время хотелось бы что-то переделать. Основательница A–House рассказывает о своей библиотеке и о часе, который каждый день старается оставить для себя.</p>
-        <div class="press-page-links">
-          <!-- PRESS INTERVIEW PDF -->
-          <a href="#a-news-01">Весь номер в архиве</a>
-        </div>
-      </div>
     </section>
   </div>
 </main>

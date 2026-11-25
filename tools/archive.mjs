@@ -52,46 +52,70 @@ export async function renderPrintArchive(editions, getFileSize) {
       return `<article id="${id}" class="print-issue" aria-labelledby="${id}-title">
         <img src="@@ROOT@@media/print/${id}.jpg" alt="Обложка ${escape(name)}" width="${issue.coverWidth}" height="${issue.coverHeight || 780}" loading="lazy" decoding="async">
         <div><p class="home-kicker">№ ${issue.number} · <time datetime="${escape(issue.published)}">${escape(month)}</time></p>
-        <h4 id="${id}-title">${escape(issue.title)}<span class="screen-reader-only"> · ${escape(name)}</span></h4>
+        <h3 id="${id}-title">${escape(issue.title)}<span class="screen-reader-only"> · ${escape(name)}</span></h3>
         <p>${escape(issue.description)}</p><div class="press-page-links">${files.join('')}</div></div></article>`;
     }));
     return `<section id="${anchor}" class="print-series" aria-labelledby="${anchor}-heading">
-      <h3 id="${anchor}-heading">${escape(edition.archiveLabel || edition.edition)}</h3>
+      <h2 id="${anchor}-heading">${escape(edition.archiveLabel || edition.edition)}</h2>
       ${edition.archiveNote ? '<p>' + escape(edition.archiveNote) + '</p>' : ''}
       <div class="print-issues">${cards.join('\n')}</div>
     </section>`;
   }));
-  return `<nav class="press-page-links print-series-nav" aria-label="Издания в архиве">${navigation}</nav>${groups.join('\n')}`;
+  return `<div class="print-archive-layout">
+    <nav class="press-page-links print-series-nav" aria-label="Издания в архиве">${navigation}</nav>
+    <div>${groups.join('\n')}</div>
+  </div>`;
 }
 
-export function renderCurrentPrintIssues(issues, projects) {
-  const current = issues.filter(issue => issue.latest)
-    .sort((a, b) => b.latest.published.localeCompare(a.latest.published))[0];
-  const { edition, latest } = current;
-  const regular = { ...latest, title: `${edition} № ${latest.number} ${latest.topic}` };
-  const special = projects.filter(project => project.specialIssue).map(project => project.specialIssue)
+export function subscriptionIssues(editions) {
+  return editions.filter(edition => edition.latest)
+    .map(({ edition, latest }) => ({ ...latest, title: `${edition} № ${latest.number} ${latest.topic}` }))
+    .sort((a, b) => b.published.localeCompare(a.published));
+}
+
+function printCover({ cover }, className) {
+  return `<img class="${className}" src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy" decoding="async">`;
+}
+
+export function renderFriendCover(issues) {
+  const issue = issues.find(issue => issue.cover);
+  return issue ? `<figure class="home-friend-cover">${printCover(issue, 'friend-cover-image')}<figcaption>${escape(issue.title)}</figcaption></figure>` : '';
+}
+
+function renderFeaturedIssue(issue) {
+  const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
+  const more = issue.announcement ? ` <a href="${escape(issue.announcement)}">О выпуске в Telegram</a>` : '';
+  const article = issue.article
+    ? `<div class="press-page-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`
+    : '';
+  return `<article class="press-featured-issue">
+    ${issue.cover ? printCover(issue, 'press-featured-cover') : ''}
+    <div class="press-featured-copy">
+      <p class="home-kicker">${dateMarkup(issue.published)}</p>
+      <h3>${title}</h3>
+      ${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}
+      ${article}
+    </div>
+  </article>`;
+}
+
+export function renderCurrentPrintIssues(issues) {
+  const featured = issues.find(issue => issue.cover);
+  const other = issues.filter(issue => issue !== featured).map(issue =>
+    `<li><p>${escape(issue.title)}</p><p class="home-kicker">${dateMarkup(issue.published)}</p></li>`
+  ).join('');
+  return `<div class="press-friend-issues">${featured ? renderFeaturedIssue(featured) : ''}${other ? '<ul>' + other + '</ul>' : ''}</div>`;
+}
+
+export function renderFeaturedPrintProject(projects) {
+  const special = projects.flatMap(project => project.specialIssue ? [project.specialIssue] : [])
     .sort((a, b) => b.published.localeCompare(a.published))[0];
-  return [regular, special].filter(Boolean).sort((a, b) => b.published.localeCompare(a.published)).map((issue, index) => {
-    const { cover } = issue;
-    const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
-    const subscriberIssue = issue === regular;
-    const more = issue.announcement ? ` <a href="${escape(issue.announcement)}">О выпуске в Telegram</a>` : '';
-    const articleLink = issue.article
-      ? `<div class="home-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`
-      : '';
-    return `<article class="home-issue ${index === 0 ? 'home-current-issue' : 'home-companion-issue'} editorial-pair">
-      ${cover ? `<figure class="home-issue-cover"><img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy"></figure>` : ''}
-      <div class="home-issue-copy">
-        <div class="home-issue-title"><p class="home-kicker">${subscriberIssue ? 'Свежий номер' : 'Спецвыпуск'} · ${dateMarkup(issue.published)}</p><h5>${title}</h5></div>
-        <div class="home-issue-story">${issue.description ? '<p>' + escape(issue.description) + more + '</p>' : ''}${articleLink}</div>
-      </div>
-    </article>`;
-  }).join('\n');
+  return special ? renderFeaturedIssue(special) : '';
 }
 
 export function renderSubscriptionEntries(issues) {
   return issues.filter(issue => issue.latest).map(issue => `<div id="${escape(issue.latest.anchor)}" class="friend-edition" tabindex="-1">
-    <a class="friend-archive-return" href="@@ROOT@@press/#${escape(issue.seriesId)}">К архиву ${escape(issue.edition)}</a>
+    <a class="friend-archive-return" href="@@ROOT@@press/archive/#${escape(issue.archiveAnchor || issue.seriesId)}">К архиву ${escape(issue.edition)}</a>
     <p class="home-kicker">В подписке — ${escape(issue.edition)} № ${escape(issue.latest.number)} ${escape(issue.latest.topic)}</p>
   </div>`).join('\n');
 }
@@ -110,8 +134,8 @@ export function renderPressBooks(books) {
 
 const dateFormat = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 const relatedReading = new Map([
-  ['tpost/f0997i9441-anews-2', { href: '@@ROOT@@press/#a-news-02', title: 'Читать второй номер A–News' }],
-  ['tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so', { href: '@@ROOT@@press/#a-kids-01', title: 'Читать первый A–Kids — для взрослых и для детей' }],
+  ['tpost/f0997i9441-anews-2', { href: '@@ROOT@@press/archive/#a-news-02', title: 'Читать второй номер A–News' }],
+  ['tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so', { href: '@@ROOT@@press/archive/#a-kids-01', title: 'Читать первый A–Kids — для взрослых и для детей' }],
   ['tpost/17xaum7r91-translyatsiya-paris-design-week', {
     href: 'https://t.me/ahouseproject/832', title: 'Итоги Парижской недели дизайна в Telegram', published: '2023-09-18'
   }],
@@ -273,23 +297,59 @@ function topicKey(topic) {
   return topic.slug.slice('archive/'.length);
 }
 
+const pressSections = [
+  ['press/archive', 'Архив печатных номеров'],
+  ['press/books', 'Книги A–Press']
+];
+
+export function renderPressNavigation(slug) {
+  const entries = pressSections.map(([path, title]) => path === slug
+    ? '<span aria-current="page">' + title + '</span>'
+    : '<a href="@@ROOT@@' + path + '/">' + title + '</a>').join('');
+  return '<nav class="press-page-links press-contents" aria-label="Разделы издательства">' + entries + '</nav>';
+}
+
+function renderSectionBookmarks(entries) {
+  const links = entries.map(([id, href, title]) =>
+    '<a data-section-bookmark id="' + escape(id) + '" href="' + escape(href) + '">' + escape(title) + '</a>');
+  return '<div class="section-bookmarks">' + links.join('') + '</div>';
+}
+
+export function renderPressBookmarks(editions, newsHref) {
+  const archive = '@@ROOT@@press/archive/';
+  const books = '@@ROOT@@press/books/';
+  const entries = [
+    ['print-archive', archive, pressSections[0][1]],
+    ['press-interview', archive + '#press-interview', 'Интервью из A–News № 1'],
+    ['online', newsHref, 'Читать журнал A–News'],
+    ...['books', 'books-heading', 'editions', 'press-editions-title', 'rec2308376921'].map(id => [id, books, pressSections[1][1]])
+  ];
+  for (const edition of editions) {
+    const section = edition.archiveAnchor || edition.seriesId;
+    entries.push([section, archive + '#' + section, edition.archiveLabel || edition.edition]);
+    for (const issue of edition.issues) {
+      entries.push([issue.id, archive + '#' + issue.id, edition.edition + ' № ' + issue.number]);
+    }
+  }
+  return renderSectionBookmarks(entries);
+}
+
 export function renderHomeBookmarks(archive, base) {
   const bookmarks = [
     ['partnership', 'partnership/', 'Сотрудничество'],
     ['partnership-heading', 'partnership/', 'Сотрудничество'],
     ['rec2309705331', 'partnership/#rec2309705331', 'Книги и газеты'],
     ['rec2309704211', 'partnership/#rec2309704211', 'Городские пространства'],
-    ['home-books', 'press/#books', 'Книги A–Press'],
+    ['home-books', 'press/books/', 'Книги A–Press'],
+    ['home-periodicals', 'press/#periodicals', 'Газеты и журналы'],
     ['publications', 'archive/', archive.title],
     ['publication-archive', 'archive/', archive.title],
     ['archive-heading', 'archive/', archive.title],
-    ['issue-a-sport', 'press/#a-sport-02', 'A–Sport № 2 «Движение»'],
+    ['issue-a-sport', 'press/archive/#a-sport-02', 'A–Sport № 2 «Движение»'],
     ...archive.topicRoutes.map(({archiveTopic: topic}) =>
       ['publication-archive-' + topicKey(topic), topic.slug + '/', topic.title])
   ];
-  const links = bookmarks.map(([id, path, title]) =>
-    `<a id="${escape(id)}" href="${escape(base + path)}">${escape(title)}</a>`);
-  return '<div class="home-bookmarks">' + links.join('') + '</div>';
+  return renderSectionBookmarks(bookmarks.map(([id, path, title]) => [id, base + path, title]));
 }
 
 function renderArchiveEntries(archive, topic, base) {

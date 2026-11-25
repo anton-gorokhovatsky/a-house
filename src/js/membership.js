@@ -29,6 +29,7 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
       const count = Number(quantity.value);
       const valid = Number.isSafeInteger(count * price) && Number.isInteger(count) && count > 0;
       quantity.setCustomValidity(valid || empty ? '' : 'Введите целое количество подписок от одной.');
+      less.disabled = empty || !valid || count <= 1;
       basket.querySelector('[data-order-total]').textContent = empty || valid ? format.format(count * price) + ' ₽' : '—';
       basket.querySelector('[data-order-line]').hidden = empty;
       basket.querySelector('[data-order-empty]').hidden = !empty;
@@ -41,7 +42,7 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
       const count = Number(quantity.value);
       if (action === 'more' && Number.isSafeInteger((count + 1) * price)) quantity.value = Math.max(1, Math.floor(count) + 1);
       if (action === 'less' && count > 1) quantity.value = count - 1;
-      if (action === 'remove' || (action === 'less' && count <= 1)) {
+      if (action === 'remove') {
         empty = true;
         previousQuantity = Number.isSafeInteger(count) && count > 0 ? count : 1;
         quantity.value = 0;
@@ -84,7 +85,7 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
     if (field.type === 'tel') {
       const digits = field.value.replace(/\D/g, '');
       if (digits.length < 7 || digits.length > 15 || /[^\d\s+().-]/.test(field.value)) {
-        return 'Укажите номер с кодом страны, например +7 900 000-00-00.';
+        return 'Проверьте номер телефона. Например, +7 900 000-00-00.';
       }
     }
     return field.validity.valid ? '' : field.validationMessage;

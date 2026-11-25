@@ -47,6 +47,7 @@
 .ah-video-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .ah-video-player > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ah-video-play { position: relative; appearance: none; border: 1px solid #fff; background: #111; color: #fff; padding: .75em 1.2em; cursor: pointer; font: inherit; }
+.home-page .ah-video-play { padding-block: .70em .80em; }
 .ah-video-play:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 @media(max-width:600px){.ah-authored-dialog{max-height:calc(100dvh - 16px)}.ah-authored-dialog .modal-scroll{max-height:calc(100dvh - 16px)}.ah-gallery-controls{right:6px;bottom:6px}.ah-scroll-controls{right:8px;bottom:8px}}
 @media(hover:hover) and (pointer:fine){.ah-gallery-controls button:hover,.ah-scroll-controls button:not(:disabled):hover{background:#fff;color:#111}}

@@ -75,7 +75,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
       const friend = kind === 'friend';
       const endpoint = friend ? '/order' : '/application';
       const entry = site + base + (friend ? '#services-checkout' : 'member/?offer=patron');
-      await page.goto(site + base + (friend ? 'press/#print-archive' : 'club/#programs'));
+      await page.goto(site + base + (friend ? 'press/archive/' : 'club/#programs'));
       const destination = friend
         ? page.locator('#print-archive').getByRole('link', { name: 'Оформить подписку A–Friend' })
         : page.getByRole('link', { name: 'Подать заявку по программе A–Patron' });
@@ -90,6 +90,8 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
       assert.equal(await consent.isChecked(), false);
       if (friend) {
         const increment = form.getByRole('button', { name: 'Увеличить количество' });
+        const decrement = form.getByRole('button', { name: 'Уменьшить количество' });
+        assert.ok(await decrement.isDisabled());
         await increment.click();
         assert.match(await form.locator('[data-order-total]').innerText(), /24\s000/);
         await form.getByRole('button', { name: 'Удалить' }).click();
@@ -97,6 +99,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         assert.equal(await form.locator('[name="quantity"]').inputValue(), '0');
         await form.getByRole('button', { name: 'Вернуть в заказ' }).click();
         assert.equal(await form.locator('[name="quantity"]').inputValue(), '2');
+        assert.ok(await decrement.isEnabled());
         const areas = form.getByLabel('Сфера деятельности', { exact: false });
         assert.equal(await areas.locator('option').count(), 9);
         assert.equal(await areas.inputValue(), '');

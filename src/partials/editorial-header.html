@@ -1,7 +1,7 @@
 <header id="t-header" class="site-header home-masthead">
   <div class="home-header-inner">
     <div class="site-header-bar">
-      <{{wordmarkTag}} class="home-wordmark"><a class="site-header-brand" href="@@ROOT@@" aria-label="A–House, на главную"><img src="@@ROOT@@media/ah_logo-d765e23d69d9.svg" width="469" height="89" alt="A–House"></a></{{wordmarkTag}}>
+      <{{wordmarkTag}} class="home-wordmark"><a class="site-header-brand" {{wordmarkDestination}}><img src="@@ROOT@@media/ah_logo-d765e23d69d9.svg" width="469" height="89" alt="A–House"></a></{{wordmarkTag}}>
       <div class="home-tools">
         <a href="{{home}}#visit">{{housesLabel}}</a>
         <button type="button" class="site-menu-toggle" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-navigation"><span class="home-open-label">Меню</span><span class="home-close-label">Закрыть</span></button>
@@ -11,7 +11,7 @@
       <ul class="menu-sections">
         <li><a href="@@ROOT@@calendar/"{{programCurrent}}>{{eventsLabel}}</a></li>
         <li><a data-home-view href="{{home}}#visit">{{housesLabel}}</a></li>
-        <li><a data-home-view href="{{home}}#media">{{mediaLabel}}</a></li>
+        <li><a href="@@ROOT@@press/"{{pressCurrent}}>Издательство</a></li>
         <li><a data-home-view href="{{home}}#industry">Бюро и&nbsp;вакансии</a></li>
         <li><a href="@@ROOT@@club/"{{clubCurrent}}>Клуб A–House</a></li>
         <li><a href="@@ROOT@@partnership/"{{partnershipCurrent}}>Сотруд&shy;ничество</a></li>

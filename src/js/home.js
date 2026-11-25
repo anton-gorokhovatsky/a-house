@@ -1,6 +1,7 @@
 (() => {
   const homeTitle = document.title;
   const overview = document.getElementById('overview');
+  const brand = document.querySelector('[data-home-brand]');
   const sections = [...document.querySelectorAll('[data-home-section]')];
   const choices = [...document.querySelectorAll('[data-home-view]')];
   const links = [...document.querySelectorAll('a')];
@@ -10,8 +11,7 @@
     const clubLink = '#club .home-links > a';
     const shortcuts = { '#program': '.home-calendar-link', '#club': clubLink, '#rec2309637911': clubLink };
     const selector = shortcuts[location.hash];
-    const target = document.getElementById(location.hash.slice(1));
-    const link = selector ? document.querySelector(selector) : target?.closest('.home-bookmarks a');
+    const link = selector && document.querySelector(selector);
     if (!link) return false;
     const destination = new URL(link.href);
     destination.search = location.search;
@@ -28,6 +28,13 @@
   function displayView(target) {
     const context = target?.closest('.home-footer') ? document.getElementById(history.state?.homeContext || '') : target;
     const selected = viewFor(context);
+    if (selected) {
+      brand.href = brand.dataset.homeBrand;
+      brand.setAttribute('aria-label', 'A–House, на главную');
+    } else {
+      brand.removeAttribute('href');
+      brand.removeAttribute('aria-label');
+    }
     overview.dataset.view = selected?.id || 'overview';
     for (const section of sections) {
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');

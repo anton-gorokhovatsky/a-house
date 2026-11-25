@@ -11,7 +11,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { collectArchive, renderHomeBookmarks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
+import { collectArchive, renderHomeBookmarks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 
@@ -184,6 +184,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const houseProjects = projects.filter(project => project.venue);
   const sportStory = projects.flatMap(project => project.works || []).find(work => work.id === 'issue-a-sport');
   const printEditions = JSON.parse(await source('data/print-editions.json'));
+  const currentPrintIssues = subscriptionIssues(printEditions);
   const pressBooks = JSON.parse(await source('data/press-books.json'));
   const printDirectory = file('media/print');
   const publicPrintFiles = printArchiveFileNames(printEditions);
@@ -220,7 +221,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     .replace('{{friendUnitPrice}}', String(friendPrice)).replace('{{friendTotal}}', priceLabel);
   const applicationForm = renderMembership('member', memberTemplate, agreements, member)
     .replace('<!-- MEMBER PROGRAMS -->', () => memberPrograms);
-  if (!outputDirectory) await rm(output, { recursive: true, force: true });
+  if (!outputDirectory) await rm(output, { recursive: true, force: true, maxRetries: 2 });
   // A caller building an alternate variant must supply a new directory.
   await mkdir(output);
   await Promise.all([
@@ -253,14 +254,15 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   }
   const clubPages = new Set(['club', 'member']);
   const documents = new Set(['agreement', 'agreement2', 'rules', 'politic_a-com', 'mts_docs']);
-  const features = new Set(['press', 'special_projects', '404']);
+  const pressPages = new Set(['press', 'press/archive', 'press/books']);
+  const features = new Set(['special_projects', '404']);
   const readerPage = page => page.slug === 'archive' || Boolean(page.archiveTopic) || archive.articles.has(page.slug);
   function pageStyles(page) {
     const {slug} = page;
     let style;
     if (isInstitutionPage(slug)) style = 'institution';
     else if (readerPage(page)) style = 'reader';
-    else if (documents.has(slug) || features.has(slug)) style = 'publications';
+    else if (documents.has(slug) || pressPages.has(slug) || features.has(slug)) style = 'publications';
     if (style) return ['styles/source/grid-3.0.css', 'styles/chrome.css', 'styles/pages/home.css', 'styles/pages/' + style + '.css'];
     return page.styles;
   }
@@ -295,13 +297,15 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const body = markup
       .replace('<!-- EDITORIAL HEADER -->', () => editorialHeader
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
+        .replace('{{wordmarkDestination}}', home ? 'data-home-brand="@@ROOT@@"' : 'href="@@ROOT@@" aria-label="A–House, на главную"')
         .replace('{{programCurrent}}', programPage ? ' aria-current="location"' : '')
+        .replace('{{pressCurrent}}', pressPages.has(page.slug) ? ' aria-current="' + (page.slug === 'press' ? 'page' : 'location') + '"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : '')
-        .replace('{{partnershipCurrent}}', page.slug === 'partnership' ? ' aria-current="page"' : ''))
+        .replace('{{partnershipCurrent}}', page.slug === 'partnership' ? ' aria-current="page"'
+          : page.slug === 'special_projects' ? ' aria-current="location"' : ''))
       .replace('<!-- MENU THEME CONTROL -->', () => menuTheme)
       .replaceAll('{{eventsLabel}}', 'События')
       .replaceAll('{{housesLabel}}', 'Дома и адреса')
-      .replaceAll('{{mediaLabel}}', 'Журнал <span class="wrap-group media-title-phrase">и <wbr><span>издательство</span></span>')
       .replaceAll('{{projectsLabel}}', 'Все проекты')
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
@@ -319,7 +323,11 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
       .replace('{{sportStoryHref}}', () => escape(sportStory.href))
-      .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(printEditions, projects))
+      .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
+      .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
+      .replace('<!-- FRIEND FEATURED COVER -->', () => renderFriendCover(currentPrintIssues))
+      .replace('<!-- PRESS CONTENTS -->', () => renderPressNavigation(page.slug))
+      .replace('<!-- PRESS BOOKMARKS -->', () => renderPressBookmarks(printEditions, projects.find(project => project.overview === 'news').href))
       .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks))
       .replaceAll('{{friendAction}}', friendAction)
       .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@media/press/a-news-01-daria-belyakova.pdf', 'Читать интервью', 'PDF, с. 24–25'))

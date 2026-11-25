@@ -190,34 +190,44 @@ async function checkExpiredProgram(page) {
 }
 
 async function checkReadingReturn(page, mobile) {
-  await page.goto(mobile ? url : url + '#media');
-  if (mobile) {
-    await page.locator('.site-menu-toggle').click();
-    await page.locator('[data-home-view][href="#media"]').click();
-  }
-  const subscription = page.locator('#media a[href="#services-checkout"]');
   const friendLabel = membershipSettings('friend') ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
-  assert.equal((await subscription.innerText()).replace(/\s+/g, ' '), friendLabel);
-  const originalTop = await subscription.evaluate(async link => {
-    await document.fonts.ready;
-    link.scrollIntoView({ block: 'center', behavior: 'instant' });
-    link.focus({ preventScroll: true });
-    return link.getBoundingClientRect().top;
-  });
-  await page.keyboard.press('Enter');
-  assert.equal(new URL(page.url()).hash, '#services-checkout');
   const form = page.locator('#friend-form');
-  await form.waitFor();
-  assert.equal(await page.locator('dialog[open]').count(), 0);
-  assert.equal(await form.locator('input[name="product"]').getAttribute('value'), 'A-Friend');
-  assert.equal(await page.locator('#services-checkout').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
-  await page.goBack();
-  await page.waitForFunction(({link,top}) => link === document.activeElement &&
-    Math.abs(link.getBoundingClientRect().top - top) < 4, { link: await subscription.elementHandle(), top: originalTop });
-  assert.equal(new URL(page.url()).hash, '#media');
+  const origins = [
+    ['', '.home-friend-promo'],
+    ['press/#current-issues', '#current-issues'],
+    ['press/archive/#print-archive', '#print-archive']
+  ];
+  for (const [path, section] of origins) {
+    const origin = url + path;
+    await page.goto(origin);
+    const subscription = page.locator(section + ' a[href$="#services-checkout"]');
+    assert.equal((await subscription.innerText()).replace(/\s+/g, ' '), friendLabel);
+    assert.equal(await subscription.evaluate(link => link.href), url + '#services-checkout');
+    const activationMarker = 'Subscription link position ';
+    await subscription.evaluate(async (link, marker) => {
+      await document.fonts.ready;
+      link.scrollIntoView({ block: 'center', behavior: 'instant' });
+      link.addEventListener('click', () => console.debug(marker + link.getBoundingClientRect().top), { once: true });
+    }, activationMarker);
+    const [activation] = await Promise.all([
+      page.waitForEvent('console', {predicate: message => message.text().startsWith(activationMarker)}),
+      mobile ? subscription.tap() : subscription.press('Enter')
+    ]);
+    const top = Number(activation.text().slice(activationMarker.length));
+    assert.ok(Number.isFinite(top));
+    await page.waitForURL(url + '#services-checkout');
+    await form.waitFor();
+    assert.equal(await page.locator('dialog[open]').count(), 0);
+    assert.equal(await form.locator('input[name="product"]').getAttribute('value'), 'A-Friend');
+    assert.equal(await page.locator('#services-checkout').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
+    await page.goBack();
+    await page.waitForURL(origin);
+    await page.waitForFunction(({link, top}) => link === document.activeElement &&
+      Math.abs(link.getBoundingClientRect().top - top) < 4, { link: await subscription.elementHandle(), top });
+  }
   await page.goForward();
+  await page.waitForURL(url + '#services-checkout');
   await form.waitFor();
-  assert.equal(new URL(page.url()).hash, '#services-checkout');
   await page.goto(url + '#friend');
   assert.ok(await form.isVisible(), 'The former subscription bookmark reaches the same terms and order');
 }
@@ -346,10 +356,10 @@ async function checkVisitorLinks(page, mobile) {
   assert.equal(await page.locator('#publication-archive').isVisible(), false);
   assert.equal(await page.locator('#projects').isVisible(), false, 'The catalogue opens from navigation as its own view');
   const projects = projectGroups.flatMap(group => group.projects);
-  const selected = ['directory','news'].map(key => projects.find(project => project.overview === key));
+  const selected = ['news','directory'].map(key => projects.find(project => project.overview === key));
   const features = page.locator('.home-project-feature:visible');
   assert.deepEqual(await page.locator('#overview > [data-home-section]:visible').evaluateAll(items => items.map(item => item.id)),
-    ['program', 'visit', 'media', 'gatherings']);
+    ['program', 'visit', 'gatherings']);
   assert.ok(await page.locator('#collection-community a[href$="/club/"]').isVisible());
   assert.equal(await page.locator('main a[href*="/member/"]').count(), 0, 'The homepage introduces the club before asking for an application');
   assert.deepEqual(await features.locator('.editorial-pair-title').allInnerTexts(), selected.map(project => project.name));
@@ -364,31 +374,24 @@ async function checkVisitorLinks(page, mobile) {
   assert.deepEqual(await features.locator('.home-project-portfolios h4 a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
   const archiveLink = editions.getByRole('link', {name:'Архив печатных номеров', exact:true});
-  assert.equal(await archiveLink.getAttribute('href'), new URL('press/', url).pathname + '#print-archive');
+  assert.equal(await archiveLink.evaluate(link => link.href), url + 'press/archive/');
   const editorialTitles = await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts();
-  assert.deepEqual(editorialTitles.map(title => title.replaceAll('\u00ad', '')), ['Издательство A–Press', 'A–Index', 'A–News'],
-    'Each project has one heading and follows the intended order');
-  const periodicals = editions.getByRole('region', {name:'Газеты и журналы', exact:true});
-  assert.deepEqual(await periodicals.locator('.home-editions article h5').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
-  assert.deepEqual(await periodicals.locator('.home-editions h5 a').evaluateAll(links => links.map(link => link.hash)),
-    printCatalog.map(series => '#' + (series.archiveAnchor || series.seriesId)), 'Every print series opens its own archive');
-  assert.equal(await periodicals.locator('.editions-access a[href="#services-checkout"]').count(), 1, 'Subscription terms belong to periodicals');
-  assert.equal(await periodicals.locator('.editions-access a[href$="press/#distribution"]').count(), 1);
-  assert.equal(await editions.locator('.press-book').count(), 0, 'Common book catalogue lives on the publisher page');
+  assert.deepEqual(editorialTitles.map(title => title.replaceAll('\u00ad', '').replace(/\s+/g, ' ')), ['Издательство A–Press', 'A–News'],
+    'The home reading highlights introduce the publisher and online journal');
+  assert.equal(await page.locator('main .home-editions, main .print-issue, main .press-book').count(), 0);
   const chooseBooks = editions.getByRole('link', {name:'Книги A–Press'});
   await activate(chooseBooks);
-  await page.waitForURL(url + 'press/#books');
-  const books = page.getByRole('region', {name:'Книги', exact:true});
-  assert.ok(await books.isVisible());
-  assert.deepEqual(await books.getByRole('heading',{level:3}).allInnerTexts(), bookCatalog.map(book => book.title));
-  assert.deepEqual(await books.locator('.press-book a').evaluateAll(links => links.map(link => link.href)), bookCatalog.map(book => book.href));
+  await page.waitForURL(url + 'press/books/');
+  await page.getByRole('heading', {name:'Книги A–Press', level:1}).waitFor();
+  assert.deepEqual(await page.locator('.press-book-title').allInnerTexts(), bookCatalog.map(book => book.title));
+  assert.deepEqual(await page.locator('.press-book .book-preview a').evaluateAll(links => links.map(link => link.href)), bookCatalog.map(book => book.href));
   await page.goBack();
-  await page.waitForFunction(() => document.activeElement?.hash === '#books');
-  await page.goto(url + '#home-books');
-  await page.waitForURL(url + 'press/#books');
-  await page.goBack();
+  await page.waitForURL(url);
   await chooseBooks.waitFor({state:'visible'});
-  for (const work of projects.flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
+  await page.waitForFunction(link => document.activeElement === link, await chooseBooks.elementHandle());
+  const periodicalProjects = projects.filter(project => project.overview === 'editions');
+  for (const work of projects.filter(project => project.overview !== 'editions')
+    .flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
     const example = page.locator('.project-examples a').filter({hasText: work.title});
     assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
   }
@@ -441,26 +444,56 @@ async function checkVisitorLinks(page, mobile) {
   await activate(press);
   await page.waitForURL(url + 'press/');
   assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
-  const printArchive = page.locator('#print-archive');
-  const publisherBooks = page.getByRole('region',{name:'Книги', exact:true});
-  const publisherContents = page.getByRole('navigation', { name: 'Разделы каталога A–Press' });
-  await page.evaluate(() => document.fonts.ready);
-  const pressStart = await page.evaluate(() => scrollY);
-  await activate(publisherContents.getByRole('link', {name:'Книги', exact:true}));
-  await page.waitForURL(url + 'press/#books');
-  await page.waitForFunction(() => {
-    const top = document.getElementById('books-heading').getBoundingClientRect().top;
-    return top >= -1 && top < innerHeight / 3;
-  });
+  assert.equal(await page.locator('main .print-issue, main .press-book').count(), 0);
+  const current = page.locator('#current-issues');
+  const latestIssues = printCatalog.filter(series => series.latest)
+    .sort((a, b) => b.latest.published.localeCompare(a.latest.published));
+  const featured = latestIssues.find(series => series.latest.cover);
+  const issueOrder = featured ? [featured, ...latestIssues.filter(series => series !== featured)] : latestIssues;
+  const issueTitles = await current.locator('.press-featured-issue h3, .press-friend-issues li p:first-child').allTextContents();
+  const plainText = text => text.replaceAll('\u00ad', '').replace(/\s+/g, ' ').trim();
+  assert.deepEqual(issueTitles.map(plainText), issueOrder.map(({edition, latest}) => plainText(edition + ' № ' + latest.number + ' ' + latest.topic)));
+  assert.deepEqual(await current.locator('.press-friend-issues time').evaluateAll(dates => dates.map(date => date.dateTime)),
+    issueOrder.map(({latest}) => latest.published));
+  if (featured) assert.equal(await current.locator('.press-featured-cover').evaluate(image => image.src), new URL(featured.latest.cover.src, url).href);
+  const periodicals = page.locator('#periodicals');
+  assert.deepEqual((await periodicals.locator('.home-edition-brief h3').allTextContents()).map(plainText),
+    periodicalProjects.map(project => project.name));
+  for (const series of printCatalog) {
+    const destination = new URL('press/archive/#' + (series.archiveAnchor || series.seriesId), url);
+    assert.ok(await periodicals.locator('a[href="' + destination.pathname + destination.hash + '"]').first().isVisible());
+  }
+  for (const project of periodicalProjects) {
+    for (const work of project.works) {
+      const example = periodicals.locator('.project-examples a').filter({hasText: work.title});
+      assert.equal(await example.getAttribute('href'), (work.href || project.href).replace('@@ROOT@@', new URL(url).pathname));
+    }
+  }
+  assert.equal(await periodicals.getByRole('link', {name:'Где найти печатный номер'}).getAttribute('href'), '#distribution');
+  const publisherContents = page.getByRole('navigation', {name:'Разделы издательства'});
+  const booksTab = publisherContents.getByRole('link', {name:'Книги A–Press', exact:true});
+  const archiveTab = publisherContents.getByRole('link', {name:'Архив печатных номеров', exact:true});
+  await booksTab.scrollIntoViewIfNeeded();
+  const booksTop = (await booksTab.boundingBox()).y;
+  await activate(booksTab);
+  await page.waitForURL(url + 'press/books/');
+  await page.getByRole('heading', {name:'Книги A–Press', level:1}).waitFor();
+  assert.equal(await publisherContents.locator('[aria-current="page"]').innerText(), 'Книги A–Press');
+  assert.equal(await archiveTab.evaluate(link => link.href), url + 'press/archive/');
+  assert.equal(await page.locator('main .print-issue, main #a-focus').count(), 0);
   await page.goBack();
   await page.waitForURL(url + 'press/');
-  await page.waitForFunction(y => document.activeElement?.hash === '#books' && Math.abs(scrollY - y) < 4, pressStart);
-  assert.equal(await page.locator('#online').getAttribute('href'), 'https://news.ahouseproject.com/');
+  await page.waitForFunction(({link, top}) => document.activeElement === link &&
+    Math.abs(link.getBoundingClientRect().top - top) < 4, {link: await booksTab.elementHandle(), top: booksTop});
+  await activate(archiveTab);
+  await page.waitForURL(url + 'press/archive/');
+  const printArchive = page.locator('#print-archive');
+  await printArchive.getByRole('heading', {name:'Архив печатных номеров', level:1}).waitFor();
+  assert.equal(await publisherContents.locator('[aria-current="page"]').innerText(), 'Архив печатных номеров');
+  assert.equal(await booksTab.evaluate(link => link.href), url + 'press/books/');
+  assert.equal(await printArchive.locator('.press-book').count(), 0);
   assert.ok(await printArchive.getByRole('heading',{name:'Газета A–News', exact:true}).isVisible());
-  assert.deepEqual(await publisherBooks.getByRole('heading',{level:3}).allInnerTexts(), bookCatalog.map(book => book.title));
-  assert.deepEqual(await publisherBooks.locator('.book-preview a').evaluateAll(links => links.map(link => link.href)), bookCatalog.map(book => book.href));
-  assert.equal(await publisherBooks.locator('#a-focus').count(), 0);
-  assert.ok(await printArchive.locator('#a-focus').isVisible());
+  assert.ok(await printArchive.locator('#a-focus-archive').isVisible());
   const issueCards = printArchive.locator('.print-issue');
   assert.ok(await page.locator('main .press-file').evaluateAll(links => links.every(link => {
     const action = link.querySelector('.press-file-label');
@@ -473,19 +506,12 @@ async function checkVisitorLinks(page, mobile) {
     printCatalog.flatMap(edition => edition.issues.map(issue => issue.files.map(file => file.name))),
     'Every archived issue offers the corresponding files in reading order');
   await activate(printArchive.getByRole('navigation', { name: 'Издания в архиве' }).getByRole('link', { name: 'A–Kids', exact: true }));
-  await page.waitForURL(url + 'press/#a-kids');
+  await page.waitForURL(url + 'press/archive/#a-kids');
   const newestKids = printCatalog.find(edition => edition.seriesId === 'a-kids').issues[0];
   assert.equal(await page.locator('#a-kids .print-issue').first().getAttribute('id'), newestKids.id);
   assert.equal(await page.locator('#' + newestKids.id + ' a[href$=".pdf"]').count(), 2, 'Children and adults can both read the newest open A–Kids');
   await page.goBack();
-  await page.goto(url + 'press/#a-sport-01');
-  await page.waitForFunction(() => Math.abs(document.getElementById('a-sport-01').getBoundingClientRect().top) < innerHeight / 3);
-  await page.goBack();
-  await page.waitForURL(url + 'press/');
-  assert.equal(await page.locator('main a[href$="#services-checkout"]').count(), 1, 'Subscriptions belong to the archive as a whole');
-  await activate(printArchive.locator('a[href$="#services-checkout"]'));
-  await page.waitForURL(url + '#services-checkout');
-  assert.ok(await page.locator('#friend-form').isVisible());
+  await page.waitForURL(url + 'press/archive/');
   await page.goBack();
   await page.waitForURL(url + 'press/');
   await page.goBack();
@@ -495,11 +521,25 @@ async function checkVisitorLinks(page, mobile) {
   const register = page.locator('#a-media .home-project-entries');
   assert.ok(await register.isVisible());
   await activate(register.getByRole('link', { name: /Газета\s+A–Sport/ }));
-  await page.waitForURL(url + 'press/#a-sport');
+  await page.waitForURL(url + 'press/archive/#a-sport');
   assert.ok(await page.locator('#a-sport-02').isVisible());
-  await page.goto(url + '#issue-a-sport');
-  await page.waitForURL(url + 'press/#a-sport-02');
-  assert.ok(await page.locator('#a-sport-02 .press-file').isVisible());
+  for (const [bookmark, destination, content] of [
+    ['press/#print-archive', 'press/archive/', '#print-archive h1'],
+    ['press/#a-sport-01', 'press/archive/#a-sport-01', '#a-sport-01 .press-file'],
+    ['press/#books', 'press/books/', 'main h1'],
+    ['#home-books', 'press/books/', 'main h1'],
+    ['#issue-a-sport', 'press/archive/#a-sport-02', '#a-sport-02 .press-file']
+  ]) {
+    await page.goto(url + bookmark);
+    await page.waitForURL(url + destination);
+    await page.locator(content).first().waitFor();
+    if (destination.includes('#')) {
+      await page.waitForFunction(() => {
+        const target = document.getElementById(location.hash.slice(1));
+        return target && Math.abs(target.getBoundingClientRect().top) < innerHeight / 3;
+      });
+    }
+  }
   await page.goto(url + '#publications');
   await page.waitForURL(url + 'archive/');
   const archive = page.getByRole('main');
@@ -712,7 +752,7 @@ async function checkEnlargedMenu(page) {
   await page.mouse.click(lastWord.x, lastWord.y);
   await page.waitForURL(url + '#industry');
 
-  await page.goto(url + 'press/#a-sport');
+  await page.goto(url + 'press/archive/#a-sport');
   await page.addStyleTag({ content: 'html { font-size: 200%; }' });
   await page.locator('#a-sport').evaluate(el => el.scrollIntoView({block: 'start'}));
   await page.waitForFunction(() => {
@@ -732,6 +772,19 @@ async function checkEnlargedMenu(page) {
   await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.style.fontSize = '200%';
   }, { once: true }));
+  for (const [path, title] of [
+    ['press/', /A–Press/],
+    ['press/archive/', 'Архив печатных номеров'],
+    ['press/books/', 'Книги A–Press']
+  ]) {
+    await page.goto(url + path);
+    await page.getByRole('heading', {level:1, name:title}).waitFor();
+    assert.ok(await page.getByRole('navigation', {name:'Разделы издательства'}).isVisible());
+    assert.ok(await page.evaluate(async () => {
+      await document.fonts.ready;
+      return document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1;
+    }), path + ' must fit at 320px and 200% text');
+  }
   for (const bookmark of ['about/#principles', 'calendar/#past']) {
     await page.goto(url + bookmark);
     await page.evaluate(() => document.fonts.ready);
@@ -755,23 +808,8 @@ async function checkEnlargedMenu(page) {
 }
 
 async function checkEditorialGrouping(page) {
-  await page.goto(url + '#media');
-  const title = page.locator('#media-title');
+  await page.goto(url);
   const mobile = page.viewportSize().width < 600;
-  const [beforeConjunction, afterConjunction] = await renderedWordGaps(title);
-  if (!mobile) assert.ok(beforeConjunction > 0, 'The print section title fits on one line on desktop');
-  assert.ok(afterConjunction > 0, 'The conjunction must remain on the same line as the noun');
-
-  const renderedLines = locator => locator.evaluate(element => {
-    const range = document.createRange();
-    range.selectNodeContents(element.firstChild);
-    return new Set([...range.getClientRects()].filter(rect => rect.width > 0).map(rect => Math.round(rect.top))).size;
-  });
-  const specialTitle = page.locator('.home-issue h5').filter({hasText: /A–Focus.*предприни/u});
-  const markedWord = specialTitle.locator('.wrap-group');
-  if (await specialTitle.count()) assert.equal(await renderedLines(markedWord), 1,
-    'Keep the full word «предпринимателя» on a fresh line when it fits in the A–Focus title');
-
   if (mobile) {
     const viewport = page.viewportSize();
     const menu = page.locator('.site-menu-toggle');
@@ -779,11 +817,15 @@ async function checkEditorialGrouping(page) {
     try {
       await page.setViewportSize({width: 320, height: viewport.height});
       await menu.tap();
-      const item = page.locator('#site-navigation a[href$="#media"]');
-      const [, after] = await renderedWordGaps(item);
-      assert.ok(after > 0, 'The enlarged menu keeps «и издательство» together where the phrase fits');
-      assert.equal(await renderedLines(item.getByText('издательство', {exact: true})), 1,
-        'At 320px and 200% text the whole noun fits on a fresh menu line');
+      const publisher = page.locator('#site-navigation').getByRole('link', {name:'Издательство', exact:true});
+      assert.equal(await publisher.evaluate(link => link.href), url + 'press/');
+      assert.ok(await publisher.evaluate(async item => {
+        await document.fonts.ready;
+        const range = document.createRange();
+        range.selectNodeContents(item);
+        const lines = [...range.getClientRects()].filter(rect => rect.width > 0);
+        return lines.length > 0 && lines.every(rect => rect.left >= 0 && rect.right <= document.documentElement.clientWidth);
+      }), 'The publisher link remains readable at 320px and 200% text');
     } finally {
       if (await menu.getAttribute('aria-expanded') === 'true') await menu.tap();
       await largerText.evaluate(style => style.remove());
@@ -806,21 +848,6 @@ async function checkEditorialGrouping(page) {
   });
   assert.equal(countLines.length, 2, 'Check both quantities in the A–Fest announcement');
   assert.ok(countLines.every(delta => delta < 1), 'A quantity must share a line with the start of what it counts');
-
-  const issue = page.locator('.home-current-issue');
-  const group = await issue.evaluate(async el => {
-    await document.fonts.ready;
-    const cover = el.querySelector('figure').getBoundingClientRect();
-    const label = el.querySelector('.home-kicker');
-    const number = label.getBoundingClientRect();
-    const story = el.querySelector('.home-issue-story').getBoundingClientRect();
-    return { gap: number.left - cover.right, offset: number.top - cover.top, storyOffset: story.top - cover.top,
-      titleBottom: el.querySelector('.home-issue-title h5').getBoundingClientRect().bottom, coverTop: cover.top, small: matchMedia('(max-width: 48em)').matches, em: parseFloat(getComputedStyle(label).fontSize) };
-  });
-  if (group.small) assert.ok(group.titleBottom < group.coverTop && Math.abs(group.storyOffset) < group.em,
-    'On the phone the full title introduces the cover and the adjacent story');
-  else assert.ok(Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em,
-    'The issue date must sit beside the upper edge of its cover');
 
   const lists = page.locator('.home-season:visible .home-events');
   for (const list of await lists.all()) {
@@ -879,6 +906,23 @@ async function checkEditorialGrouping(page) {
       }
     }
   }
+
+  await page.goto(url + 'press/#current-issues');
+  const issue = page.locator('#current-issues .press-featured-issue');
+  const group = await issue.evaluate(async el => {
+    await document.fonts.ready;
+    const cover = el.querySelector('.press-featured-cover').getBoundingClientRect();
+    const label = el.querySelector('.home-kicker');
+    const date = label.getBoundingClientRect();
+    const title = el.querySelector('h3').getBoundingClientRect();
+    return { width: cover.width, height: cover.height, coverBottom: cover.bottom, dateTop: date.top,
+      offset: date.top - cover.top, gap: date.left - cover.right, titleTop: title.top, dateBottom: date.bottom,
+      em: parseFloat(getComputedStyle(label).fontSize) };
+  });
+  assert.ok(group.width > 0 && group.height > 0 && group.titleTop >= group.dateBottom - 1);
+  const besideCover = Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em;
+  assert.ok(besideCover || group.coverBottom <= group.dateTop,
+    'The issue date and title must sit beside the cover or directly below it');
 }
 
 async function checkArchiveReading(page) {
@@ -940,12 +984,22 @@ async function checkArchiveReading(page) {
     'Project logos must reserve their area before the lazy files arrive');
   assert.equal(await clients.getByRole('link').count(), 0);
   assert.equal(await clients.getByRole('img', {name: /.+/}).count(), 12);
-  const projects = page.getByRole('navigation', {name: 'Совместные проекты'}).getByRole('link');
-  assert.equal(await projects.count(), 3);
-  await projects.first().focus();
+  const stories = page.locator('#partner-stories');
+  assert.ok(await stories.getByRole('heading', {name:'Совместные проекты', level:2}).isVisible());
+  const cases = stories.locator('.partner-case');
+  assert.equal(await cases.count(), 6);
+  assert.ok(await cases.evaluateAll(items => items.every(item => item.querySelectorAll('a[href]').length === 1)));
+  const projects = cases.getByRole('link');
+  assert.equal(await projects.nth(0).evaluate(link => link.href), url + 'mts/');
+  assert.equal(await projects.nth(1).evaluate(link => link.href), url + 'longevity/');
+  assert.equal(await projects.nth(5).evaluate(link => link.href), url + 'tpost/s1n334xh71-sin-nyan-hao-ili-schastlivogo-novogo-god/');
+  assert.equal(await stories.locator('.partner-other-case a').evaluate(link => link.href), url + 'tpost/r8me79ap71-kvartirnik-pioneer-v-ahouse/');
+  await projects.nth(3).focus();
   await page.keyboard.press('Tab');
-  const chosen = projects.nth(1);
+  const chosen = projects.nth(4);
   const position = await chosen.evaluate(link => ({ address: link.href, top: link.getBoundingClientRect().top }));
+  assert.equal(position.address, url + 'tpost/xenjkodze1-ahouse-cosmoscow/');
+  assert.ok(await chosen.evaluate(link => document.activeElement === link));
   await page.keyboard.press('Enter');
   await page.waitForURL(position.address);
   await page.goBack();
@@ -1058,11 +1112,8 @@ async function checkConsentReturn(page) {
 }
 
 async function checkHomeRoutes(page, mobile) {
-  const choice = name => page.locator('[data-home-view][href="#' + name + '"]');
   const section = name => page.locator('[data-home-section][id="' + name + '"]');
-  const headingGap = name => section(name).getByRole('heading', {level:2}).first().evaluate(heading =>
-    heading.getBoundingClientRect().top - document.getElementById('t-header').getBoundingClientRect().bottom);
-  for (const [anchor, title] of [['visit', 'Дома и адреса'], ['media', 'Журнал и издательство'], ['services-checkout', 'A–Friend']]) {
+  for (const [anchor, title] of [['visit', 'Дома и адреса'], ['services-checkout', 'A–Friend']]) {
     await page.goto(url + '#' + anchor);
     assert.equal(await page.title(), title + ' — A–House');
     await page.locator('.skip-content').press('Enter');
@@ -1074,23 +1125,32 @@ async function checkHomeRoutes(page, mobile) {
       'Reading must continue inside the original section');
   }
   await checkReadingReturn(page, mobile);
-  await page.goto(url);
   await checkEditorialGrouping(page);
+  await page.goto(url);
   const menu = page.locator('.site-menu-toggle');
   const calendarLink = page.locator('.site-navigation a[href$="/calendar/"]');
+  const publisherPath = new URL('press/', url).pathname;
+  const publisherLink = page.locator('#site-navigation a[href="' + publisherPath + '"]');
+  const media = page.locator('#media');
   assert.equal(await section('program').isVisible(), true);
-  assert.equal(await section('media').isVisible(), true);
+  assert.equal(await media.isVisible(), true);
   assert.equal(await section('club').isVisible(), false, 'The overview must keep club details in their own view');
+  assert.equal(await publisherLink.count(), 1);
+  assert.equal(await page.locator('#site-navigation a[href^="' + publisherPath + '"]').count(), 1);
+  assert.equal((await publisherLink.textContent()).trim().replaceAll('\u00ad', ''), 'Издательство');
+  assert.equal(await page.locator('#site-navigation a[href="#media"]').count(), 0);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  const printArchive = page.locator('.home-print').getByRole('link', {name: 'Архив печатных номеров', exact: true});
-  await printArchive.press('Enter');
-  await page.waitForURL(url + 'press/#print-archive');
+  const printArchive = media.getByRole('link', {name:'Архив печатных номеров', exact:true});
+  if (mobile) await printArchive.tap();
+  else await printArchive.press('Enter');
+  await page.waitForURL(url + 'press/archive/');
   assert.ok(await page.locator('#print-archive .press-file').first().isVisible());
   await page.goBack();
-  assert.equal(await page.locator('#t-header a[href$="/archive/"], #t-footer a[href$="/archive/"]').count(), 0);
+  assert.equal(await page.locator('#t-header a[href="' + new URL('archive/', url).pathname +
+    '"], #t-footer a[href="' + new URL('archive/', url).pathname + '"]').count(), 0);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   assert.equal(await menu.isVisible(), mobile, 'Only a compact header needs a menu toggle');
-  assert.equal(await choice('media').isVisible(), !mobile, 'Desktop sections should be visible before interaction');
+  assert.equal(await publisherLink.isVisible(), !mobile, 'Desktop sections should be visible before interaction');
   if (!mobile) {
     const links = page.locator('#site-navigation a:visible');
     const rows = await links.evaluateAll(items => items.map(a => Math.round(a.getBoundingClientRect().top)));
@@ -1123,44 +1183,46 @@ async function checkHomeRoutes(page, mobile) {
     assert.equal(await menu.getAttribute('aria-expanded'), 'false', 'Choosing a section must close the mobile menu');
     await page.goBack();
   }
-  if (mobile && await menu.getAttribute('aria-expanded') !== 'true') await menu.click();
-  await choice('media').click();
-  await section('media').waitFor({ state: 'visible' });
+  if (mobile && await menu.getAttribute('aria-expanded') !== 'true') await menu.tap();
+  if (mobile) await publisherLink.tap();
+  else await publisherLink.press('Enter');
+  await page.waitForURL(url + 'press/');
+  assert.equal(await publisherLink.getAttribute('aria-current'), 'page');
+  await page.getByRole('heading', {level:1, name:/A–Press/}).waitFor();
+  await page.goto(url + '#media');
+  await media.waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media');
-  assert.equal(await page.evaluate(() => document.activeElement.id), 'media-title');
-  const ranks = await section('media').evaluate(el => ['#media-title', '#collection-editions', '.home-issue h5'].map(selector => parseFloat(getComputedStyle(el.querySelector(selector)).fontSize)));
-  assert.ok(ranks[0] > ranks[1] && ranks[1] > ranks[2], 'The reading view gives its title, publisher and individual issues distinct sizes');
-  const readingGap = await headingGap('media');
-  assert.equal(await choice('media').getAttribute('aria-current'), 'true');
-  assert.equal(await section('program').isVisible(), false);
-  assert.equal(await section('media').getByRole('heading', {name: 'A–Index', exact: true}).count(), 0);
-  const newsLink = section('media').locator('#media-heading').getByRole('link', {name: 'Читать онлайн-журнал A–News'});
+  await page.waitForFunction(() => document.activeElement.id === 'media');
+  assert.equal(await page.title(), 'A–House');
+  assert.ok(await section('program').isVisible(), 'The old reading bookmark opens within the full homepage');
+  assert.equal(await media.getByRole('heading', {name:'A–Index', exact:true}).count(), 0);
+  const news = media.getByRole('article', {name:'A–News', exact:true});
+  const newsLink = news.getByRole('link', {name:'Читать журнал A–News'});
   assert.equal(await newsLink.getAttribute('href'), 'https://news.ahouseproject.com/');
   await page.goto(url + '#a-news');
-  const article = section('media').getByRole('article', {name: 'A–News'}).locator('.project-examples a').first();
+  const article = news.locator('.project-examples a').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
+  assert.equal(new URL(await article.evaluate(link => link.href)).origin, 'https://news.ahouseproject.com');
   await page.goBack();
   await page.waitForURL(url + '#media');
-  assert.equal(await section('media').locator('.publication-list, .home-archived-issue').count(), 0);
+  assert.equal(await media.locator('.publication-list, .print-issue, .press-book').count(), 0);
   await page.evaluate(() => { location.hash = 'publication-archive-design'; });
   await page.waitForURL(url + 'archive/design/');
   await page.goBack();
   await page.waitForURL(url + '#media');
-  await page.waitForFunction(() => document.title === 'Журнал и издательство — A–House');
-  if (mobile) await menu.click();
+  await page.waitForFunction(() => document.title === 'A–House');
+  if (mobile) await menu.tap();
   await calendarLink.press('Enter');
   await page.waitForURL(url + 'calendar/');
   assert.ok(await page.locator('#upcoming').isVisible() && await page.locator('#past').isVisible());
   await page.goBack();
-  await section('media').waitFor({ state: 'visible' });
-  assert.equal(new URL(page.url()).hash, '#media', 'Back must restore the chosen reading view');
+  await media.waitFor({ state: 'visible' });
+  assert.equal(new URL(page.url()).hash, '#media', 'Back must restore the reading bookmark');
   await page.goto(url + '#services-checkout');
   await page.locator('#friend-form').waitFor();
   assert.equal(await page.locator('dialog[open]').count(), 0);
   await page.goto(url + '#visit');
   await section('visit').waitFor({ state: 'visible' });
-  assert.ok(readingGap > 0 && Math.abs(await headingGap('visit') - readingGap) <= 1,
-    'The house addresses and reading sections must start at the same distance below the masthead');
   await section('visit').locator('a[href$="/residents/"]').first().click();
   await page.waitForURL(url + 'residents/');
 }

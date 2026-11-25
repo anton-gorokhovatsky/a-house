@@ -110,7 +110,7 @@
           {"title": "№ 2. Коллекциониро\u00adвание", "text": "Основательницы ярмарки blazar и кураторы её секции дизайна рассказывают, как новые имена попадают на ярмарку.", "href": "@@ROOT@@tpost/f0997i9441-anews-2/"}
         ],
         "description": "Газета об архитектуре, дизайне, девелопменте и культуре. У каждого выпуска своя тема — от дома до коллекционирования.",
-        "href": "@@ROOT@@press/#a-news"
+        "href": "@@ROOT@@press/archive/#a-news"
       },
       {
         "name": "Журнал A–Kids",
@@ -120,7 +120,7 @@
           {"title": "Первый номер. Петербург с двух сторон", "text": "Взрослым — путеводитель по городу. Если перевернуть журнал, начинаются игры и задания для детей.", "href": "@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/"}
         ],
         "description": "Журнал-перевёртыш для всей семьи. В первом номере с одной стороны — путеводитель по Петербургу для родителей, с другой — игры для детей.",
-        "href": "@@ROOT@@press/#a-kids"
+        "href": "@@ROOT@@press/archive/#a-kids"
       },
       {
         "name": "Газета A–Sport",
@@ -130,7 +130,7 @@
           {"id": "issue-a-sport", "title": "Как выбрать велосипед и экипировку", "text": "Зачем велотуфлям шипы и что такое бибсы? Команда Velopraktika разбирает велосипед и экипировку для первых тренировок.", "href": "https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/"}
         ],
         "description": "Газета о спорте и культуре. В номере «Движение» команда Velopraktika помогает выбрать велосипед, одежду и обувь для тренировок.",
-        "href": "@@ROOT@@press/#a-sport"
+        "href": "@@ROOT@@press/archive/#a-sport"
       },
       {
         "name": "Газета A–State",
@@ -140,7 +140,7 @@
           {"title": "Владикавказ Тамары Сокуровой", "text": "В выпуске о Северном Кавказе основательница кинофестиваля «Алания» рассказывает о своём городе.", "href": "https://news.ahouseproject.com/a-talks-tamara-sokurova/"}
         ],
         "description": "Каждый выпуск посвящён одному региону. В номере о Северном Кавказе Тамара Сокурова рассказывает о Владикавказе и своём кинофестивале «Алания».",
-        "href": "@@ROOT@@press/#a-state"
+        "href": "@@ROOT@@press/archive/#a-state"
       },
       {
         "name": "Партнёрская газета A–Focus",
@@ -156,7 +156,7 @@
           {"title": "Первый выпуск с Archipélago", "text": "Редакция и мебельный бренд собрали в одном номере интервью и календарь событий в предметном дизайне.", "href": "https://archipelago.studio/about/news/2250/?lang=ru"}
         ],
         "description": "Газета, которую A–Press делает на заказ. Первый выпуск о предметном дизайне издательство подготовило вместе с мебельным брендом Archipélago.",
-        "href": "@@ROOT@@press/#a-focus-archive"
+        "href": "@@ROOT@@press/archive/#a-focus-archive"
       },
       {
         "name": "Рубрика A–Guide",

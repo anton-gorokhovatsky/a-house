@@ -105,7 +105,7 @@ export function renderHomeProjects(projects, events, group) {
         ${renderProjectWorks(project)}</article>`;
     }
     const distinct = project.works.some(work => work.href && work.href !== project.href);
-    return `<article class="home-edition-brief"><h5>${distinct ? link(project.href, project.name) : escape(project.name)}</h5>
+    return `<article class="home-edition-brief"><h3>${distinct ? link(project.href, project.name) : escape(project.name)}</h3>
       ${renderProjectWorks(project)}</article>`;
   }).join('\n');
 }

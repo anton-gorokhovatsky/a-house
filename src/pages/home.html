@@ -25,6 +25,19 @@
           </nav>
         </div>
       </section>
+      <section class="home-section home-friend-promo home-overview-only" aria-labelledby="home-friend-title">
+        <div class="home-friend-promo-inner">
+          <div class="home-friend-promo-copy">
+            <h2 id="home-friend-title">Подписка A–Friend</h2>
+            <p>Свежие номера {{digitalEditions}} в PDF в приложении A–House. В подписку также входят путеводители, подборки и приглашения на выставки.</p>
+            <div class="home-links">
+              <a class="home-action" href="#services-checkout">{{friendAction}}</a>
+              <a href="@@ROOT@@press/archive/">Читать прошлые номера бесплатно</a>
+            </div>
+          </div>
+          <!-- FRIEND FEATURED COVER -->
+        </div>
+      </section>
       <section id="visit" class="home-section home-visit" data-home-section data-overview-section tabindex="-1" aria-labelledby="visit-heading">
         <div class="home-section-head">
           <h2 id="visit-heading"><span class="home-overview-only" id="collection-houses">{{housesLabel}}</span><span class="home-detail">{{housesLabel}}</span></h2>
@@ -75,40 +88,27 @@
         </header>
         <div class="home-community"><!-- PROJECTS community --></div>
       </section>
-      <div id="media" class="home-section home-reading" data-home-section data-overview-section data-home-title="media-title" tabindex="-1">
-        <h2 class="home-overview-only screen-reader-only">Издательство, справочник и онлайн-журнал</h2>
-        <div id="media-heading" class="home-section-head home-detail">
-          <h2 id="media-title">{{mediaLabel}}</h2>
-          <a href="https://news.ahouseproject.com/">Читать онлайн-журнал A–News</a>
-        </div>
+      <div id="media" class="home-section home-reading home-overview-only" tabindex="-1">
+        <h2 id="media-title" class="screen-reader-only">Что почитать</h2>
         <div class="reading-highlights">
-          <section class="home-print" aria-labelledby="collection-editions">
-            <header class="home-section-head publisher-head">
-              <h3 id="collection-editions" class="editorial-pair-title">Издательство A–Press</h3>
+          <section class="home-press-teaser" aria-labelledby="collection-editions">
+            <h3 id="collection-editions" class="editorial-pair-title">Издательство A–Press</h3>
+            <div>
+              <p>Книги, газеты и журналы об архитектуре, дизайне и городской жизни.</p>
               <div class="home-links">
-                <a href="@@ROOT@@press/#print-archive">Архив печатных номеров</a>
-                <a href="@@ROOT@@press/#books">Книги A–Press</a>
+                <a href="@@ROOT@@press/">Свежие номера и проекты издательства</a>
+                <a href="@@ROOT@@press/archive/">Архив печатных номеров</a>
+                <a href="@@ROOT@@press/books/">Книги A–Press</a>
               </div>
-            </header>
-            <section class="publisher-shelf" aria-labelledby="home-periodicals">
-              <h4 id="home-periodicals" class="publisher-shelf-title">Газеты и журналы</h4>
-              <div>
-                <div class="press-highlights"><!-- CURRENT PRINT ISSUES --></div>
-                <div class="editions-access">
-                  <p>Предыдущие номера можно бесплатно прочитать в архиве. Свежие выпуски {{digitalEditions}} доступны по подписке в приложении A–House.</p>
-                  <div class="home-section-tail">
-                    <a href="#services-checkout">{{friendAction}}</a>
-                    <a href="@@ROOT@@press/#distribution">Где взять бумажный номер</a>
-                  </div>
-                </div>
-                <div class="home-editions"><!-- PROJECTS editions --></div>
-              </div>
-            </section>
+            </div>
           </section>
-          <div class="home-overview-only"><!-- PROJECTS directory --></div>
           <!-- PROJECTS news -->
         </div>
       </div>
+      <section class="home-section home-reading home-overview-only" aria-labelledby="directory-intro">
+        <h2 id="directory-intro" class="screen-reader-only">Справочник архитектурных бюро</h2>
+        <div class="reading-highlights"><!-- PROJECTS directory --></div>
+      </section>
       <section id="industry" class="home-section home-industry" data-home-section tabindex="-1" aria-labelledby="industry-heading">
         <div class="home-section-head">
           <h2 id="industry-heading">Бюро и&nbsp;вакансии</h2><a class="home-bureaus-shortcut" href="#architecture-bureaus">К справочнику A–Index</a>
@@ -156,7 +156,7 @@
             <p class="membership-benefits">{{friendExtras}}</p>
             <p class="membership-price">{{friendPrice}}</p>
             <p class="membership-note">В&nbsp;программу клуба A–Member уже входит доступ к&nbsp;приложению и&nbsp;изданиям A–House.</p>
-            <a class="friend-archive-return friend-archive-all" href="@@ROOT@@press/#print-archive">К архиву печатных номеров</a>
+            <a class="friend-archive-return friend-archive-all" href="@@ROOT@@press/archive/">К архиву печатных номеров</a>
           </header>
           <div class="membership-request" id="form634408909">
             <!-- FRIEND ORDER -->

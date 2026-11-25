@@ -1,3 +1,15 @@
+function followMovedSection() {
+  const link = document.getElementById(location.hash.slice(1));
+  if (!link?.matches('a[data-section-bookmark]')) return;
+  const destination = new URL(link.href);
+  if (destination.origin === location.origin) destination.search = location.search;
+  location.replace(destination.href);
+}
+if (document.querySelector('[data-section-bookmark]')) {
+  followMovedSection();
+  window.addEventListener('hashchange', followMovedSection);
+}
+
 // Original compositions use a different drawing width at each breakpoint.
 // Scale the composition as a whole so photographs and their captions stay together.
 const boards = Array.from(document.querySelectorAll('.t396__artboard[data-artboard-screens]'));
@@ -171,10 +183,12 @@ if (header) {
   compact.addEventListener('change', () => {
     if (compact.matches && menu.contains(document.activeElement)) toggle.focus({preventScroll: true});
     const focused = document.activeElement;
-    if (!compact.matches && (focused === toggle || (header.contains(focused) && !focused.getClientRects().length))) {
-      header.querySelector('.site-header-brand').focus({preventScroll: true});
-    }
+    const restoreFocus = !compact.matches && (focused === toggle || (header.contains(focused) && !focused.getClientRects().length));
     openMenu(false);
+    if (restoreFocus) {
+      const destination = header.querySelector('.site-header-brand[href]') || menu.querySelector('a[href]');
+      destination?.focus({preventScroll: true});
+    }
   });
   window.addEventListener('pageshow', event => { if (event.persisted) openMenu(false); });
   toggle.addEventListener('click', () => {
