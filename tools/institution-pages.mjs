@@ -52,6 +52,10 @@ export function isInstitutionPage(slug) {
 
 export function renderInstitutionPage(slug) {
   const page = institutionPages[slug];
+  const isMainSection = slug === 'partnership';
+  const title = escape(page.title)
+    .replace('предпринимателя', '<span class="wrap-group">пред&shy;при&shy;ни&shy;ма&shy;те&shy;ля</span>')
+    .replace('Сотрудничество', 'Сотруд&shy;ничество');
   const sections = page.sections.map(section => `
     <section class="institution-section${section.people ? ' institution-section-people' : ''}${section.formats ? ' institution-section-formats' : ''}" id="${escape(section.id)}" aria-labelledby="${escape(section.id)}-title">
       <h2 id="${escape(section.id)}-title">${escape(section.title)}</h2>
@@ -62,7 +66,7 @@ export function renderInstitutionPage(slug) {
     <main id="site-content" tabindex="-1" class="home-editorial institution-page">
       <header class="institution-opening${page.photo ? ' institution-opening-photo editorial-pair' : ''}">
         <div class="institution-intro">
-          <h1 class="editorial-pair-title">${escape(page.title).replace('предпринимателя', '<span class="wrap-group">пред&shy;при&shy;ни&shy;ма&shy;те&shy;ля</span>')}</h1>
+          <h1 class="editorial-pair-title${isMainSection ? ' section-title' : ''}">${title}</h1>
           <p class="institution-lead">${escape(page.lead).replace('предпринимателей', 'пред&shy;при&shy;ни&shy;ма&shy;те&shy;лей')}</p>
           ${page.intro ? '<p>' + escape(page.intro) + '</p>' : ''}
           ${links(page.links)}

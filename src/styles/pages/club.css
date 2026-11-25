@@ -14,14 +14,7 @@
   align-items: start;
 }
 
-.club-opening h1 {
-  margin: 0;
-  font: 400 var(--lead-size)/1.07 var(--display);
-  text-wrap: balance;
-}
-@container club-content (max-width: 12em) {
-  .club-opening h1 { font-size: var(--chapter-size); }
-}
+.club-opening h1 { margin: 0; }
 
 .home-page .club-opening p { max-width: 37em; margin-block-start: 1.1rem; }
 .club-scene img,
@@ -39,6 +32,7 @@
 
 .club-programs, .club-terms { margin-block-start: var(--chapter); }
 .club-programs, .club-programs article { scroll-margin-block-start: 1.2rem; }
+.home-page .club-page h2 { font-size: var(--type-subsection); }
 .home-page .club-programs h2 { text-align: start; }
 .club-programs header { margin-block-end: var(--group); }
 .club-programs article + article { margin-block-start: clamp(2.8rem, 7vw, 6.5rem); }

@@ -24,12 +24,67 @@
   {
     "id": "marketing-mastermind",
     "title": "Маркетинг на разбор",
-    "start": "2026-11-26", "end": "2026-11-26", "time": "19:00",
+    "start": "2026-11-26", "end": "2026-11-26", "time": "19:00", "endTime": "21:00",
     "kind": "Мастермайнд", "venueId": "entrepreneur", "address": "Зал Строгановых, Малый Каретный пер., 11, стр. 10",
     "summary": "Встреча с командой Точка Банка о том, как предпринимателям привлекать клиентов.",
     "home": "card", "price": "4 000 ₽",
     "booking": { "url": "https://dompred.ru/events/marketing-mastermind#marketing-mastermind", "label": "Записаться" },
     "links": [{ "url": "https://dompred.ru/events/marketing-mastermind", "label": "Страница встречи", "role": "event-page" }]
+  },
+  {
+    "id": "business-decisions-galper",
+    "title": "Развилки большого бизнеса: решения, которые определяют будущее",
+    "start": "2026-11-27", "end": "2026-11-27", "time": "19:30", "endTime": "21:00",
+    "kind": "Встреча с амбассадором", "venueId": "entrepreneur", "address": "Зал Строгановых, Малый Каретный пер., 11, стр. 10",
+    "summary": "Сооснователь Grow Food Даниэль Гальпер на примерах из бизнеса разбирает, как выбрать инвестора, сохранить самостоятельность или решиться на продажу компании.",
+    "home": false,
+    "price": "5 000 ₽",
+    "booking": { "url": "https://dompred.ru/events/daniel-galper#daniel-galper", "label": "Записаться" },
+    "links": [{ "url": "https://dompred.ru/events/daniel-galper", "label": "Страница встречи", "role": "event-page" }]
+  },
+  {
+    "id": "eliseev-gastronomy",
+    "title": "Жить со вкусом: империя Елисеевых",
+    "start": "2026-11-28", "end": "2026-11-28", "time": "13:00", "endTime": "15:00",
+    "kind": "Лекция", "venueId": "entrepreneur", "address": "Зал Мамонтова, Малый Каретный пер., 11, стр. 10",
+    "summary": "Историк и искусствовед Валерия Романова расскажет, как купцы Елисеевы построили собственную сеть гастрономов и сделали своё имя знаком качества.",
+    "home": false,
+    "price": "2 500 ₽",
+    "booking": { "url": "https://dompred.ru/events/eliseeva-gastronomy-and-trade#eliseeva-gastronomy-and-trade", "label": "Записаться" },
+    "links": [{ "url": "https://dompred.ru/events/eliseeva-gastronomy-and-trade", "label": "Страница лекции", "role": "event-page" }]
+  },
+  {
+    "id": "business-improvisation",
+    "title": "Без сценария: как действовать, когда план уже не работает",
+    "start": "2026-12-01", "end": "2026-12-01", "time": "19:00", "endTime": "21:00",
+    "kind": "Практикум", "venueId": "entrepreneur", "address": "Зал Строгановых, Малый Каретный пер., 11, стр. 10",
+    "summary": "Команда Prosecco Show проведёт упражнения по импровизации в парах и группах. Участники попробуют принимать решения, когда обстоятельства меняются на ходу.",
+    "home": false,
+    "price": "3 000 ₽",
+    "booking": { "url": "https://dompred.ru/events/bez-stsenariya-kak-deystvovat-kogda-plan-perestal-rabotat#bez-stsenariya-kak-deystvovat-kogda-plan-perestal-rabotat", "label": "Записаться" },
+    "links": [{ "url": "https://dompred.ru/events/bez-stsenariya-kak-deystvovat-kogda-plan-perestal-rabotat", "label": "Страница встречи", "role": "event-page" }]
+  },
+  {
+    "id": "moscow-food-trade",
+    "title": "Москва на вкус. Шоколад, конфеты, водка и бизнес",
+    "start": "2026-12-05", "end": "2026-12-05", "time": "13:00", "endTime": "15:00",
+    "kind": "Лекция", "venueId": "entrepreneur", "address": "Зал Мамонтова, Малый Каретный пер., 11, стр. 10",
+    "summary": "Историк искусств Ксения Григорьева расскажет, как московские фабриканты Абрикосовы, Смирновы и Эйнем строили свои марки и боролись за покупателей в XIX веке.",
+    "home": false,
+    "price": "2 500 ₽",
+    "booking": { "url": "https://dompred.ru/events/moskva-na-vkus-shokolad-konfety-vodka-i-biznes#moskva-na-vkus-shokolad-konfety-vodka-i-biznes", "label": "Записаться" },
+    "links": [{ "url": "https://dompred.ru/events/moskva-na-vkus-shokolad-konfety-vodka-i-biznes", "label": "Страница лекции", "role": "event-page" }]
+  },
+  {
+    "id": "ai-adoption-in-business",
+    "title": "Внедрение ИИ в бизнес: как преодолеть сопротивление команды, повысить эффективность и продолжать расти без роста ФОТ",
+    "start": "2026-12-07", "end": "2026-12-07", "time": "19:00", "endTime": "21:00",
+    "kind": "Встреча", "venueId": "entrepreneur", "address": "Зал Мамонтова, Малый Каретный пер., 11, стр. 10",
+    "summary": "Алексей Бирюков, основатель Idaproject, обсудит с Виталием Климовым из Точка Банка, как команда внедряет ИИ в продукты и оценивает выгоду от этих затрат.",
+    "home": false,
+    "price": "3 000 ₽",
+    "booking": { "url": "https://dompred.ru/events/vnedrenie-ii-v-biznes-kak-preodolet-soprotivlenie-komandy-povysit-effektivnost-i-prodolzhat-rasti-be#vnedrenie-ii-v-biznes-kak-preodolet-soprotivlenie-komandy-povysit-effektivnost-i-prodolzhat-rasti-be", "label": "Записаться" },
+    "links": [{ "url": "https://dompred.ru/events/vnedrenie-ii-v-biznes-kak-preodolet-soprotivlenie-komandy-povysit-effektivnost-i-prodolzhat-rasti-be", "label": "Страница встречи", "role": "event-page" }]
   },
   {
     "id": "a-forum-2026", "projectId": "a-forum", "title": "Первый A–Forum о гостиничной индустрии",

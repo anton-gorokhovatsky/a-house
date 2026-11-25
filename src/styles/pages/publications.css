@@ -11,7 +11,6 @@
   letter-spacing: -.012em;
   overflow-wrap: anywhere; text-wrap: balance;
 }
-.home-page :is(.press-page,.partnership-stories) h1 { font-size: var(--lead-size); overflow-wrap: break-word; }
 .document-copy { line-height: 1.55; overflow-wrap: break-word; hyphens: auto; hyphenate-limit-chars: 7 3 3; }
 .home-page .editorial-document h1 { max-inline-size: 27ch; overflow-wrap: break-word; hyphens: manual; text-wrap: pretty; }
 @container document-content (max-width: 14em) {
@@ -53,12 +52,12 @@
   line-height: var(--leading-lead); text-wrap: pretty;
 }
 .press-page section, .partnership-stories section { margin-block-start: var(--chapter); }
-.press-page :is(#periodicals, #distribution, #press-interview) { scroll-margin-block-start: 1rem; }
+.press-page :is(#periodicals, #distribution, #print-archive, #press-interview) { scroll-margin-block-start: 1rem; }
 .home-page :is(.press-page,.partnership-stories) section h2 { margin-bottom: .65em; }
+.home-page :is(.press-page,.partnership-stories) section h2 { font-size: var(--type-subsection); }
 .press-page picture, .press-page img { display: block; width: 100%; height: auto; }
 .press-inner, .partnership-inner { container: publication-content / inline-size; }
 @container publication-content (max-width: 12em) {
-  .home-page :is(.press-page,.partnership-stories) h1 { font-size: var(--chapter-size); }
   .home-page .press-page section h2 { font-size: var(--story-size); }
 }
 .press-opening-image { margin-block-start: var(--group); max-width: 50rem; }
@@ -70,16 +69,18 @@
 }
 .press-book-list { margin-block-start: var(--group); }
 .home-page .press-page .press-friend { margin-block-start: var(--group); }
-.home-page .press-page .print-archive-intro { margin-block-start: var(--story-gap); }
-.home-page .press-page :is(.press-friend, .print-archive-intro) > p { max-inline-size: 57ch; text-wrap: pretty; }
+.home-page .press-page :is(.press-friend, #print-archive, .press-distribution) h2 { margin-block-end: .22em; }
+.home-page .press-page :is(.press-friend > p, .print-archive-intro) { max-inline-size: 57ch; text-wrap: pretty; }
+.home-page .press-page .press-friend > .home-action { margin-block-start: .72em; }
 .press-friend-issues {
-  display: grid; gap: 1.6rem var(--chapter); align-items: start;
-  margin-block-start: var(--story-gap);
+  display: grid; gap: var(--story-gap) var(--group); align-items: start;
+  margin-block-start: var(--group);
 }
 .home-page .press-page .press-friend-issues > ul { display: grid; gap: .85rem; align-items: start; }
 .press-featured-issue { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem 1.4rem; align-items: start; }
 .press-featured-issue .press-featured-cover { width: min(52%, 10rem); }
 .home-page .press-featured-copy h3 { margin-block: .2em .4em; font-size: var(--type-card); text-wrap: pretty; }
+.home-page .press-featured-copy .press-page-links { margin-block-start: .25em; }
 .home-page .press-featured-copy a:not(.press-file) {
   text-decoration: underline var(--link-press-thickness, 1px) var(--link-underline-color);
   text-underline-offset: var(--link-underline-offset);
@@ -89,10 +90,11 @@
   .press-featured-issue .press-featured-cover { width: 100%; }
 }
 @container publication-content (min-width: 48em) {
-  .press-friend-issues { grid-template-columns: minmax(0, 1fr) minmax(0, .65fr); }
+  .press-friend-issues { grid-template-columns: minmax(0, 1fr) minmax(0, .56fr); max-inline-size: 70rem; }
 }
 .home-page .press-page .print-series { margin-block-start: var(--group); scroll-margin-top: 1rem; }
 .home-page .press-page .print-series + .print-series { margin-block-start: var(--chapter); }
+.print-archive-layout { margin-block-start: var(--story-gap); }
 @container publication-content (min-width: 63em) {
   .print-archive-layout {
     display: grid; grid-template-columns: minmax(8.5rem, .18fr) minmax(0, 1fr);
@@ -106,22 +108,22 @@
     .print-series-nav { position: sticky; inset-block-start: 1.2rem; }
   }
 }
-.home-page .press-page .print-series > h2 { margin: 0 0 .45em; font-size: var(--story-size); }
+.home-page .press-page .print-series > h3 { margin: 0 0 .45em; font-size: var(--story-size); }
 .home-page .print-series > p { margin: 0 0 1em; }
 .print-issues { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,13rem),1fr)); max-inline-size: 72rem; align-items: start; gap: var(--group); }
 .print-issue { min-width: 0; scroll-margin-top: 1rem; }
 .print-issue img { display: block; width: auto; max-width: 100%; height: clamp(9rem,16vw,13.5rem); object-fit: contain; object-position: top left; }
 .print-issue > div { margin-top: .8rem; }
-.home-page .print-issue h3 {
+.home-page .print-issue h4 {
   margin: .14em 0 .3em; font: 400 var(--type-card)/1.18 var(--display);
 }
-.home-page .print-issue :is(h3, h3 + p) {
+.home-page .print-issue :is(h4, h4 + p) {
   -webkit-hyphens: auto; hyphens: auto; -webkit-hyphenate-limit-after: 4;
   hyphenate-limit-chars: 8 4 4; overflow-wrap: break-word;
 }
 .home-page .print-issue .press-page-links { display: grid; gap: 0; }
 .print-stories { margin-block-start: var(--group); }
-.home-page .print-stories h2 { font-size: var(--story-size); }
+.home-page .print-stories h3 { font-size: var(--story-size); }
 .home-page .print-stories .press-page-links {
   display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,18rem),1fr));
   align-items: start; max-inline-size: 50rem; gap: 0 var(--group); margin-block-start: .4em;
@@ -140,7 +142,6 @@
   .press-partner-edition { grid-template-columns: minmax(0,14rem) minmax(0,36rem); gap: var(--group); }
 }
 .home-page .press-page-links { display: flex; flex-wrap: wrap; gap: .2em 1.3em; align-items: baseline; margin-top: .65em; }
-.home-page .press-related-links a { color: var(--quiet); }
 .press-page-links a { display: inline-block; min-inline-size: 44px; max-width: 100%; padding-block: max(.35em,calc((44px - 1.46em) / 2)); }
 .home-page .home-editorial .press-page-links a.press-file { text-decoration: none; }
 .press-distribution { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--group); align-items: start; overflow-wrap: anywhere; }
@@ -149,7 +150,7 @@
 .press-interview { display: grid; grid-template-columns: minmax(0,1fr); align-items: start; gap: 1.25rem; }
 .press-interview figure { margin: 0; max-inline-size: 18.5rem; }
 .press-interview figcaption { margin-block-start: .5em; color: var(--quiet); font-size: var(--note-size); }
-.home-page .press-page .press-interview h2 { max-inline-size: 23ch; margin: .3em 0 .45em; font-size: var(--story-size); text-wrap: balance; }
+.home-page .press-page .press-interview h3 { max-inline-size: 23ch; margin: .3em 0 .45em; font-size: var(--story-size); text-wrap: balance; }
 .press-interview p { max-inline-size: 50ch; }
 .home-page .partnership-inner #partner-stories { margin-block-start: var(--group); }
 .partner-cases { display: grid; align-items: start; gap: var(--chapter) var(--group); }

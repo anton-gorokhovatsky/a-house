@@ -11,7 +11,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { collectArchive, renderHomeBookmarks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
+import { collectArchive, renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 import { clubPrograms } from '../src/data/club-programs.mjs';
@@ -186,18 +186,21 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const projectNavigation = renderProjectNavigation(directions);
   const projects = directions.flatMap(group => group.projects);
   const houseProjects = projects.filter(project => project.venue);
-  const sportStory = projects.flatMap(project => project.works || []).find(work => work.id === 'issue-a-sport');
   const printEditions = JSON.parse(await source('data/print-editions.json'));
   const currentPrintIssues = subscriptionIssues(printEditions);
   const pressBooks = JSON.parse(await source('data/press-books.json'));
   const printDirectory = file('media/print');
   const publicPrintFiles = printArchiveFileNames(printEditions);
   const printArchive = await renderPrintArchive(printEditions, async name => (await stat(path.join(printDirectory, name))).size);
+  const mediaKitPath = 'media/press/a-press-media-kit.pdf';
+  const pressInterviewPath = 'media/press/a-news-01-daria-belyakova.pdf';
+  const [mediaKit, pressInterview] = await Promise.all([mediaKitPath, pressInterviewPath].map(name => stat(file(name))));
   const projectGroups = renderProjectDirectory(directions);
   const pages = JSON.parse(await source('routes.json'));
   const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));
   const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
-  const program = renderProgram(events, await source('partials/program-feature.html'), base);
+  const homeEvents = events.filter(event => event.home !== false);
+  const program = renderProgram(homeEvents, await source('partials/program-feature.html'), base);
   const comfort = events.find(event => event.id === 'designing-comfort');
   const themeControl = await source('partials/theme-control.html');
   const menuTheme = themeControl.replaceAll('{{themeId}}', 'menu-theme');
@@ -315,20 +318,20 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
-      .replace(/<!-- VENUE PROGRAM (\w+) -->/g, (_, key) => renderVenueProgram(events, venues[key].name, base))
+      .replace(/<!-- VENUE PROGRAM (\w+) -->/g, (_, key) => renderVenueProgram(home ? homeEvents : events, venues[key].name, base))
       .replace(/<!-- HOUSE WORK (\w+) -->/g, (_, key) => renderProjectWorks(houseProjects.find(project => project.venue === key)))
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
-      .replace('{{sportStoryHref}}', () => escape(sportStory.href))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
       .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
       .replace('<!-- FRIEND FEATURED COVER -->', () => renderFriendCover(currentPrintIssues))
       .replace('<!-- PRESS CONTENTS -->', () => renderPressNavigation(page.slug))
-      .replace('<!-- PRESS BOOKMARKS -->', () => renderPressBookmarks(printEditions, projects.find(project => project.overview === 'news').href))
+      .replace('<!-- PRESS BOOKMARKS -->', () => renderPressBookmarks(projects.find(project => project.overview === 'news').href))
       .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks))
       .replaceAll('{{friendAction}}', friendAction)
-      .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@media/press/a-news-01-daria-belyakova.pdf', 'Читать интервью', 'PDF, с. 24–25'))
+      .replace('<!-- PRESS MEDIA KIT -->', () => renderPrintFileLink('@@ROOT@@' + mediaKitPath, 'Медиакит A–Press', pdfMetadata(mediaKit.size)))
+      .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@' + pressInterviewPath, 'Читать интервью', pdfMetadata(pressInterview.size) + ' · с. 24–25'))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- PRINT ISSUES -->', () => printArchive)
       .replace('<!-- FRIEND EDITIONS -->', () => renderSubscriptionEntries(printEditions))
@@ -340,7 +343,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('{{comfortDate}}', () => escape(comfort.start.slice(5).split('-').reverse().join('.')))
       .replace('{{comfortTitle}}', () => escape(comfort.title))
       .replaceAll('{{friendEditions}}', friendEditions)
-      .replaceAll('{{digitalEditions}}', digitalEditions)
       .replaceAll('{{friendExtras}}', friendExtras)
       .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
       .replace('<!-- FOOTER -->', () => homeFooterTemplate)

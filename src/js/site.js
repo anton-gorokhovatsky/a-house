@@ -1,3 +1,11 @@
+const movedPage = document.querySelector('a[data-moved-page]');
+if (movedPage) {
+  const destination = new URL(movedPage.href);
+  destination.search = location.search;
+  destination.hash = location.hash || destination.hash;
+  location.replace(destination.href);
+}
+
 function followMovedSection() {
   const link = document.getElementById(location.hash.slice(1));
   if (!link?.matches('a[data-section-bookmark]')) return;
@@ -79,7 +87,7 @@ document.addEventListener('click', event => {
   const link = event.target.closest('a[href]');
   if (reduced.matches || !link?.hash || link.origin !== location.origin || link.pathname !== location.pathname ||
       link.search !== location.search || link.matches('.skip-content, .calendar-results-shortcut') ||
-      link.closest('[data-instant-anchors]') || event.button !== 0 ||
+      event.button !== 0 ||
       event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || link.hasAttribute('download') ||
       (link.target && link.target !== '_self')) return;
   followingAnchor = true;
@@ -252,7 +260,7 @@ document.addEventListener('click', event => {
   const link = event.target.closest('a[href]');
   if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self') || !/^https?:$/.test(link.protocol)) return;
   const samePage = link.origin === location.origin && link.pathname === location.pathname && link.search === location.search;
-  if (samePage && (!link.hash || link.hash === location.hash || !link.closest('[data-instant-anchors]'))) return;
+  if (samePage && (!link.hash || link.hash === location.hash || !link.closest('[data-restore-fragment]'))) return;
   // The responsive archive separately restores the corresponding visible occurrence of an article.
   if (archiveList?.contains(link) && link.origin === location.origin && /\/tpost\//.test(link.pathname)) {
     if (history.state?.visitorReturn) {

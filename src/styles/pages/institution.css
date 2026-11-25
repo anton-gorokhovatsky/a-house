@@ -90,6 +90,7 @@
   hyphens: auto;
   hyphenate-limit-chars: 7 3 3;
 }
+.home-page .institution-page:has(.section-title) .institution-section h2 { font-size: var(--type-subsection); }
 
 .home-page .institution-copy > * + :is(p, dl, ul, .institution-photos, .institution-video) {
   margin-top: 1.4rem;

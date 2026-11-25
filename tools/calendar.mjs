@@ -176,7 +176,7 @@ export function renderCalendar(events, base, now = new Date()) {
   );
   const entries = list => list.map(event => renderEvent(event, calendar)).join('\n');
   return `<header class="calendar-opening">
-    <h1>Календарь событий</h1>
+    <h1 class="section-title">Календарь событий</h1>
     <nav class="calendar-entry-links" aria-label="Разделы календаря">
       <a class="calendar-results-shortcut" href="#calendar-results">К списку событий</a>
       <a href="${calendar}#past" data-jump-past${past.length ? '' : ' hidden'}>Весь архив событий</a>

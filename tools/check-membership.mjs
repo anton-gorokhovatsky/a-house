@@ -91,7 +91,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
       const friend = kind === 'friend';
       const endpoint = friend ? '/order' : '/application';
       const entry = site + base + (friend ? '#services-checkout' : 'member/?offer=patron');
-      await page.goto(site + base + (friend ? 'press/archive/' : 'club/#programs'));
+      await page.goto(site + base + (friend ? 'press/#print-archive' : 'club/#programs'));
       const destination = friend
         ? page.locator('#print-archive').getByRole('link', { name: 'Оформить подписку A–Friend' })
         : page.getByRole('link', { name: 'Заполнить анкету по программе A–Patron' });

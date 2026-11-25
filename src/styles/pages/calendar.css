@@ -6,13 +6,7 @@
   padding: var(--page-entry) var(--edge) var(--chapter);
   container: event-calendar / inline-size;
 }
-.calendar-opening h1 {
-  margin: 0;
-  font: 400 var(--lead-size)/1.05 var(--display);
-  letter-spacing: normal;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
+.calendar-opening h1 { margin: 0; }
 .home-page .calendar-page :is(.calendar-entry-links a, #calendar-filters a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset]) {
   color: inherit;
   text-decoration: underline;
@@ -61,6 +55,7 @@
 }
 .calendar-family-source { margin-block-start: 1.6rem; }
 .calendar-stream { margin-top: var(--group); scroll-margin-block-start: 1.2rem; }
+.home-page .calendar-stream h2 { font-size: var(--type-subsection); }
 .calendar-stream > section { scroll-margin-block-start: 1.1rem; }
 .calendar-stream > section + section { margin-top: var(--chapter); }
 .calendar-stream > section[hidden] + section { margin-top: 0; }
@@ -90,8 +85,6 @@
   border: 0; clip-path: inset(50%); overflow: hidden; white-space: nowrap;
 }
 @container event-calendar (max-width: 12em) {
-  .calendar-opening h1 { font-size: min(var(--chapter-size), 17.5cqi); }
-  .home-page .calendar-stream h2 { font-size: min(var(--story-size), 15cqi); }
   .calendar-page :is(.calendar-event h3,.calendar-venue) .project-name { white-space: normal; overflow-wrap: anywhere; }
 }
 @container event-calendar (min-width: 44em) {
