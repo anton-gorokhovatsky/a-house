@@ -12,15 +12,15 @@
   border-radius: 0;
   background: #fff;
   color: #111;
-  font-family: AHTimes, Arial, sans-serif;
+  font-family: var(--text);
   font-size: 18px;
   line-height: 1.5;
   text-align: left;
 }
 .services-dialog:not([open]) { display: none !important; }
 .services-dialog::backdrop { background: rgb(0 0 0 / 78%); }
-.services-dialog h2 { font: inherit; font-size: clamp(28px, 4vw, 48px); line-height: 1.05; margin: 12px 0 28px; }
-.services-dialog h3 { font: inherit; font-size: 26px; line-height: 1.15; margin: 0 0 16px; }
+.services-dialog h2 { font: inherit; font-family: var(--display); font-size: clamp(28px, 4vw, 48px); line-height: 1.05; margin: 12px 0 28px; }
+.services-dialog h3 { font: inherit; font-family: var(--display); font-size: 26px; line-height: 1.15; margin: 0 0 16px; }
 .services-dialog p { margin: 0 0 20px; }
 .services-dialog a { color: inherit; }
 .services-close {
@@ -65,7 +65,7 @@
 .services-checkout { width: min(720px, calc(100vw - 48px)); }
 .services-eyebrow { font-size: 14px; text-transform: uppercase; letter-spacing: .03em; }
 .services-order-price { font-size: 17px; }
-.services-demo-note { margin: 0 0 32px; padding: 16px 0; border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; font: 16px/1.45 AHTimes, Arial, sans-serif; }
+.services-demo-note { margin: 0 0 32px; padding: 16px 0; border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; font: 16px/1.45 var(--text); }
 .services-demo-note strong { font-family: inherit; font-weight: 600; }
 .services-demo-note p { margin: 6px 0 0; }
 .services-form { color: inherit; }
@@ -76,7 +76,7 @@
 .services-checkout .services-form .t-input-title,
 .services-checkout .services-form .t-checkbox__control,
 .services-checkout .services-form .t-radio__control { color: #111 !important; }
-.services-form input, .services-form select, .services-form textarea { box-sizing: border-box; max-width: 100%; font-size: max(16px, 1em); }
+.services-form :is(input, select, textarea) { box-sizing: border-box; max-width: 100%; font-family: var(--text); font-size: max(16px, 1em); }
 .services-form input:not([type="checkbox"]):not([type="radio"]),
 .services-form select { min-height: 44px; }
 .services-form .t-checkbox__indicator,
@@ -89,22 +89,22 @@
   display: block !important;
   margin: 6px 0 0;
   color: #8a211a;
-  font: 16px/1.4 AHTimes, Georgia, serif;
+  font: 16px/1.4 var(--text);
 }
 .services-form .t-form__errorbox-middle,
 .services-form .t-form__errorbox-bottom,
 .services-form .js-successbox { display: none !important; }
-.services-offer { margin-bottom: 28px; font: 18px/1.4 AHTimes, Arial, sans-serif; }
+.services-offer { margin-bottom: 28px; font: 18px/1.4 var(--text); }
 .services-offer label { display: block; margin-bottom: 8px; }
 .services-offer select { display: block; width: 100%; padding: 12px; border: 1px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; }
 .services-offer option { color: #111; background: #fff; }
-.services-form-status, .services-hint { margin: 12px 0; font: 15px/1.4 AHTimes, Arial, sans-serif; }
+.services-form-status, .services-hint { margin: 12px 0; font: 15px/1.4 var(--text); }
 .services-form-status:empty { display: none; }
 .services-hint { color: #555; }
-.services-result { padding: 28px 0; font: 18px/1.5 AHTimes, Arial, sans-serif; }
+.services-result { padding: 28px 0; font: 18px/1.5 var(--text); }
 .services-result[hidden] { display: none !important; }
 .services-result p { margin: 0 0 18px; }
-.services-result h3 { font: inherit; font-size: 28px; line-height: 1.15; margin: 0 0 22px; }
+.services-result h3 { font: inherit; font-family: var(--display); font-size: 28px; line-height: 1.15; margin: 0 0 22px; }
 .services-link { text-underline-offset: 3px; text-decoration: underline !important; }
 #allrecords .services-result .services-link { color: inherit; }
 .services-result-actions { display: flex; flex-wrap: wrap; gap: 12px; }

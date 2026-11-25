@@ -1,11 +1,3 @@
-@font-face {
-  font-family: 'Noto Serif';
-  src: url('@@ROOT@@media/fonts/noto-serif-regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 .home-page {
   --ink: #141414;
   --quiet: #555;
@@ -18,8 +10,6 @@
   /* A reader's first line sits inside a 44px return link. */
   --page-entry-with-back-link: max(0px, calc(var(--page-entry) - (44px - 1.4 * var(--note-size)) / 2));
   --story-gap: clamp(1.25rem, 2.2vw, 2rem);
-  --display: 'Noto Serif', Georgia, serif;
-  --text: Arial, Helvetica, sans-serif;
   --lead-size: clamp(2.25rem, 1.78rem + 3.7vw, 5.35rem);
   --chapter-size: clamp(1.9rem, 1.5rem + 1.65vw, 3.45rem);
   --story-size: clamp(1.5rem, 1.26rem + 1.2vw, 2.5rem);
@@ -31,7 +21,7 @@
 .editorial-pair { align-items: start; align-content: start; }
 .home-page #t-header.home-masthead {
   position: relative; background: var(--paper); color: var(--ink);
-  font: 400 var(--copy-size)/1.3 var(--text);
+  font: 500 var(--copy-size)/1.3 var(--text);
 }
 html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page :is(#overview, [data-home-section]) { scroll-margin-block-start: var(--site-header-height); }
@@ -66,7 +56,7 @@ html:has(.home-page .home-masthead) { scroll-padding-top: 0; }
 .home-page #t-header .site-navigation :is(.home-menu-extra,.menu-visit) { display: none; }
 .home-page #t-header .site-navigation a {
   display: inline-block; min-height: 44px; max-width: 100%; padding: max(.38rem, calc((44px - 1.3em) / 2)) 0;
-  font: 400 clamp(.9rem, .67rem + .4vw, 1.04rem)/1.3 var(--text); text-transform: none; text-decoration: none;
+  font: 500 clamp(.9rem, .67rem + .4vw, 1.04rem)/1.3 var(--text); text-transform: none; text-decoration: none;
 }
 .home-page #t-header .site-navigation a:is([aria-current="true"],[aria-current="location"]) { color: var(--quiet); }
 .home-page #t-header .site-navigation[hidden] { display: none; }

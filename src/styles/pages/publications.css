@@ -1,6 +1,7 @@
 .editorial-document, .press-page, .partnership-stories, .editorial-missing {
   padding: var(--page-entry) var(--edge) var(--chapter);
 }
+.editorial-document { --text: var(--pro-text); }
 .press-page, .partnership-stories, .editorial-missing {
   inline-size: 100%; max-inline-size: var(--measure); margin-inline: auto;
 }

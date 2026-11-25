@@ -1,8 +1,55 @@
-/* Prototype font alternatives, SIL OFL 1.1. See README.md and provenance.json.
-   The original AHTimes weights select different families, not boldness.
-   Remove the source-site @font-face rules before loading this file. */
-/* Widths were fitted against the original Russian title and paragraph in the annual report. */
-@font-face{font-family:'AHTimes';src:url('./noto-serif-extra-condensed-regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;size-adjust:93%}
-@font-face{font-family:'AHTimes';src:url('./roboto-condensed-medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap;size-adjust:88%}
+@font-face {
+  font-family: 'Times New Roman Cyr Condensed';
+  src: url('./times-new-roman-cyr-condensed.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Apercu Condensed Pro';
+  src: url('./apercu-condensed-pro-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Apercu Condensed Pro';
+  src: url('./apercu-condensed-pro-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Apercu Pro';
+  src: url('./apercu-pro-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Apercu Pro';
+  src: url('./apercu-pro-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Apercu Pro';
+  src: url('./apercu-pro-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Serif';
+  src: url('./noto-serif-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* The imported AHTimes weights select different families, not boldness. */
+@font-face{font-family:'AHTimes';src:url('./times-new-roman-cyr-condensed.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'AHTimes';src:url('./apercu-condensed-pro-medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:'AHTimes';src:url('./roboto-flex-compact-regular.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
 @font-face{font-family:'AHTimes';src:url('./roboto-flex-extended-regular.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;size-adjust:112%}
