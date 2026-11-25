@@ -1265,13 +1265,14 @@ try {
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.goto(url + 'press/');
       const cover = page.locator('.press-opening-image img');
-      await cover.evaluate(image => image.decode());
+      await cover.scrollIntoViewIfNeeded();
+      await page.waitForFunction(image => image.complete && image.naturalWidth > 0, await cover.elementHandle());
       assert.match(await cover.evaluate(image => image.currentSrc), /\/stills\//, 'Reduced motion shows a still on the press cover');
       const photo = page.locator('#distribution img');
       const photoURL = await photo.evaluate(image => image.src);
       assert.equal(await photo.getAttribute('loading'), 'lazy', 'The distribution map should be eligible for lazy loading');
       await photo.scrollIntoViewIfNeeded();
-      await photo.evaluate(image => image.decode());
+      await page.waitForFunction(image => image.complete && image.naturalWidth > 0, await photo.elementHandle());
       assert.ok(requested.has(photoURL), 'The distribution map loads when the reader reaches it');
       assert.ok(![...requested].some(src => /\.gif(?:\?|$)/i.test(src)), 'An animated GIF loaded in reduced motion');
       const futurePage = await browserPage({ ...pageOptions, reducedMotion: 'reduce' });
