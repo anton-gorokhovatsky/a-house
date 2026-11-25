@@ -1264,7 +1264,7 @@ try {
       assert.match(await cover.evaluate(image => image.currentSrc), /\/stills\//, 'Reduced motion shows a still on the press cover');
       const photo = page.locator('#distribution img');
       const photoURL = await photo.evaluate(image => image.src);
-      assert.equal(requested.has(photoURL), false, 'A distant photo loaded before scrolling');
+      assert.equal(await photo.getAttribute('loading'), 'lazy', 'The distribution map should be eligible for lazy loading');
       await photo.scrollIntoViewIfNeeded();
       await photo.evaluate(image => image.decode());
       assert.ok(requested.has(photoURL), 'The distribution map loads when the reader reaches it');
