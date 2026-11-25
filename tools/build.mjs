@@ -213,7 +213,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   }
   const friendPrice = 12000;
   const digitalEditions = new Intl.ListFormat('ru').format(printEditions.filter(issue => issue.latest).map(issue => issue.edition));
-  const friendEditions = `Полные выпуски ${digitalEditions} в PDF можно читать в приложении A–House.`;
+  const friendEditions = `${digitalEditions} доступны в приложении A–House.`;
   const friendExtras = 'В подписку также входят путеводители, подборки фильмов, ресторанов и спектаклей, дайджесты событий, трансляции с международных площадок и приглашения на выставки A–House.';
   const friendAction = friend ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
