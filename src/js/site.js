@@ -273,11 +273,15 @@ document.addEventListener('click', event => {
   const matches = [...document.links].filter(item => item.href === link.href);
   const visitorReturn = { from: location.href, href: link.href, occurrence: matches.indexOf(link), top: link.getBoundingClientRect().top };
   if (samePage) visitorReturn.fragment = true;
+  const inHeader = header?.contains(link);
+  const fromPinnedHeader = inHeader && scrollY > 0 && getComputedStyle(header).position === 'sticky';
+  // A link in the pinned menu stays at the same screen position as the page scrolls.
+  if (fromPinnedHeader) visitorReturn.scrollY = scrollY;
   // WebKit can otherwise jump back to the fragment after restoring the visible link.
-  const restoreFragment = !samePage && location.hash && !header?.contains(link) && history.scrollRestoration === 'auto';
-  if (restoreFragment) visitorReturn.restoreAutomaticScroll = true;
+  const restoreScroll = !samePage && (fromPinnedHeader || (location.hash && !inHeader)) && history.scrollRestoration === 'auto';
+  if (restoreScroll) visitorReturn.restoreAutomaticScroll = true;
   history.replaceState({ ...history.state, visitorReturn }, '');
-  if (restoreFragment) history.scrollRestoration = 'manual';
+  if (restoreScroll) history.scrollRestoration = 'manual';
 });
 
 function restoreVisitor(returning) {
@@ -317,7 +321,8 @@ function restoreVisitor(returning) {
     else if (link.closest('.site-submenu[hidden]')) target = header?.querySelector('.site-presence-toggle');
     if (!target?.getClientRects().length) return;
     target.focus({ preventScroll: true });
-    if (target === link) window.scrollBy({ top: link.getBoundingClientRect().top - entry.top, behavior: 'instant' });
+    if (Number.isFinite(entry.scrollY)) window.scrollTo({ top: entry.scrollY, behavior: 'instant' });
+    else if (target === link) window.scrollBy({ top: link.getBoundingClientRect().top - entry.top, behavior: 'instant' });
   });
 }
 

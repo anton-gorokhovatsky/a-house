@@ -110,6 +110,11 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         assert.ok(await decrement.isDisabled());
         await increment.click();
         assert.match(await form.locator('[data-order-total]').innerText(), /24\s000/);
+        await decrement.press('Enter');
+        const quantity = field('quantity');
+        assert.equal(await quantity.inputValue(), '1');
+        assert.ok(await quantity.evaluate(input => document.activeElement === input && input.matches(':focus-visible')));
+        await increment.click();
         await form.getByRole('button', { name: 'Удалить' }).click();
         assert.equal(await submit.isVisible(), false);
         assert.equal(await form.locator('[name="quantity"]').inputValue(), '0');

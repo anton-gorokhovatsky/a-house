@@ -43,6 +43,7 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
       const action = event.target.closest('button')?.dataset.orderAction;
       if (!action) return;
       const count = Number(quantity.value);
+      const retainKeyboardFocus = action === 'less' && event.detail === 0 && document.activeElement === less;
       if (action === 'more' && Number.isSafeInteger((count + 1) * price)) quantity.value = Math.max(1, Math.floor(count) + 1);
       if (action === 'less' && count > 1) quantity.value = count - 1;
       if (action === 'remove') {
@@ -56,6 +57,7 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
       }
       displayQuantity();
       if (quantity.hasAttribute('aria-invalid') && !empty) validate([quantity]);
+      if (retainKeyboardFocus && less.disabled) quantity.focus({ preventScroll: true });
       if (empty) restore.focus();
       if (action === 'restore') more.focus();
     });

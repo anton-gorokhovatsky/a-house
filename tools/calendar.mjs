@@ -186,7 +186,7 @@ export function renderCalendar(events, base, now = new Date()) {
     ${renderFilters(events, calendar)}
     <div class="calendar-stream" id="calendar-results" tabindex="-1">
       <div data-calendar-empty hidden><p data-empty-message></p><a href="${calendar}" data-calendar-reset>Сбросить фильтры</a></div>
-      <section id="upcoming" aria-labelledby="calendar-upcoming-heading">
+      <section id="upcoming" aria-labelledby="calendar-upcoming-heading" tabindex="-1">
         <h2 id="calendar-upcoming-heading">Сейчас и скоро</h2>
         <p data-no-upcoming${current.length ? ' hidden' : ''}>Новые даты пока не объявлены.</p>
         <div class="calendar-list" data-upcoming-list>${entries(current)}</div>

@@ -6,6 +6,7 @@
   const monthLinks = [...filters.querySelectorAll('[data-calendar-month]')];
   const audienceLinks = [...filters.querySelectorAll('[data-calendar-audience]')];
   const events = [...calendar.querySelectorAll('[data-calendar-event]')];
+  const upcomingSection = document.getElementById('upcoming');
   const upcoming = calendar.querySelector('[data-upcoming-list]');
   const past = calendar.querySelector('[data-past-list]');
   const archive = document.getElementById('past');
@@ -107,7 +108,7 @@
     const total = visiblePast + visibleCurrent;
     const filtered = !!month || kids;
     calendar.querySelector('[data-no-upcoming]').hidden = visibleCurrent > 0;
-    document.getElementById('upcoming').hidden = filtered && !visibleCurrent;
+    upcomingSection.hidden = filtered && !visibleCurrent;
     document.querySelector('[data-jump-past]').hidden = !pastEvents.length;
     calendar.querySelector('[data-family-source]').hidden = !kids;
     const familyShortcut = calendar.querySelector('[data-family-shortcut]');
@@ -119,6 +120,7 @@
       ? (month ? 'В выбранном месяце нет событий для детей.' : 'В календаре пока нет событий для детей.')
       : 'В выбранном месяце нет событий.';
     updateArchive();
+    return { visibleCurrent, visiblePast };
   }
 
   calendar.addEventListener('click', event => {
@@ -126,7 +128,13 @@
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     event.preventDefault();
     if (link.href !== location.href) history.pushState(null, '', link.href);
-    showSelection();
+    const { visibleCurrent, visiblePast } = showSelection();
+    if (months.parentElement === archive && link.dataset.calendarMonth && visibleCurrent && !visiblePast) {
+      upcomingSection.focus({ preventScroll: true });
+      const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+      upcomingSection.scrollIntoView({ block: 'start', behavior });
+      return;
+    }
     const results = calendar.querySelector('.calendar-stream');
     if (getComputedStyle(filters).position === 'sticky' && results.getBoundingClientRect().top < 0) {
       results.scrollIntoView({ block: 'start' });

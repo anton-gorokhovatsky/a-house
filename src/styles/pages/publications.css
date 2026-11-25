@@ -104,7 +104,7 @@
 }
 @media (min-height: 36em) {
   @container publication-content (min-width: 63em) {
-    .print-series-nav { position: sticky; inset-block-start: 1.2rem; }
+    .print-series-nav { position: sticky; inset-block-start: calc(var(--site-header-height) + 1.2rem); }
   }
 }
 .home-page .press-page .print-series > h3 { margin: 0 0 .45em; font-size: var(--story-size); }

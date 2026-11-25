@@ -1,5 +1,7 @@
 <form id="member-form" class="membership-form" data-membership-form="member" aria-labelledby="member-heading" aria-describedby="member-intro" {{formAttributes}}>
+  {{formNotice}}
   <!-- MEMBER PROGRAMS -->
+  {{formPolicy}}
   <div class="membership-field">
     <label for="member-name">Фамилия и&nbsp;имя, отчество при&nbsp;наличии</label>
     <input id="member-name" name="name" type="text" autocomplete="name" maxlength="200" required aria-describedby="member-name-error">

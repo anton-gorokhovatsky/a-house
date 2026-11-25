@@ -1,13 +1,16 @@
 <h3 id="friend-form-heading">Оформление подписки</h3>
 <form id="friend-form" class="membership-form" data-membership-form="friend" aria-labelledby="friend-form-heading" {{formAttributes}} accept-charset="UTF-8">
   <input type="hidden" name="product" value="A-Friend">
+  {{formNotice}}
   <div class="friend-basket" data-unit-price="{{friendUnitPrice}}">
     <div data-order-line>
       <label for="friend-quantity">Количество подписок</label>
       <div class="friend-quantity">
-        <button type="button" data-order-action="less" aria-label="Уменьшить количество" hidden>−</button>
-        <input type="number" inputmode="numeric" id="friend-quantity" name="quantity" min="1" step="1" value="1" required readonly aria-describedby="friend-quantity-error">
-        <button type="button" data-order-action="more" aria-label="Увеличить количество" hidden>+</button>
+        <div class="friend-stepper">
+          <button type="button" data-order-action="less" aria-label="Уменьшить количество" hidden><span aria-hidden="true"></span></button>
+          <input type="number" inputmode="numeric" id="friend-quantity" name="quantity" min="1" step="1" value="1" required readonly aria-describedby="friend-quantity-error">
+          <button type="button" data-order-action="more" aria-label="Увеличить количество" hidden><span aria-hidden="true"></span></button>
+        </div>
         <button type="button" data-order-action="remove" hidden>Удалить</button>
       </div>
       <p id="friend-quantity-error" class="membership-error" data-field-error="quantity" hidden></p>
@@ -19,24 +22,27 @@
     <p class="friend-total" aria-live="polite" aria-atomic="true">Итого <span data-order-total>{{friendTotal}}</span></p>
   </div>
   <div class="friend-fields">
+  {{formPolicy}}
   <div class="membership-field">
     <label for="friend-name">Имя и фамилия</label>
     <input id="friend-name" name="name" autocomplete="name" maxlength="100" required aria-describedby="friend-name-error">
     <p id="friend-name-error" class="membership-error" data-field-error="name" hidden></p>
   </div>
   <div class="membership-field">
-    <label for="friend-workarea">Сфера деятельности <span class="membership-optional">По желанию</span></label>
-    <select id="friend-workarea" name="workarea">
-      <option value="">Выберите один из вариантов</option>
-      <option>Архитектура и проектирование</option>
-      <option>Предметный дизайн</option>
-      <option>Интерьерный дизайн</option>
-      <option>Графический дизайн и брендинг</option>
-      <option>Строительство и девелопмент</option>
-      <option>Урбанистика</option>
-      <option>Искусство</option>
-      <option>Другое</option>
-    </select>
+    <label for="friend-workarea">Сфера деятельности <span class="membership-optional">По&nbsp;желанию</span></label>
+    <div class="membership-select">
+      <select id="friend-workarea" name="workarea">
+        <option value="">Выберите</option>
+        <option>Архитектура и проектирование</option>
+        <option>Предметный дизайн</option>
+        <option>Интерьерный дизайн</option>
+        <option>Графический дизайн и брендинг</option>
+        <option>Строительство и девелопмент</option>
+        <option>Урбанистика</option>
+        <option>Искусство</option>
+        <option>Другое</option>
+      </select>
+    </div>
   </div>
   <div class="membership-field">
     <label for="friend-email">Электронная почта</label>
@@ -49,7 +55,7 @@
     <p id="friend-phone-error" class="membership-error" data-field-error="phone" hidden></p>
   </div>
   <div class="membership-field">
-    <label for="friend-comment">Комментарий <span class="membership-optional">По желанию</span></label>
+    <label for="friend-comment">Комментарий <span class="membership-optional">По&nbsp;желанию</span></label>
     <p class="membership-hint" id="friend-comment-hint">Если покупаете сертификат в подарок, укажите имя будущего владельца.</p>
     <textarea id="friend-comment" name="comment" rows="3" aria-describedby="friend-comment-hint"></textarea>
   </div>

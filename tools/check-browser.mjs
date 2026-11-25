@@ -148,11 +148,16 @@ async function checkMobileExhibition(page) {
   assert.ok(await poster.getByRole('link', { name: feature.title }).isVisible());
 }
 
-async function checkProjectMotion(page) {
+async function checkHomeNavigation(page) {
   await page.goto(url + '#projects');
   await page.evaluate(() => document.fonts.ready);
   const link = page.locator('.home-project-navigation a[href="#a-presence"]');
   const destination = page.locator('#a-presence');
+  const arrived = () => {
+    const header = document.getElementById('t-header').getBoundingClientRect();
+    const top = document.getElementById('a-presence').getBoundingClientRect().top;
+    return header.top === 0 && top >= header.bottom - 1 && top < header.bottom + 60;
+  };
   for (const reducedMotion of ['no-preference', 'reduce']) {
     await page.emulateMedia({ reducedMotion });
     const start = await destination.evaluate(el => el.getBoundingClientRect().top);
@@ -163,13 +168,29 @@ async function checkProjectMotion(page) {
         return top < y - 5 && top > innerHeight;
       }, start);
     } else {
-      assert.ok((await destination.boundingBox()).y < 60, 'Reduced motion must arrive immediately');
+      assert.ok(await page.evaluate(arrived), 'Reduced motion must arrive immediately below the pinned menu');
     }
-    await page.waitForFunction(() => document.activeElement?.id === 'a-presence' &&
-      document.getElementById('a-presence').getBoundingClientRect().top < 60);
+    await page.waitForFunction(arrived);
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'a-presence');
     await page.goBack();
     await page.waitForFunction(() => document.activeElement?.matches('.home-project-navigation a[href="#a-presence"]'));
   }
+  await page.goto(url);
+  const scroll = await page.evaluate(async () => {
+    await document.fonts.ready;
+    window.scrollTo(0, 1500);
+    return scrollY;
+  });
+  assert.ok(scroll > 0);
+  const publication = page.locator('#site-navigation').getByRole('link', {name: 'Издательство', exact: true});
+  const headerBox = await page.locator('#t-header').boundingBox();
+  const box = await publication.boundingBox();
+  assert.ok(headerBox.y === 0 && box.y >= 0 && box.y + box.height <= headerBox.height);
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForURL(url + 'press/');
+  await page.goBack();
+  await page.waitForFunction(y => Math.abs(scrollY - y) <= 2 &&
+    document.activeElement?.matches('#site-navigation a[href$="/press/"]'), scroll);
 }
 
 async function checkExpiredProgram(page) {
@@ -301,6 +322,11 @@ async function checkCalendar(page, mobile) {
   await activate(page.locator('[data-jump-past]'));
   await page.waitForURL(url + 'calendar/#past');
   assert.ok(await page.locator('#past [data-calendar-event]:visible').count() > 0);
+  if (!mobile) {
+    const header = await page.locator('#t-header').boundingBox();
+    const filterBox = await page.locator('#calendar-filters').boundingBox();
+    assert.ok(filterBox.y >= header.y + header.height, 'Calendar filters stay below the pinned menu');
+  }
   await page.goBack();
   await page.locator('[data-calendar-empty]').waitFor();
   await activate(page.locator('[data-calendar-reset]'));
@@ -315,6 +341,22 @@ async function checkCalendar(page, mobile) {
   }
   await page.goto(url + 'calendar/');
   assert.equal(await page.locator('h3 a[href="https://dompred.ru/events/marketing-mastermind"]').count(), 1);
+}
+
+async function checkUpcomingMonthFromArchive(page) {
+  await page.clock.setFixedTime(new Date('2026-11-25T12:00:00+03:00'));
+  await page.goto(url + 'calendar/#past');
+  await page.locator('#past [data-calendar-month="2026-12"]').tap();
+  await page.waitForURL(url + 'calendar/?month=2026-12');
+  await page.waitForFunction(() => {
+    const results = document.getElementById('upcoming');
+    const top = results.getBoundingClientRect().top;
+    return document.activeElement === results && top >= 0 && top < innerHeight / 2;
+  });
+  assert.ok(await page.locator('#upcoming [data-calendar-event]:visible').count() > 0);
+  await page.goBack();
+  await page.waitForURL(url + 'calendar/#past');
+  assert.equal(await page.locator('#past [data-calendar-month=""]').getAttribute('aria-current'), 'true');
 }
 
 async function checkVisitorLinks(page, mobile) {
@@ -705,13 +747,19 @@ async function checkSpecialProjectPrograms(page, mobile) {
   await activate(contest);
   await page.waitForURL(url + 'mts/');
   assert.equal(await page.locator('.site-header, .home-footer').count(), 0);
-  assert.ok(await page.getByRole('heading', {level: 1, name: 'Меняя привычное', exact: false}).isVisible());
+  const contestHeading = page.getByRole('heading', {level: 1, name: 'Меняя привычное', exact: false});
+  assert.ok(await contestHeading.isVisible());
   assert.equal(await page.locator('form').count(), 0);
+  assert.equal(await page.locator('.t367__opener:not([hidden]), .t367__opener:not([tabindex="-1"])').count(), 0);
   const notice = page.getByRole('dialog', {name: /портфолио.*окончен/i});
-  await notice.waitFor();
+  await notice.and(page.locator('.t-popup_show')).waitFor();
   assert.match(await notice.innerText(), /aindex@ahouseproject\.com/);
   await activate(notice.getByRole('button', {name: /закрыть/i}));
   await notice.waitFor({state: 'hidden'});
+  await page.waitForFunction(heading => {
+    const box = heading.getBoundingClientRect();
+    return document.activeElement === heading && box.top < innerHeight && box.bottom > 0;
+  }, await contestHeading.elementHandle());
   const more = page.getByRole('button', {name: 'Подробнее о конкурсе'});
   await activate(more);
   await page.waitForFunction(() => document.getElementById('rec2291513081').classList.contains('open-accord'));
@@ -725,6 +773,23 @@ async function checkSpecialProjectPrograms(page, mobile) {
   assert.match(await page.locator('#rec2291517501').innerText(), /подписание\s+NDA/);
   const rules = page.getByRole('link', {name: /правила\s+конкурса\s+на\s+Яндекс\s+Диске/i});
   assert.equal(await rules.getAttribute('href'), 'https://disk.360.yandex.ru/d/kAckYUQ5My6vfg');
+
+  await page.goto(url + 'moscow_business/#program');
+  const captions = page.locator('#ah-grid .card :is(.meta,.more)');
+  await captions.first().waitFor();
+  const ratios = await captions.evaluateAll(items => {
+    const luminance = color => color.match(/\d+/g).slice(0, 3).map(Number).reduce((total, channel, index) => {
+      const normalized = channel / 255;
+      const linear = normalized <= .04045 ? normalized / 12.92 : ((normalized + .055) / 1.055) ** 2.4;
+      return total + linear * [.2126, .7152, .0722][index];
+    }, 0);
+    const background = luminance(getComputedStyle(document.getElementById('program')).backgroundColor);
+    return items.map(item => {
+      const foreground = luminance(getComputedStyle(item).color);
+      return (Math.max(background, foreground) + .05) / (Math.min(background, foreground) + .05);
+    });
+  });
+  assert.ok(ratios.every(ratio => ratio >= 4.5), 'Program captions and controls must reach 4.5:1');
 }
 
 async function checkEnlargedMenu(page) {
@@ -1077,8 +1142,6 @@ async function checkClubApplication(page) {
   const intro = await page.locator('#member-intro').innerText();
   assert.match(intro.replace(/\s+/g, ' '), /укажите, как с вами связаться/);
   assert.equal(await form.locator('.membership-optional-group [name]:visible').count(), 4);
-  assert.equal(await form.locator('a[href$="/politic_a-com/"]').count(), 0);
-  assert.equal(await page.locator('.footer-legal a[href$="/politic_a-com/"]').count(), 1);
   await checkMembershipForm(page, 'member');
   await page.goBack();
   await card.waitFor();
@@ -1097,6 +1160,13 @@ async function checkMembershipForm(page, kind) {
   const name = form.locator('input[name="name"]');
   const submit = form.locator('button[type="submit"]');
   const settings = membershipSettings(kind);
+  const policy = form.locator('.membership-policy a');
+  assert.ok(await policy.isVisible());
+  assert.equal(await policy.getAttribute('href'), base + 'politic_a-com/');
+  assert.equal(await policy.getAttribute('href'),
+    await page.locator('.footer-legal a[href$="/politic_a-com/"]').getAttribute('href'));
+  assert.ok(await policy.evaluate(link =>
+    link.compareDocumentPosition(link.closest('form').elements.namedItem('name')) & Node.DOCUMENT_POSITION_FOLLOWING));
   await name.fill('Тестовый читатель');
   await email.fill('reader');
   await email.press('Tab');
@@ -1116,6 +1186,8 @@ async function checkMembershipForm(page, kind) {
     assert.equal(await form.getAttribute('method'), 'dialog');
     assert.equal(await form.getAttribute('action'), null);
     assert.ok(await submit.isDisabled());
+    assert.ok(await form.locator('.membership-status').evaluate(notice =>
+      notice.compareDocumentPosition(notice.closest('form').elements.namedItem('name')) & Node.DOCUMENT_POSITION_FOLLOWING));
     const address = page.url();
     const posted = [];
     const watch = request => { if (request.method() === 'POST') posted.push(request.url()); };
@@ -1281,8 +1353,15 @@ async function checkHomeRoutes(page, mobile) {
   for (const label of ['О Доме предпринимателя', 'Амбассадоры Дома']) {
     assert.equal(await entrepreneur.getByRole('link', {name: label, exact: true}).locator('.external-link-mark').count(), 0);
   }
+  const housesCurrent = page.locator('#site-navigation a[aria-current="location"][href$="#visit"]');
+  await entrepreneur.getByRole('link', {name: 'О Доме предпринимателя', exact: true}).click();
+  await page.waitForURL(url + 'dompredprinimatelya/');
+  assert.equal(await housesCurrent.count(), 1);
+  await page.goBack();
+  await page.waitForURL(url + '#visit');
   await section('visit').locator('a[href$="/residents/"]').first().click();
   await page.waitForURL(url + 'residents/');
+  assert.equal(await housesCurrent.count(), 1);
 }
 
 let browser;
@@ -1300,7 +1379,7 @@ try {
   await checkMobileExhibition(phone);
   await phone.close();
   const motionPage = await browserPage({viewport: {width: 1440, height: 900}});
-  await checkProjectMotion(motionPage);
+  await checkHomeNavigation(motionPage);
   await motionPage.close();
   for (const width of [390, 1511]) {
     const mobile = width === 390;
@@ -1335,6 +1414,7 @@ try {
       assert.ok(![...requested].some(src => /\.gif(?:\?|$)/i.test(src)), 'An animated GIF loaded in reduced motion');
       const futurePage = await browserPage({ ...pageOptions, reducedMotion: 'reduce' });
       await checkExpiredProgram(futurePage);
+      await checkUpcomingMonthFromArchive(futurePage);
       await futurePage.close();
     }
     await checkArchiveReading(page);

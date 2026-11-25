@@ -177,7 +177,7 @@
 }
 
 @media (width > 61.25em) {
-  .institution-section-formats > h2 { position: sticky; inset-block-start: 1rem; }
+  .institution-section-formats > h2 { position: sticky; inset-block-start: calc(var(--site-header-height) + 1rem); }
 }
 
 .partnership-parent-link {

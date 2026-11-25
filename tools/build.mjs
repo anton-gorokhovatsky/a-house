@@ -111,19 +111,18 @@ export function membershipSettings(kind, env = process.env) {
 function renderMembership(kind, template, agreementTemplate, settings) {
   const friend = kind === 'friend';
   const legal = { ...settings, kind, termsLabel: friend ? 'Условия покупки' : 'Условия вступления' };
-  const policyLink = `<a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${kind}-documents">Политика обработки персональных данных</a>`;
   const agreements = settings ? agreementTemplate
-    .replace('{{policyLink}}', friend ? policyLink : '')
-    .replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : friend ? `<div class="membership-field">
-      <p class="home-links">${policyLink}</p>
-      <p id="${kind}-documents" class="membership-hint">Документ откроется в новой вкладке.</p>
-    </div>` : '';
+    .replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : '';
+  const notice = friend ? 'Оплата пока недоступна.' : 'Приём заявок пока закрыт.';
+  const policyNote = kind + '-policy-window';
   const fields = {
     formAttributes: settings ? `method="post" action="${escape(settings.action)}"` : 'method="dialog"',
+    formNotice: settings ? '' : `<p class="membership-status">${notice}</p>`,
+    formPolicy: `<p class="membership-policy"><a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${policyNote}">Политика обработки персональных данных</a> <span id="${policyNote}">В&nbsp;новой вкладке</span></p>`,
     agreements,
     submitState: settings ? '' : ' disabled'
   };
-  return template.replace(/\{\{(formAttributes|agreements|submitState)\}\}/g, (_, key) => fields[key]);
+  return template.replace(/\{\{(formAttributes|formNotice|formPolicy|agreements|submitState)\}\}/g, (_, key) => fields[key]);
 }
 
 function consentLink(link, hintId) {
@@ -262,6 +261,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     return scripts;
   }
   const clubPages = new Set(['club', 'member']);
+  const housePages = new Set(['residents', 'dompredprinimatelya']);
   const documents = new Set(['agreement', 'agreement2', 'rules', 'politic_a-com', 'mts_docs']);
   const pressPages = new Set(['press', 'press/archive', 'press/books']);
   const features = new Set(['special_projects', '404']);
@@ -284,8 +284,9 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', externalLinksStyle, 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
+  const mtsLandingScript = 'js/mts-landing.js';
   const editorialRoutes = routes.filter(page => page.layout !== 'standalone');
-  const references = new Set([nearbyImages, 'js/theme.js', ...editorialRoutes.flatMap(scriptsFor), ...editorialRoutes.flatMap(cssFor)]);
+  const references = new Set([nearbyImages, mtsLandingScript, 'js/theme.js', ...editorialRoutes.flatMap(scriptsFor), ...editorialRoutes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
     const bytes = await readFile(path.join(output, name));
     const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
@@ -300,7 +301,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug)
       : archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
     if (page.layout === 'standalone') {
-      await writeFile(path.join(location, 'index.html'), standaloneDocument(pageContent, base, standaloneLinkStyles));
+      const html = page.slug === 'mts' ? pageContent.replace('@@ROOT@@' + mtsLandingScript, urls.get(mtsLandingScript)) : pageContent;
+      await writeFile(path.join(location, 'index.html'), standaloneDocument(html, base, standaloneLinkStyles));
       continue;
     }
     const markup = pageContent.includes('<!-- EDITORIAL HEADER -->') ? pageContent :
@@ -310,6 +312,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
         .replace('{{wordmarkDestination}}', home ? 'data-home-brand="@@ROOT@@"' : 'href="@@ROOT@@" aria-label="A–House, на главную"')
         .replace('{{programCurrent}}', programPage ? ' aria-current="location"' : '')
+        .replace('{{housesCurrent}}', housePages.has(page.slug) ? ' aria-current="location"' : '')
         .replace('{{pressCurrent}}', pressPages.has(page.slug) ? ' aria-current="' + (page.slug === 'press' ? 'page' : 'location') + '"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : '')
         .replace('{{partnershipCurrent}}', page.slug === 'partnership' ? ' aria-current="page"'

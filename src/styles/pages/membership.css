@@ -1,7 +1,6 @@
 .membership-page { padding-block: var(--page-entry) var(--chapter); }
 .membership-layout {
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .87fr);
-  gap: clamp(3.5rem, 8vw, 8rem); max-width: 76rem; margin-inline: auto;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--group);
 }
 .membership-intro { container: membership-intro / inline-size; }
 .friend-edition { display: none; }
@@ -27,26 +26,59 @@
 .membership-intro .home-links { margin-top: 1.25rem; }
 .home-page .membership-request > :is(h2,h3) { margin: 0; font-size: var(--story-size); }
 .membership-request, .membership-field, .membership-form, .friend-fields { min-inline-size: 0; }
+.membership-request { max-inline-size: 32rem; }
 .membership-form, .friend-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
 .membership-form { margin: 1.5rem 0 0; }
 .friend-basket { margin-block-end: .4rem; }
-.friend-quantity { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.friend-quantity { display: flex; flex-wrap: wrap; gap: .25rem .75rem; align-items: center; }
 .friend-basket button { color: var(--ink); background: transparent; padding: .3rem .5rem; }
-.friend-quantity button:is([data-order-action="less"],[data-order-action="more"]) { min-width: 44px; text-align: center; border: 1px solid var(--quiet); }
+.friend-stepper { display: inline-flex; max-inline-size: 100%; border: 1px solid var(--ah-rule); }
+.friend-stepper button {
+  position: relative; display: grid; place-items: center; min-inline-size: max(44px, 2em);
+}
+.friend-stepper button span {
+  position: relative; display: block; inline-size: .58em; block-size: .58em;
+}
+.friend-stepper button span::before, .friend-stepper [data-order-action="more"] span::after {
+  content: ''; position: absolute; inset: 50% 0 auto;
+  border-block-start: max(1px, .082em) solid currentColor; transform: translateY(-50%);
+}
+.friend-stepper [data-order-action="more"] span::after { transform: translateY(-50%) rotate(90deg); }
+.membership-request .friend-stepper button:disabled { color: var(--quiet); background-color: transparent; opacity: .7; }
+.membership-request .friend-stepper button:focus-visible { outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .friend-stepper button:not(:disabled):hover { background-color: var(--ah-surface); }
+}
 .friend-basket button:is([data-order-action="remove"],[data-order-action="restore"]) { text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
-.membership-request .friend-quantity input[type="number"] { width: 5ch; min-height: 44px; padding: .3rem; text-align: center; appearance: textfield; }
+.membership-request .friend-stepper input[type="number"] {
+  inline-size: max(44px, 4.3ch); min-height: 44px; padding: .3rem .12rem;
+  border-block: 0; text-align: center; appearance: textfield;
+  background-color: var(--ah-surface); font: inherit; font-variant-numeric: tabular-nums lining-nums;
+}
 .friend-quantity input::-webkit-inner-spin-button { appearance: none; }
 .home-page .friend-basket .friend-total { margin-top: .65rem; font-weight: var(--emphasis-weight); }
 .membership-request [hidden] { display: none !important; }
-.membership-field label, .membership-programs legend { display: block; margin-bottom: .32rem; font-weight: var(--label-weight); }
+.membership-field label, .membership-programs legend { display: block; margin-bottom: .27rem; font-weight: var(--label-weight); }
 .membership-optional { display: inline; margin-left: .4em; color: var(--quiet); font-size: var(--note-size); white-space: normal; }
 .membership-request :is(input:not([type="radio"], [type="checkbox"]),textarea,select) {
   box-sizing: border-box; display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 2.8rem; padding: .58rem .72rem;
   background: #fff; color: var(--ink); border: 1px solid #888; border-radius: 0; box-shadow: none;
   font: 400 max(1rem, var(--copy-size))/1.4 var(--text);
 }
+.membership-request .membership-field :is(input:not([type="radio"], [type="checkbox"]), textarea, select) {
+  background-color: var(--ah-surface); border-block-start: 0; border-inline: 0;
+  font-family: var(--pro-text);
+}
+.membership-field :is(input, textarea)::placeholder { color: var(--quiet); opacity: 1; }
 .membership-request textarea { resize: vertical; min-height: 4.1rem; }
-.membership-request .membership-field select { height: 2.8rem; }
+.membership-select { display: grid; }
+.membership-request .membership-select select { grid-area: 1 / 1; appearance: none; padding-inline-end: 2rem; }
+.membership-select::after {
+  content: ''; grid-area: 1 / 1; align-self: center; justify-self: end;
+  inline-size: .44em; block-size: .44em; margin-inline-end: .85rem;
+  border: solid currentColor; border-width: 0 1.5px 1.5px 0;
+  transform: translateY(-.13em) rotate(45deg); pointer-events: none;
+}
 .home-page .membership-request .membership-hint { margin: .25rem 0 .45rem; color: var(--quiet); font-size: var(--note-size); }
 .membership-request :is(input:not([type="radio"], [type="checkbox"]),textarea,select):focus-visible {
   border-color: var(--ink); outline: 2px solid var(--ink); outline-offset: -2px; box-shadow: none;
@@ -57,7 +89,7 @@
 .membership-programs legend { padding: 0; }
 .membership-programs label {
   display: inline-flex; align-items: center; gap: .45em; margin-right: .8rem; padding-block: .35rem;
-  min-height: 2.25rem; max-width: 100%; cursor: pointer;
+  min-height: 44px; max-width: 100%; cursor: pointer;
 }
 .membership-programs input { flex: none; width: 1em; height: 1em; margin: 0; accent-color: var(--ink); }
 .membership-programs input:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
@@ -70,7 +102,9 @@
   margin-top: .2rem; padding-block: .63em .73em; padding-inline: 1.14em;
   background: var(--ink); color: #fff;
 }
-.home-page .membership-request .membership-status { margin: 0 0 .2rem; color: var(--quiet); }
+.home-page .membership-request :is(.membership-status, .membership-policy) { font-size: var(--note-size); line-height: 1.4; }
+.home-page .membership-request .membership-status { color: var(--quiet); }
+.membership-policy span { margin-inline-start: .45em; color: var(--quiet); }
 .home-page .membership-request .order-consent {
   display: flex; align-items: baseline; gap: .55rem; font: 400 1rem/1.45 var(--text); cursor: pointer;
 }
@@ -87,6 +121,6 @@
   margin-top: .65rem; max-width: 36ch;
 }
 @media (max-width: 48em) {
-  .membership-layout { grid-template-columns: minmax(0,1fr); gap: 2.6rem; margin-inline: 0; max-width: 38rem; }
+  .membership-layout { grid-template-columns: minmax(0,1fr); gap: 2.6rem; max-width: 38rem; }
   .membership-form { margin-top: 1.1rem; }
 }

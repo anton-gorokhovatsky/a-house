@@ -11,11 +11,19 @@
     awards: 'rec4612983501'
   };
   const panels = new Map();
+  const noticeOpener = document.querySelector('.t367__opener');
+  const noticeOpenerParent = noticeOpener.parentElement;
+  const notice = document.querySelector('#rec2398061631 .t-popup');
+  const pageHeading = document.querySelector('[role="heading"][aria-level="1"]');
+  pageHeading.tabIndex = -1;
+  let noticeOrigin;
 
   function followBookmark() {
     const fragment = location.hash.slice(1);
     if (fragment === 'organizers') {
-      document.querySelector('.t367__opener').click();
+      // The export removes the timer link after its first use.
+      if (!noticeOpener.isConnected) noticeOpenerParent.appendChild(noticeOpener);
+      noticeOpener.click();
       return;
     }
     const disclosure = panels.get(fragment);
@@ -50,6 +58,26 @@
     new MutationObserver(syncState).observe(title, { attributes: true, attributeFilter: ['class'] });
     syncState();
   }
+
+  noticeOpener.addEventListener('click', () => {
+    if (!notice.contains(document.activeElement)) noticeOrigin = document.activeElement;
+  });
+  let noticeOpen = false;
+  new MutationObserver(() => {
+    const open = notice.classList.contains('t-popup_show');
+    if (noticeOpen && !open) {
+      const active = document.activeElement;
+      if (active === document.body || notice.contains(active)) {
+        if (noticeOrigin?.tabIndex >= 0 && noticeOrigin.getClientRects().length) {
+          noticeOrigin.focus({ preventScroll: true });
+        } else {
+          pageHeading.focus();
+        }
+      }
+      noticeOrigin = null;
+    }
+    noticeOpen = open;
+  }).observe(notice, { attributes: true, attributeFilter: ['class'] });
 
   window.addEventListener('load', followBookmark, { once: true });
   window.addEventListener('hashchange', followBookmark);
