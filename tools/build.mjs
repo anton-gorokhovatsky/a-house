@@ -28,6 +28,34 @@ export function siteBase(value = '/a-house/') {
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const source = name => readFile(file('src', name), 'utf8');
 
+export const standaloneAssetOrigins = [
+  'https://static.tildacdn.com', 'https://thb.tildacdn.com', 'https://optim.tildacdn.com', 'https://cdn.jsdelivr.net'
+];
+
+function standaloneDocument(html, base) {
+  const scripts = new Set(["'self'"]);
+  for (const [, attributes, content] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    const src = attributes.match(/\bsrc=(['"])([^'"]+)\1/)?.[2];
+    if (!src) scripts.add("'sha256-" + createHash('sha256').update(content).digest('base64') + "'");
+    else if (src.startsWith('https://')) {
+      const url = new URL(src);
+      if (!standaloneAssetOrigins.includes(url.origin)) throw new Error('Unexpected standalone script: ' + src);
+      scripts.add(url.origin + url.pathname);
+    }
+  }
+  const tilda = standaloneAssetOrigins[0];
+  const policy = [
+    "default-src 'none'",
+    'script-src ' + [...scripts].join(' '),
+    "style-src 'unsafe-inline' " + tilda,
+    "img-src 'self' data: " + standaloneAssetOrigins.filter(origin => origin.endsWith('.tildacdn.com')).join(' '),
+    'font-src ' + tilda,
+    "connect-src 'none'", "form-action 'none'", "base-uri 'none'"
+  ].join('; ');
+  return html.replace('<!-- STANDALONE POLICY -->', '<meta http-equiv="Content-Security-Policy" content="' + escape(policy) + '">')
+    .replaceAll('@@ROOT@@', base);
+}
+
 export function formatSiteVersion(timestamp) {
   const instant = new Date(timestamp);
   const parts = new Intl.DateTimeFormat('ru-RU', {
@@ -265,7 +293,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
-  const references = new Set([nearbyImages, 'js/theme.js', ...routes.flatMap(scriptsFor), ...routes.flatMap(cssFor)]);
+  const editorialRoutes = routes.filter(page => page.layout !== 'standalone');
+  const references = new Set([nearbyImages, 'js/theme.js', ...editorialRoutes.flatMap(scriptsFor), ...editorialRoutes.flatMap(cssFor)]);
   const urls = new Map(await Promise.all([...references].map(async name => {
     const bytes = await readFile(path.join(output, name));
     const digest = createHash('sha256').update(bytes).digest('hex').slice(0,12);
@@ -279,6 +308,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const template = page.event ? 'event' : page.archiveTopic ? 'archive' : page.slug;
     const pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug)
       : archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
+    if (page.layout === 'standalone') {
+      await writeFile(path.join(location, 'index.html'), standaloneDocument(pageContent, base));
+      continue;
+    }
     const markup = pageContent.includes('<!-- EDITORIAL HEADER -->') ? pageContent :
       '<div id="allrecords" class="t-records home-page">\n<!-- EDITORIAL HEADER -->\n' + pageContent + '\n<!-- FOOTER -->\n</div>';
     const body = markup

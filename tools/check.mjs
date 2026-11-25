@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { formatSiteVersion, membershipSettings, projectRoot, siteBase } from './build.mjs';
+import { formatSiteVersion, membershipSettings, projectRoot, siteBase, standaloneAssetOrigins } from './build.mjs';
 import { eventDestination, routesWithEvents } from './calendar.mjs';
 import { collectArchive, printArchiveFileNames } from './archive.mjs';
 import { typesetText } from './typography.mjs';
@@ -57,6 +57,7 @@ const membershipPages = new Map([
   ['member/index.html', { kind: 'member', settings: membershipSettings('member') }]
 ]);
 const expectedFiles = routes.map(({slug}) => slug==='home' ? 'index.html' : slug==='404' ? '404.html' : slug+'/index.html');
+const standaloneFiles = new Set(routes.filter(page => page.layout === 'standalone').map(page => page.slug + '/index.html'));
 const htmlFiles = [...files].filter(file => file.endsWith('.html'));
 for (const file of expectedFiles) if (!files.has(file)) errors.push('Missing page ' + file);
 const documents = new Map();
@@ -68,7 +69,9 @@ function validateURL(source, value, asset) {
   try { url = new URL(value,'https://preview.invalid'+base+source); }
   catch { errors.push(source+' contains invalid URL '+value);return; }
   if (url.origin!=='https://preview.invalid') {
-    if (asset) errors.push(source+' loads an external asset '+value);
+    if (asset && !(standaloneFiles.has(source) && standaloneAssetOrigins.includes(url.origin))) {
+      errors.push(source+' loads an external asset '+value);
+    }
     if (url.protocol==='javascript:') errors.push(source+' contains a javascript: URL');
     return;
   }
@@ -106,16 +109,23 @@ for (const file of htmlFiles) {
     errors.push('The media overview must keep site articles and archived print issues in their own catalogues');
   }
   const head = source.slice(0, source.indexOf('</head>'));
-  const styles = [...head.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)];
-  const themeLoader = [...head.matchAll(/<script src="[^"]*\/js\/theme\.js(?:\?[^"]*)?"><\/script>/g)];
-  if (themeLoader.length !== 1 || !styles.length || themeLoader[0].index > styles[0].index ||
-      !styles.at(-1)[1].startsWith(base + 'styles/theme.css?')) {
-    errors.push(file + ' must restore the saved theme before styles and apply the shared palette last');
-  }
-  for (const [tag, id] of [['nav', 'menu-theme'], ['footer', 'site-theme']]) {
-    const region = source.match(new RegExp('<' + tag + '\\b[^>]*>[\\s\\S]*?</' + tag + '>'))?.[0];
-    if (!region?.includes('id="' + id + '" data-site-theme')) {
-      errors.push(file + ' is missing its theme choices in the ' + tag);
+  const standalone = standaloneFiles.has(file);
+  if (standalone) {
+    if (!head.includes('http-equiv="Content-Security-Policy"') || !head.includes("connect-src 'none'; form-action 'none'")) {
+      errors.push(file + ' must keep the standalone export separate from live integrations');
+    }
+  } else {
+    const styles = [...head.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)];
+    const themeLoader = [...head.matchAll(/<script src="[^"]*\/js\/theme\.js(?:\?[^"]*)?"><\/script>/g)];
+    if (themeLoader.length !== 1 || !styles.length || themeLoader[0].index > styles[0].index ||
+        !styles.at(-1)[1].startsWith(base + 'styles/theme.css?')) {
+      errors.push(file + ' must restore the saved theme before styles and apply the shared palette last');
+    }
+    for (const [tag, id] of [['nav', 'menu-theme'], ['footer', 'site-theme']]) {
+      const region = source.match(new RegExp('<' + tag + '\\b[^>]*>[\\s\\S]*?</' + tag + '>'))?.[0];
+      if (!region?.includes('id="' + id + '" data-site-theme')) {
+        errors.push(file + ' is missing its theme choices in the ' + tag);
+      }
     }
   }
   // The House renovation announcement also returns HTTP 200. A consent link
@@ -132,7 +142,8 @@ for (const file of htmlFiles) {
     const element=tag[1].toLowerCase();
     const attribute=element==='a' || element==='link' ? 'href' : 'src';
     const value=tag[0].match(new RegExp('\\s'+attribute+'\\s*=\\s*["\\x27]([^"\\x27]*)','i'))?.[1];
-    if (value!==undefined) validateURL(file,value,element!=='a');
+    const canonical = standalone && element === 'link' && /\brel="canonical"/.test(tag[0]);
+    if (value!==undefined) validateURL(file,value,element!=='a' && !canonical);
     if (element==='a' && value===base+'404.html') errors.push(file+' links straight to the error page');
     if (element==='img' || element==='source') {
       const candidates=tag[0].match(/\bsrcset="([^"]+)"/i)?.[1];
@@ -142,7 +153,7 @@ for (const file of htmlFiles) {
         errors.push(file+' is missing its reduced-motion picture');
       }
     }
-    if (element==='script' && !value) errors.push(file+' contains an inline script');
+    if (element==='script' && !value && !standalone) errors.push(file+' contains an inline script');
     if (element === 'form') {
       const memberPage = membershipPages.get(file);
       const id = tag[0].match(/\sid="([^"]+)"/i)?.[1];
@@ -174,6 +185,12 @@ if (!formatSiteVersion('2026-12-31T21:07:00Z').includes('1 января 2027, 00
 const documentsCitingOfficialSite = new Set(['politic_a-com/index.html', 'rules/index.html']);
 const citedSite = 'https://ahouseproject.com/';
 for (const [file, html] of documents) {
+  if (standaloneFiles.has(file)) {
+    if (!html.includes('role="main"') || /class="(?:site-header|home-footer)/.test(html)) {
+      errors.push(file + ' must render its own standalone content');
+    }
+    continue;
+  }
   if (!html.includes(versionTag) || !html.includes('class="skip-content" href="#site-content"')) {
     errors.push(file + ' is missing the shared version or the skip link');
   }

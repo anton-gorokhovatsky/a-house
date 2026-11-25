@@ -587,46 +587,27 @@ async function checkSpecialProjectPrograms(page, mobile) {
   const contest = page.locator('#a-industry').getByRole('link', {name: /Конкурс МТС «Меняя привычное»/});
   await activate(contest);
   await page.waitForURL(url + 'mts/');
-  assert.ok(await page.getByText('Приём портфолио завершён.', {exact: true}).isVisible());
-  await activate(page.getByRole('link', {name: 'Этапы конкурса', exact: true}));
-  await page.waitForURL(url + 'mts/#stages');
-  assert.ok(await page.locator('#rec3335110301 time[datetime="2026-12-25"]').isVisible());
-  const selection = page.locator('#rec2291516421');
-  await activate(selection.locator('summary'));
-  assert.equal(await selection.getAttribute('open'), '');
-  const contact = page.getByRole('link', {name: 'Контакты организаторов', exact: true});
-  await contact.evaluate(link => link.scrollIntoView({block: 'center', behavior: 'instant'}));
-  const contactTop = (await contact.boundingBox()).y;
-  await activate(contact);
-  const contacts = page.getByRole('dialog', {name: 'Контакты организаторов'});
-  const email = contacts.getByRole('link', {name: 'aindex@ahouseproject.com'});
-  await email.waitFor();
-  assert.ok(await email.evaluate(link => {
-    const box = link.getBoundingClientRect();
-    return box.top >= 0 && box.bottom <= innerHeight;
-  }), 'Opening organizer contacts must reveal the email on the first screen');
-  await activate(contacts.getByRole('button', {name: 'Закрыть'}));
-  await page.waitForURL(url + 'mts/#stages');
-  await contacts.waitFor({state: 'hidden'});
-  await page.waitForFunction(top => {
-    const link = document.activeElement;
-    return link.matches('.story-mts a[href="#organizers"]') && Math.abs(link.getBoundingClientRect().top - top) < 2;
-  }, contactTop);
-  if (mobile) {
-    await activate(contact);
-    const originalViewport = page.viewportSize();
-    await page.setViewportSize({width: 320, height: 568});
-    await contacts.locator('img').evaluate(image => image.decode());
-    await page.addStyleTag({content:'html { font-size: 200%; }'});
-    assert.ok(await contacts.evaluate(dialog => {
-      const card = dialog.getBoundingClientRect();
-      const title = new Range();
-      title.selectNodeContents(dialog.querySelector('h2'));
-      return [...title.getClientRects()].every(line =>
-        line.left >= card.left && line.right <= card.right && line.top >= 0 && line.bottom <= innerHeight);
-    }), 'Enlarged contact heading must stay legible inside the card after the photo loads');
-    await page.setViewportSize(originalViewport);
-  }
+  assert.equal(await page.locator('.site-header, .home-footer').count(), 0);
+  assert.ok(await page.getByRole('heading', {level: 1, name: 'Меняя привычное', exact: false}).isVisible());
+  assert.equal(await page.locator('form').count(), 0);
+  const notice = page.getByRole('dialog', {name: /портфолио.*окончен/i});
+  await notice.waitFor();
+  assert.match(await notice.innerText(), /aindex@ahouseproject\.com/);
+  await activate(notice.getByRole('button', {name: /закрыть/i}));
+  await notice.waitFor({state: 'hidden'});
+  const more = page.getByRole('button', {name: 'Подробнее о конкурсе'});
+  await activate(more);
+  await page.waitForFunction(() => document.getElementById('rec2291513081').classList.contains('open-accord'));
+  assert.match(await page.locator('#rec2291513081').innerText(), /российские\s+и\s+зарубежные\s+бюро/i);
+  const secondStage = page.getByRole('button', {name: 'Этап 2. Эскизное задание'});
+  // The export layers the caption and hit area over the same visible control.
+  if (mobile) await secondStage.tap({force: true});
+  else await secondStage.press('Enter');
+  await page.waitForFunction(() => document.getElementById('rec2291517501').classList.contains('open-accord'));
+  assert.equal(await more.getAttribute('aria-expanded'), 'false');
+  assert.match(await page.locator('#rec2291517501').innerText(), /подписание\s+NDA/);
+  const rules = page.getByRole('link', {name: /ознакомиться с правилами проведения конкурса/i});
+  assert.equal(await rules.getAttribute('href'), 'https://disk.360.yandex.ru/d/kAckYUQ5My6vfg');
 }
 
 async function checkEnlargedMenu(page) {
