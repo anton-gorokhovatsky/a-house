@@ -44,6 +44,7 @@ async function checkReadable(locator) {
 
 export async function checkTheme(browser, url) {
   const context = await browser.newContext({ viewport: { width: 390, height: 780 }, isMobile: true, hasTouch: true, colorScheme: 'light' });
+  context.setDefaultTimeout(30_000);
   try {
     const page = await context.newPage();
     await page.goto(url);
@@ -152,6 +153,7 @@ export async function checkTheme(browser, url) {
   }
 
   const noScript = await browser.newContext({ javaScriptEnabled: false, colorScheme: 'dark' });
+  noScript.setDefaultTimeout(30_000);
   try {
     const page = await noScript.newPage();
     await page.goto(url + 'calendar/');

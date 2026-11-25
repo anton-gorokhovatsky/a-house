@@ -80,6 +80,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
       delivered.push({ message, packed });
     } });
     context = await browser.newContext({ ...contextOptions, ignoreHTTPSErrors: true });
+    context.setDefaultTimeout(30_000);
     const allowed = new Set([site, api]);
     await context.route('**/*', route => allowed.has(new URL(route.request().url()).origin) ? route.continue() : route.abort());
     const page = await context.newPage();
@@ -196,6 +197,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         }
         assert.ok(message.html.includes('Тест &lt;письма&gt;<br>Вторая строка.'));
         nativeContext = await browser.newContext({ ...contextOptions, ignoreHTTPSErrors: true, javaScriptEnabled: false });
+        nativeContext.setDefaultTimeout(30_000);
         const nativePage = await nativeContext.newPage();
         await nativePage.goto(entry);
         const nativeForm = nativePage.locator('#member-form');

@@ -1228,15 +1228,20 @@ async function checkHomeRoutes(page, mobile) {
 }
 
 let browser;
+async function browserPage(options) {
+  const page = await browser.newPage(options);
+  page.setDefaultTimeout(30_000);
+  return page;
+}
 try {
   browser = await chromium.launch({ channel: 'chrome' });
-  const narrowPage = await browser.newPage({ viewport: { width: 320, height: 844 } });
+  const narrowPage = await browserPage({ viewport: { width: 320, height: 844 } });
   await checkEnlargedMenu(narrowPage);
   await narrowPage.close();
-  const phone = await browser.newPage({ viewport: { width: 375, height: 560 }, isMobile: true, hasTouch: true });
+  const phone = await browserPage({ viewport: { width: 375, height: 560 }, isMobile: true, hasTouch: true });
   await checkMobileExhibition(phone);
   await phone.close();
-  const motionPage = await browser.newPage({viewport: {width: 1440, height: 900}});
+  const motionPage = await browserPage({viewport: {width: 1440, height: 900}});
   await checkProjectMotion(motionPage);
   await motionPage.close();
   for (const width of [390, 1511]) {
@@ -1244,7 +1249,7 @@ try {
     const pageOptions = {
       viewport: { width, height: 844 }, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1
     };
-    const page = await browser.newPage(pageOptions);
+    const page = await browserPage(pageOptions);
     const requested = new Set();
     page.on('request', request => {
       if (request.isNavigationRequest() && request.frame() === page.mainFrame()) requested.clear();
@@ -1269,7 +1274,7 @@ try {
       await photo.evaluate(image => image.decode());
       assert.ok(requested.has(photoURL), 'The distribution map loads when the reader reaches it');
       assert.ok(![...requested].some(src => /\.gif(?:\?|$)/i.test(src)), 'An animated GIF loaded in reduced motion');
-      const futurePage = await browser.newPage({ ...pageOptions, reducedMotion: 'reduce' });
+      const futurePage = await browserPage({ ...pageOptions, reducedMotion: 'reduce' });
       await checkExpiredProgram(futurePage);
       await futurePage.close();
     }
