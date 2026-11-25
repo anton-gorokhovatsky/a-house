@@ -34,8 +34,8 @@ function formatCount(match, number, offset, text) {
 
 function wrapNames(text, pattern) {
   return text.replace(pattern, name => '<span class="project-name">' + name + '</span>')
-    .replace(/«([АA][-‑–—]ком)(мью)(ни)(кейшнс)»/giu,
-      '<span class="legal-name"><span>«$1</span>&shy;$2&shy;$3&shy;$4»</span>');
+    .replace(/«([АA][-‑–—]ком)(мью)(ни)(кейшнс)»([.,;:!?…])?/giu,
+      '<span class="legal-name"><span>«$1</span>&shy;$2&shy;$3&shy;$4»$5</span>');
 }
 
 function russianSpacing(text) {

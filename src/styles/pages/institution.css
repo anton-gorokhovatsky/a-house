@@ -28,7 +28,7 @@
   max-inline-size: 100%;
   margin: 0;
   color: var(--ink);
-  font: 400 min(var(--lead-size), max(1.8rem, 11.85cqi))/1.07 var(--display);
+  font: 400 min(var(--lead-size), max(var(--type-title), 11.85cqi))/1.07 var(--display);
   letter-spacing: -.012em;
   text-wrap: balance;
   overflow-wrap: normal;
@@ -85,12 +85,12 @@
 
 .home-page .institution-section h2 {
   margin: 0;
+  font-size: var(--type-subsection);
   text-align: left;
   overflow-wrap: break-word;
   hyphens: auto;
   hyphenate-limit-chars: 7 3 3;
 }
-.home-page .institution-page:has(.section-title) .institution-section h2 { font-size: var(--type-subsection); }
 
 .home-page .institution-copy > * + :is(p, dl, ul, .institution-photos, .institution-video) {
   margin-top: 1.4rem;

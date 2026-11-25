@@ -11,10 +11,11 @@
   letter-spacing: -.012em;
   overflow-wrap: anywhere; text-wrap: balance;
 }
+.home-page :is(.press-page,.partnership-stories) .section-title { margin-block-end: var(--story-gap); }
 .document-copy { line-height: 1.55; overflow-wrap: break-word; hyphens: auto; hyphenate-limit-chars: 7 3 3; }
 .home-page .editorial-document h1 { max-inline-size: 27ch; overflow-wrap: break-word; hyphens: manual; text-wrap: pretty; }
 @container document-content (max-width: 14em) {
-  .home-page .editorial-document h1 { font-size: var(--type-card); hyphens: auto; hyphenate-limit-chars: 8 4 4; }
+  .home-page .editorial-document h1 { font-size: var(--type-card); }
 }
 .home-page .editorial-document .document-issuer { display: block; margin-top: .65em; font: var(--label-weight) var(--type-lead)/var(--leading-lead) var(--text); }
 .home-page .editorial-document h2 { max-inline-size: 36ch; margin: 1.8em 0 .55em; font-size: var(--type-card); text-align: start; text-wrap: pretty; }
@@ -77,8 +78,6 @@
   margin-block-start: var(--group);
 }
 .home-page .press-page .press-friend-issues > ul { display: grid; gap: .85rem; align-items: start; }
-.press-featured-issue { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem 1.4rem; align-items: start; }
-.press-featured-issue .press-featured-cover { width: min(52%, 10rem); }
 .home-page .press-featured-copy h3 { margin-block: .2em .4em; font-size: var(--type-card); text-wrap: pretty; }
 .home-page .press-featured-copy .press-page-links { margin-block-start: .25em; }
 .home-page .press-featured-copy a:not(.press-file) {

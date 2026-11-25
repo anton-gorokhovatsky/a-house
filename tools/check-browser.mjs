@@ -119,6 +119,10 @@ async function checkMobileExhibition(page) {
     assert.equal(await action.getAttribute('href'), feature.booking.url);
     const title = poster.getByRole('heading', { name: feature.title });
     const heading = await title.boundingBox();
+    assert.ok(await title.evaluate(element =>
+      parseFloat(getComputedStyle(element).fontSize) >
+      parseFloat(getComputedStyle(document.querySelector('#home-program-heading')).fontSize)),
+    'The overview label must stay subordinate to the featured exhibition title');
     const details = title.getByRole('link', { name: feature.title });
     assert.equal(await details.getAttribute('href'), eventDestination(feature, new URL('calendar/', url).pathname));
     assert.ok((await details.boundingBox()).height >= 44);
@@ -373,6 +377,13 @@ async function checkVisitorLinks(page, mobile) {
   const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
   assert.deepEqual(await features.locator('.home-project-portfolios h4 a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
+  const pressFeature = editions.getByRole('article', {name: 'A–Build о новом Доме A–House'});
+  const cover = pressFeature.locator('.press-featured-cover');
+  await cover.scrollIntoViewIfNeeded();
+  await cover.evaluate(image => image.decode());
+  const announcement = pressFeature.getByRole('link', {name: 'О выпуске A–Build в Telegram', exact: true});
+  assert.equal(await announcement.getAttribute('href'), 'https://t.me/ahouseproject/10610');
+  assert.equal(await announcement.locator('.external-link-mark').getAttribute('aria-hidden'), 'true');
   const archiveLink = editions.getByRole('link', {name:'Архив печатных номеров', exact:true});
   assert.equal(await archiveLink.evaluate(link => link.href), url + 'press/#print-archive');
   const editorialTitles = await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts();
@@ -883,19 +894,34 @@ async function checkEditorialGrouping(page) {
     const entries = await list.locator(':scope > article:visible').evaluateAll(cards => cards.map(card => {
       const link = card.querySelector('.home-event-link');
       const entry = { top: card.getBoundingClientRect().top, paid: Boolean(card.querySelector('.home-event-amount')) };
+      const action = card.querySelector('.home-event-admission');
+      const address = card.querySelector('.home-detail');
+      const description = address?.getClientRects().length ? address : link?.querySelector('.home-event-info > p:last-child');
+      if (action && description) {
+        entry.endOfCopy = description.getBoundingClientRect().bottom;
+        entry.actionGap = action.getBoundingClientRect().top - entry.endOfCopy;
+        entry.lineHeight = parseFloat(getComputedStyle(action).lineHeight);
+      }
       if (!entry.paid) return entry;
       const price = card.querySelector('.home-event-amount');
-      const address = card.querySelector('.home-detail');
-      const description = address?.getClientRects().length ? address : link.querySelector('.home-event-info > p:last-child');
       if (!price || !description) return entry;
       const text = document.createRange();
-      text.selectNodeContents(price);
-      const lines = [...text.getClientRects()].filter(rect => rect.width > 0);
+      const walker = document.createTreeWalker(price, NodeFilter.SHOW_TEXT);
+      const lines = [];
+      for (let word = walker.nextNode(); word; word = walker.nextNode()) {
+        text.selectNodeContents(word);
+        lines.push(...[...text.getClientRects()].filter(rect => rect.width > 0));
+      }
       if (!lines.length) return entry;
-      return { ...entry, regular: getComputedStyle(price).fontWeight === getComputedStyle(price.parentElement).fontWeight, endOfCopy: description.getBoundingClientRect().bottom,
+      return { ...entry, regular: getComputedStyle(price).fontWeight === getComputedStyle(price.parentElement).fontWeight,
+        endOfCopy: description.getBoundingClientRect().bottom,
         priceTop: lines[0].top, priceBottom: lines.at(-1).bottom, sameLine: lines.every(rect => Math.abs(rect.top - lines[0].top) < 1) };
     }));
     for (const [index, entry] of entries.entries()) {
+      if (entry.actionGap !== undefined) {
+        assert.ok(entry.actionGap >= 0 && entry.actionGap <= entry.lineHeight,
+          'Booking must sit directly below its own description even when the adjacent card is taller');
+      }
       if (!entry.paid) continue;
       assert.ok(entry.regular, 'An amount must share the weight of its booking label');
       assert.ok(entry.sameLine && entry.priceTop > entry.endOfCopy, 'Each price belongs on a separate, unbroken line under its description');
@@ -903,8 +929,6 @@ async function checkEditorialGrouping(page) {
       if (!next) continue;
       if (Math.abs(entry.top - next.top) >= 1) {
         assert.ok(next.top - entry.priceBottom > entry.priceTop - entry.endOfCopy, 'A price must be closer to its own event than the next one');
-      } else if (next.paid) {
-        assert.ok(Math.abs(entry.priceTop - next.priceTop) < 1, 'Prices for side-by-side events must share a baseline');
       }
     }
   }
@@ -1235,6 +1259,13 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await page.locator('dialog[open]').count(), 0);
   await page.goto(url + '#visit');
   await section('visit').waitFor({ state: 'visible' });
+  const entrepreneur = section('visit').locator('.home-places > article').last();
+  for (const external of [entrepreneur.locator('.home-address a'), entrepreneur.getByRole('link', {name: 'Расписание встреч', exact: true})]) {
+    assert.equal(await external.locator('.external-link-mark').count(), 1);
+  }
+  for (const label of ['О Доме предпринимателя', 'Амбассадоры Дома']) {
+    assert.equal(await entrepreneur.getByRole('link', {name: label, exact: true}).locator('.external-link-mark').count(), 0);
+  }
   await section('visit').locator('a[href$="/residents/"]').first().click();
   await page.waitForURL(url + 'residents/');
 }

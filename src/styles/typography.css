@@ -11,6 +11,7 @@
   --leading-lead: 1.43;
   --type-display: clamp(2.5rem, 1.25rem + 5vw, 6.5rem);
   --type-title: clamp(2rem, 1.45rem + 2.2vw, 3.5rem);
+  --type-page-title: clamp(var(--type-title), .25rem + 6.25vw, 5.9rem);
   --type-section: clamp(1.625rem, 1.25rem + 1.3vw, 2.5rem);
   --type-subsection: calc((var(--type-title) + var(--type-section)) / 2);
   --type-card: clamp(1.25rem, 1.1rem + .65vw, 1.625rem);
@@ -22,7 +23,7 @@
 }
 /* Menu destinations have one title scale on their own page and on the home page. */
 .home-page .home-editorial .section-title {
-  font: 400 var(--type-title)/1.1 var(--display);
+  font: 400 var(--type-page-title)/1.1 var(--display);
   letter-spacing: -.004em;
   text-wrap: balance;
   hyphens: manual;

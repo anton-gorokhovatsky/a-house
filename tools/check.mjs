@@ -28,6 +28,11 @@ const formattedRole = '<p>Сооснователь и\u00a0генеральны�
 if (typesetText(role) !== formattedRole) {
   errors.push('Keep 12 STOREEZ and short connectives together across inline tags');
 }
+const company = '<p>Правила ООО «А-КОММЬЮНИКЕЙШНС». Следующий абзац.</p>';
+const formattedCompany = '<p>Правила ООО <span class="legal-name"><span>«А-КОМ</span>&shy;МЬЮ&shy;НИ&shy;КЕЙШНС».</span> Следующий абзац.</p>';
+if (typesetText(company) !== formattedCompany) {
+  errors.push('Punctuation following the company name belongs to the same wrapping group');
+}
 if (typesetText('<p>на стройплощадки</p>') !== '<p>на\u00a0строй\u00adплощадки</p>') {
   errors.push('Narrow screens need a natural break inside стройплощадки');
 }

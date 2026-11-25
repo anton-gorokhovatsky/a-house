@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { typesetText } from './typography.mjs';
 import { formatDocumentTables } from './legal-documents.mjs';
 import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
+import { markExternalLinks } from './external-links.mjs';
 import { loadImageDelivery } from './images.mjs';
 import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } from './calendar.mjs';
 import { renderProgram, renderVenueProgram } from './program.mjs';
@@ -33,7 +34,7 @@ export const standaloneAssetOrigins = [
   'https://static.tildacdn.com', 'https://thb.tildacdn.com', 'https://optim.tildacdn.com', 'https://cdn.jsdelivr.net'
 ];
 
-function standaloneDocument(html, base) {
+function standaloneDocument(html, base, externalLinkStyles) {
   const scripts = new Set(["'self'"]);
   for (const [, attributes, content] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
     const src = attributes.match(/\bsrc=(['"])([^'"]+)\1/)?.[2];
@@ -53,7 +54,9 @@ function standaloneDocument(html, base) {
     'font-src ' + tilda,
     "connect-src 'none'", "form-action 'none'", "base-uri 'none'"
   ].join('; ');
-  return html.replace('<!-- STANDALONE POLICY -->', '<meta http-equiv="Content-Security-Policy" content="' + escape(policy) + '">')
+  const marked = markExternalLinks(html, base);
+  const linkStyles = marked === html ? '' : '<style>' + externalLinkStyles + '</style>';
+  return marked.replace('<!-- STANDALONE POLICY -->', '<meta http-equiv="Content-Security-Policy" content="' + escape(policy) + '">' + linkStyles)
     .replaceAll('@@ROOT@@', base);
 }
 
@@ -272,11 +275,13 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     if (style) return ['styles/source/grid-3.0.css', 'styles/chrome.css', 'styles/pages/home.css', 'styles/pages/' + style + '.css'];
     return page.styles;
   }
+  const externalLinksStyle = 'styles/external-links.css';
+  const standaloneLinkStyles = await source(externalLinksStyle);
   const cssFor = page => [...new Set([
     'media/fonts/ahouse-fonts.css',
     ...pageStyles(page), ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
     ...(page.slug === 'archive' || page.archiveTopic ? ['styles/pages/archive-list.css'] : []),
-    'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', 'styles/theme.css'
+    'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', externalLinksStyle, 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
   const editorialRoutes = routes.filter(page => page.layout !== 'standalone');
@@ -295,7 +300,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug)
       : archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
     if (page.layout === 'standalone') {
-      await writeFile(path.join(location, 'index.html'), standaloneDocument(pageContent, base));
+      await writeFile(path.join(location, 'index.html'), standaloneDocument(pageContent, base, standaloneLinkStyles));
       continue;
     }
     const markup = pageContent.includes('<!-- EDITORIAL HEADER -->') ? pageContent :
@@ -376,7 +381,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
-    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|REFERRER_POLICY|CONNECT_SOURCE|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
+    const content = markExternalLinks(
+      shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|REFERRER_POLICY|CONNECT_SOURCE|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base),
+      base
+    );
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
   }
   await writeFile(path.join(output,'.nojekyll'),'');

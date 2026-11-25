@@ -8,7 +8,7 @@
       </div>
       <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-labelledby="home-program-heading">
         <header class="home-section-head home-program-head">
-          <h2 id="home-program-heading" class="section-title">{{eventsLabel}}</h2>
+          <h2 id="home-program-heading">{{eventsLabel}}</h2>
           <a class="home-calendar-link" href="@@ROOT@@calendar/">Весь календарь</a>
         </header>
         <div class="home-feature-slot" data-home-now{{featureHidden}}>
@@ -91,14 +91,21 @@
         <h2 id="media-title" class="screen-reader-only">Что почитать</h2>
         <div class="reading-highlights">
           <section class="home-press-teaser" aria-labelledby="collection-editions">
-            <h3 id="collection-editions" class="editorial-pair-title">Издательство A–Press</h3>
-            <div>
-              <p>Книги, газеты и журналы об архитектуре, дизайне и городской жизни.</p>
-              <div class="home-links">
-                <a href="@@ROOT@@press/">Свежие номера и проекты издательства</a>
-                <a href="@@ROOT@@press/#print-archive">Архив печатных номеров</a>
-                <a href="@@ROOT@@press/books/">Книги A–Press</a>
+            <h3 id="collection-editions" class="editorial-pair-title">Изда&shy;тель&shy;ство A–Press</h3>
+            <article class="press-featured-issue" aria-labelledby="home-press-issue-title">
+              <img class="press-featured-cover" src="@@ROOT@@media/press/a-build-first-forum.jpg" width="586" height="800" alt="Экземпляры газеты A–Build в чёрной стойке" loading="lazy" decoding="async">
+              <div class="press-featured-copy">
+                <h4 id="home-press-issue-title">A–Build о новом Доме A–House</h4>
+                <p>Газета к первому A–Forum о соавторах нового Дома. В номере рассказывают, откуда взялся винно-сливовый цвет главной лестницы и как свет меняет интерьеры в течение дня.</p>
+                <div class="home-links">
+                  <a href="https://t.me/ahouseproject/10610">О выпуске A–Build в Telegram</a>
+                </div>
               </div>
+            </article>
+            <div class="home-links">
+              <a href="@@ROOT@@press/">Все издания A–Press</a>
+              <a href="@@ROOT@@press/#print-archive">Архив печатных номеров</a>
+              <a href="@@ROOT@@press/books/">Книги A–Press</a>
             </div>
           </section>
           <!-- PROJECTS news -->

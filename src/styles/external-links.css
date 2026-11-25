@@ -1,0 +1,8 @@
+.external-link-ending { white-space: nowrap; }
+.external-link-mark {
+  display: inline-block;
+  inline-size: .75em;
+  block-size: .75em;
+  margin-inline-start: .23em;
+  vertical-align: .04em;
+}
