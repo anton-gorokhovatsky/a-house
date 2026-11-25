@@ -7,7 +7,8 @@
 }
 .editorial-document .document-inner { max-width: 76ch; margin-inline: auto; container: document-content / inline-size; }
 .home-page :is(.editorial-document,.press-page,.partnership-stories,.editorial-missing) h1 {
-  max-inline-size: 26ch; margin: 0 0 .6em; font: 400 var(--chapter-size)/1.12 var(--display);
+  max-inline-size: 26ch; margin: 0 0 .6em; font: 400 var(--chapter-size)/1.08 var(--display);
+  letter-spacing: -.012em;
   overflow-wrap: anywhere; text-wrap: balance;
 }
 .home-page :is(.press-page,.partnership-stories) h1 { font-size: var(--lead-size); overflow-wrap: break-word; }

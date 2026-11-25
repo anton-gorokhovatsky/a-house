@@ -4,7 +4,7 @@
     <!-- MOVED PUBLICATION LINKS -->
     <div id="overview" class="home-editorial" tabindex="-1">
       <div class="home-introduction home-overview-only">
-        <p>A–House объединяет тех, кому интересны архитектура и дизайн. Мы проводим выставки и встречи в Москве, издаём книги и журналы. <a href="@@ROOT@@about/">Об A–House</a></p>
+        <p><span class="home-introduction-lead">A–House — платформа по развитию архитектуры, дизайна и среды.</span> Выставки, встречи, книги, журналы и справочник&nbsp;бюро. <a href="@@ROOT@@about/">Об A–House</a></p>
       </div>
       <section id="program" class="home-section home-program" data-home-section data-overview-section tabindex="-1" aria-labelledby="home-program-heading">
         <header class="home-section-head home-program-head">
@@ -27,7 +27,7 @@
       </section>
       <section id="visit" class="home-section home-visit" data-home-section data-overview-section tabindex="-1" aria-labelledby="visit-heading">
         <div class="home-section-head">
-          <h2 id="visit-heading"><span class="home-overview-only" id="collection-houses">Дома, школа и клуб</span><span class="home-detail">{{housesLabel}}</span></h2>
+          <h2 id="visit-heading"><span class="home-overview-only" id="collection-houses">{{housesLabel}}</span><span class="home-detail">{{housesLabel}}</span></h2>
         </div>
         <div class="home-places">
           <article id="rec2340799251">
@@ -68,9 +68,12 @@
             <!-- HOUSE WORK entrepreneur -->
           </article>
         </div>
-        <div id="collection-community" class="home-community home-overview-only" role="region" aria-label="Школа и клуб" tabindex="-1">
-          <!-- PROJECTS community -->
-        </div>
+      </section>
+      <section id="collection-community" class="home-section home-overview-only" aria-labelledby="community-heading" tabindex="-1">
+        <header class="home-section-head">
+          <h2 id="community-heading">Школа и клуб</h2>
+        </header>
+        <div class="home-community"><!-- PROJECTS community --></div>
       </section>
       <div id="media" class="home-section home-reading" data-home-section data-overview-section data-home-title="media-title" tabindex="-1">
         <h2 class="home-overview-only screen-reader-only">Издательство, справочник и онлайн-журнал</h2>
@@ -81,9 +84,9 @@
         <div class="reading-highlights">
           <section class="home-print" aria-labelledby="collection-editions">
             <header class="home-section-head publisher-head">
-              <h3 id="collection-editions" class="editorial-pair-title">A–Press</h3>
+              <h3 id="collection-editions" class="editorial-pair-title">Издательство A–Press</h3>
               <div class="home-links">
-                <a href="@@ROOT@@press/">Каталог A–Press</a>
+                <a href="@@ROOT@@press/">Каталог изданий</a>
                 <a href="#home-books">К книгам издательства</a>
               </div>
             </header>
@@ -133,7 +136,7 @@
         <div class="home-section-head">
           <h2 id="partnership-heading">Сотруд&shy;ничество</h2>
           <div class="home-links">
-            <a href="@@ROOT@@partnership/">Форматы партнёрства</a>
+            <a href="@@ROOT@@partnership/#formats">Форматы партнёрства</a>
             <a href="mailto:partners@ahouseproject.com">Предложить партнёрский проект</a>
           </div>
         </div>
@@ -199,6 +202,7 @@
       <nav class="home-ways home-overview-only" aria-label="Другие разделы A–House">
         <h2>Ещё в&nbsp;A–House</h2>
         <ul>
+          <li><a href="#projects">{{projectsLabel}}</a></li>
           <li><a href="#industry">Найти бюро или вакансию</a></li>
           <li><a href="#partnership">Предложить проект</a></li>
         </ul>

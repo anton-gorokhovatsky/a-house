@@ -80,6 +80,7 @@ export function renderProgram(events, featureTemplate, base, today = moscow.form
     attrs: attributes(spotlight, today), date: dateLine(spotlight, today), kind: esc(spotlight.kind),
     title: esc(spotlight.title).replace(/^(.*?\. )(.+)$/, '$1<span>$2</span>'),
     url: esc(eventDestination(spotlight, base + 'calendar/')),
+    linkLabel: /^выставка(?:\s|$)/iu.test(spotlight.kind) ? 'О выставке' : 'О событии',
     summary: esc(spotlight.summary),
     detail: spotlight.detail ? '<span class="home-detail"> ' + esc(spotlight.detail) + '</span>' : '',
     access: spotlight.access ? '<p class="home-feature-access">' + esc(spotlight.access) + '</p>' : '',

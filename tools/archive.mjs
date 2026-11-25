@@ -222,7 +222,7 @@ function renderPublication(page, original, topics) {
     <main id="site-content" class="home-editorial publication-reader" tabindex="-1">
       <article itemscope itemtype="https://schema.org/BlogPosting">
         ${timestamps}
-        <a class="publication-back" href="@@ROOT@@archive/">В архив сайта A–House</a>
+        <a class="publication-back" href="@@ROOT@@archive/">В архив материалов</a>
         <header class="publication-heading">
           <div class="publication-meta">${[dateMarkup(page.published), ...topicLinks].filter(Boolean).join(' ')}</div>
           <h1 itemprop="headline">${escape(page.title)}</h1>
@@ -264,9 +264,9 @@ export async function collectArchive(routes, readArticle) {
   }
   const main = routes.find(page => page.slug === 'archive');
   const topicRoutes = [...topics.values()].map(topic => ({
-    ...main, slug:topic.slug, archiveTopic:topic, title:topic.title + ' — Архив сайта A–House'
+    ...main, slug:topic.slug, archiveTopic:topic, title:topic.title + ' — ' + main.title
   }));
-  return {articles, topicRoutes};
+  return {title: main.title, articles, topicRoutes};
 }
 
 function topicKey(topic) {
@@ -275,9 +275,9 @@ function topicKey(topic) {
 
 export function renderMovedPublicationLinks(archive, base) {
   const bookmarks = [
-    ['publications', 'archive/', 'Архив сайта A–House'],
-    ['publication-archive', 'archive/', 'Архив сайта A–House'],
-    ['archive-heading', 'archive/', 'Архив сайта A–House'],
+    ['publications', 'archive/', archive.title],
+    ['publication-archive', 'archive/', archive.title],
+    ['archive-heading', 'archive/', archive.title],
     ['issue-a-sport', 'press/#a-sport-02', 'A–Sport № 2 «Движение»'],
     ...archive.topicRoutes.map(({archiveTopic: topic}) =>
       ['publication-archive-' + topicKey(topic), topic.slug + '/', topic.title])

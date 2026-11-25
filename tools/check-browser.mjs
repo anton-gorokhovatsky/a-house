@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
 import { membershipSettings, projectRoot, siteBase } from './build.mjs';
+import { eventDestination } from './calendar.mjs';
 import { previewServer } from './preview.mjs';
 import { checkMembershipTransport } from './check-membership.mjs';
 import { checkTheme } from './check-theme.mjs';
@@ -118,11 +119,10 @@ async function checkMobileExhibition(page) {
     assert.equal(await action.getAttribute('href'), feature.booking.url);
     const title = poster.getByRole('heading', { name: feature.title });
     const heading = await title.boundingBox();
-    const linkBox = await title.getByRole('link').boundingBox();
-    const captionBox = await poster.locator('.home-feature-heading .home-meta').boundingBox();
-    const clearance = Math.max(linkBox.y - (captionBox.y + captionBox.height),
-      captionBox.y - (linkBox.y + linkBox.height));
-    assert.ok(clearance >= 4, 'Keyboard focus around the exhibition title must leave the date unobstructed');
+    assert.equal(await title.getByRole('link').count(), 0, 'The exhibition title is a plain heading');
+    const details = poster.locator('a.home-feature-link');
+    assert.equal(await details.getAttribute('href'), eventDestination(feature, new URL('calendar/', url).pathname));
+    assert.ok((await details.boundingBox()).height >= 44);
     const place = await poster.locator('.home-venue-link').boundingBox();
     const button = await action.boundingBox();
     const intro = await page.locator('.home-introduction').boundingBox();
@@ -357,8 +357,9 @@ async function checkVisitorLinks(page, mobile) {
   const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
   assert.deepEqual(await features.locator('.home-project-portfolios h4 a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
-  assert.equal(await editions.getByRole('link', {name:'Каталог A–Press'}).getAttribute('href'), new URL('press/', url).pathname);
-  assert.deepEqual(await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts(), ['A–Press', 'A–Index', 'A–News'],
+  assert.equal(await editions.getByRole('link', {name:'Каталог изданий'}).getAttribute('href'), new URL('press/', url).pathname);
+  const editorialTitles = await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts();
+  assert.deepEqual(editorialTitles.map(title => title.replaceAll('\u00ad', '')), ['Издательство A–Press', 'A–Index', 'A–News'],
     'Each project has one heading and follows the intended order');
   const periodicals = editions.getByRole('region', {name:'Газеты и журналы', exact:true});
   assert.deepEqual(await periodicals.locator('.home-editions article h5').allTextContents(), projects.filter(project => project.overview === 'editions').map(project => project.name));
@@ -478,7 +479,7 @@ async function checkVisitorLinks(page, mobile) {
   await page.goto(url + '#publications');
   await page.waitForURL(url + 'archive/');
   const archive = page.getByRole('main');
-  assert.ok(await archive.getByRole('heading', {name: 'Архив сайта A–House', level: 1}).isVisible());
+  assert.ok(await archive.getByRole('heading', {name: 'Архив материалов A–House', level: 1}).isVisible());
   const all = await archive.locator('.publication-list li').count();
   const design = archive.getByRole('link', {name: 'Дизайн', exact: true});
   await activate(design);
@@ -816,7 +817,7 @@ async function checkEditorialGrouping(page) {
 async function checkArchiveReading(page) {
   const missing = await page.goto(url + 'missing-publication-for-browser-check/');
   assert.equal(missing.status(), 404);
-  await page.getByRole('main').getByRole('link', { name: /в архив сайта/i }).click();
+  await page.getByRole('main').getByRole('link', { name: /в архив материалов/i }).click();
   await page.waitForURL(url + 'archive/');
   const listing = page.getByRole('main').getByRole('list', {name: 'Публикации', exact:true});
   const articles = listing.getByRole('link');
@@ -847,7 +848,7 @@ async function checkArchiveReading(page) {
     assert.ok(await articles.nth(index + 1).evaluate(link => link === document.activeElement), 'Tab must continue to the next publication');
     await page.goForward();
   }
-  await main.getByRole('link', { name: /в архив сайта/i }).click();
+  await main.getByRole('link', { name: /в архив материалов/i }).click();
   await page.waitForURL(url + 'archive/');
   assert.ok(await listing.getByRole('link', { name: title, exact: true }).isVisible(),
     'The archive must contain the same article on return');

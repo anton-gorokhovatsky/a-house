@@ -26,6 +26,11 @@ if (typesetText(countSample) !== countExpected) {
 if (typesetText('<p>на стройплощадки</p>') !== '<p>на\u00a0строй\u00adплощадки</p>') {
   errors.push('Narrow screens need a natural break inside стройплощадки');
 }
+const longHeading = '<h2>Издательство</h2><h2>Форматы партнёрства</h2><h1>Назад в метабудущее</h1><p>партнёрство</p>';
+const headingBreaks = '<h2>Изда\u00adтель\u00adство</h2><h2>Форматы <span class="wrap-group">партнёр\u00adства</span></h2><h1>Назад в\u00a0мета\u00adбудущее</h1><p>партнёрство</p>';
+if (typesetText(longHeading) !== headingBreaks) {
+  errors.push('Long titles need discretionary hyphens; prose keeps its original words');
+}
 
 const reference = '<a href="/rules/">Правила</a>';
 const annotated = '<u>примечание</u>';

@@ -368,8 +368,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('{{siteVersion}}', versionLabel)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
       .replace('<!-- ARCHIVE PARENT -->', () => page.archiveTopic
-        ? '<a class="home-kicker" href="' + base + 'archive/">Архив сайта A–House</a>' : '')
-      .replace('{{archiveHeading}}', () => page.archiveTopic ? escape(page.archiveTopic.title) : 'Архив сайта A–House')
+        ? '<a class="home-kicker" href="' + base + 'archive/">' + escape(archive.title) + '</a>' : '')
+      .replace('{{archiveHeading}}', () => escape(page.archiveTopic?.title ?? archive.title))
       .replace('<!-- MOVED PUBLICATION LINKS -->', () => renderMovedPublicationLinks(archive, base))
       .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic));
     let themedBody;

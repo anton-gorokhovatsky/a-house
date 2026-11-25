@@ -10,10 +10,10 @@
 .home-page .publication-heading h1 {
   margin: .3em 0 0;
   color: var(--ink);
-  font: 400 var(--chapter-size)/1.12 var(--display);
-  letter-spacing: normal;
+  font: 400 var(--chapter-size)/1.08 var(--display);
+  letter-spacing: -.012em;
   text-wrap: pretty;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   hyphens: manual;
 }
 .publication-reader > article { max-inline-size: 65ch; margin-inline: auto; }

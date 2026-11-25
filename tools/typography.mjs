@@ -52,6 +52,12 @@ function russianSpacing(text) {
     .replace(/(?<=\S) (?=[—·](?:\s|$))/gu, '\u00a0');
 }
 
+function headingHyphens(text) {
+  return text.replace(/(?<!\p{L})(изда)(тель)(ство)(?!\p{L})/giu, '$1\u00ad$2\u00ad$3')
+    .replace(/(?<!\p{L})(партнёр)(ств[оа])(?!\p{L})/giu, '<span class="wrap-group">$1\u00ad$2</span>')
+    .replace(/(?<!\p{L})(мета)(будущее)(?!\p{L})/giu, '$1\u00ad$2');
+}
+
 // Old rich-text imports wrapped links in <u> or added <u> inside the link.
 // Let the link own its underline, keeping independent annotations and their attributes.
 function cleanLinkUnderlines(tokens) {
@@ -94,6 +100,7 @@ export function typesetText(html) {
   const tokens = html.match(htmlTokens) ?? [];
   const run = [];
   let excludedDepth = 0;
+  let heading = false;
 
   function finishRun() {
     if (!run.length) return;
@@ -109,7 +116,7 @@ export function typesetText(html) {
       const visible = result === parts[part] ? tokens[index] : result;
       // The festival description, project directory and About page share this compound.
       // Give narrow measures a word boundary before the browser breaks off its last letter.
-      tokens[index] = wrapNames(visible, homeProjectName)
+      tokens[index] = wrapNames(heading ? headingHyphens(visible) : visible, homeProjectName)
         .replace(/(?<![\p{L}\p{N}@./_-])(строй)(?=площад[ко])/giu, '$1\u00ad');
       offset = end;
     }
@@ -119,6 +126,7 @@ export function typesetText(html) {
   for (const [index, token] of tokens.entries()) {
     if (token.startsWith('<')) {
       if (!/^<\/?(?:a|abbr|b|em|i|small|span|strong|sub|sup|time|u)\b/i.test(token)) finishRun();
+      if (/^<\/?h[1-6]\b/i.test(token)) heading = token[1] !== '/';
       if (/^<(?:dialog|form|pre|code)\b/i.test(token)) excludedDepth++;
       if (/^<\/(?:dialog|form|pre|code)\s*>/i.test(token)) excludedDepth--;
     } else if (excludedDepth) {
