@@ -582,18 +582,40 @@ async function checkSpecialProjectPrograms(page, mobile) {
   await activate(panel.getByRole('button', { name: /закрыть/i }).first());
   await panel.waitFor({state: 'hidden'});
 
-  await page.goto(url + 'mts/');
-  await activate(page.getByRole('link', {name: 'Контакты организаторов', exact: true}));
-  const email = page.getByRole('dialog').getByRole('link', {name: 'aindex@ahouseproject.com'});
+  await page.goto(url + '#projects');
+  await activate(page.locator('.home-project-navigation a[href="#a-industry"]'));
+  const contest = page.locator('#a-industry').getByRole('link', {name: /Конкурс МТС «Меняя привычное»/});
+  await activate(contest);
+  await page.waitForURL(url + 'mts/');
+  assert.ok(await page.getByText('Приём портфолио завершён.', {exact: true}).isVisible());
+  await activate(page.getByRole('link', {name: 'Этапы конкурса', exact: true}));
+  await page.waitForURL(url + 'mts/#stages');
+  assert.ok(await page.locator('#rec3335110301 time[datetime="2026-12-25"]').isVisible());
+  const selection = page.locator('#rec2291516421');
+  await activate(selection.locator('summary'));
+  assert.equal(await selection.getAttribute('open'), '');
+  const contact = page.getByRole('link', {name: 'Контакты организаторов', exact: true});
+  await contact.evaluate(link => link.scrollIntoView({block: 'center', behavior: 'instant'}));
+  const contactTop = (await contact.boundingBox()).y;
+  await activate(contact);
+  const contacts = page.getByRole('dialog', {name: 'Контакты организаторов'});
+  const email = contacts.getByRole('link', {name: 'aindex@ahouseproject.com'});
   await email.waitFor();
   assert.ok(await email.evaluate(link => {
     const box = link.getBoundingClientRect();
     return box.top >= 0 && box.bottom <= innerHeight;
   }), 'Opening organizer contacts must reveal the email on the first screen');
+  await activate(contacts.getByRole('button', {name: 'Закрыть'}));
+  await page.waitForURL(url + 'mts/#stages');
+  await contacts.waitFor({state: 'hidden'});
+  await page.waitForFunction(top => {
+    const link = document.activeElement;
+    return link.matches('.story-mts a[href="#organizers"]') && Math.abs(link.getBoundingClientRect().top - top) < 2;
+  }, contactTop);
   if (mobile) {
+    await activate(contact);
     const originalViewport = page.viewportSize();
     await page.setViewportSize({width: 320, height: 568});
-    const contacts = page.getByRole('dialog');
     await contacts.locator('img').evaluate(image => image.decode());
     await page.addStyleTag({content:'html { font-size: 200%; }'});
     assert.ok(await contacts.evaluate(dialog => {

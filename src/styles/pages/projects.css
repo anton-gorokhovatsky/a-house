@@ -83,10 +83,6 @@
 .story-t_private { --ink: #f2f0eb; --quiet: #c8c5be; --paper: #181818; }
 .story-t_business { --paper: light-dark(#ded3c2,#332f2b); --quiet: light-dark(#51483f,#cec4b6); }
 .home-page .project-opening .project-signature { display: block; width: min(13rem,65%); height: auto; margin-bottom: 1.4rem; }
-.competition-opening {
-  --ink: #161619; --quiet: #3e4050;
-  padding: clamp(1rem,4vw,3.5rem); color: var(--ink); background: linear-gradient(160deg,#a7b9e7,#eeedf5 75%);
-}
 .research-opening { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap: var(--group); }
 .research-opening > div { container-type: inline-size; }
 .home-page .research-opening h1 { font-size: var(--column-title-size); }

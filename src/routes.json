@@ -155,13 +155,14 @@
   {
     "slug": "mts",
     "title": "«Меняя привычное» — конкурс МТС — A–House",
-    "description": "",
+    "description": "Архитектурный конкурс МТС и A–House на новый облик башен связи. Этапы, жюри, выставка и призы.",
     "icon": "media/favicon-2-8b77dfa15dce.ico",
     "styles": [
       "styles/source/grid-3.0.css",
       "styles/chrome.css",
       "styles/pages/home.css",
-      "styles/pages/projects.css"
+      "styles/pages/projects.css",
+      "styles/pages/mts.css"
     ],
     "layout": "project"
   },
