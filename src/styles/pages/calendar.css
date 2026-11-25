@@ -16,7 +16,7 @@
 .home-page .calendar-page :is(.calendar-entry-links a, #calendar-filters a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset]) {
   color: inherit;
   text-decoration: underline;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: var(--link-press-thickness, 1px);
   text-underline-offset: var(--link-underline-offset);
   text-decoration-color: var(--link-underline-color);
 }
@@ -115,7 +115,7 @@
     #past:target .calendar-archive-tools { display: none; }
   }
 }
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .home-page .calendar-page a:hover {
     text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: var(--link-underline-offset);
   }

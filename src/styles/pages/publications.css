@@ -48,7 +48,6 @@
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: var(--link-underline-offset);
   text-decoration-color: var(--link-underline-color);
 }
-.home-page .home-editorial :is(.document-copy,.press-page-links,.print-archive-intro,.partnership-inner,.editorial-missing-inner) a:is(:hover,:focus-visible) { text-decoration-color: currentColor; }
 .home-page :is(.press-page,.partnership-stories) header > p, .editorial-missing p {
   max-width: 64ch; font-size: var(--type-lead);
   line-height: var(--leading-lead); text-wrap: pretty;
@@ -99,7 +98,7 @@
 }
 .home-page .press-page-links { display: flex; flex-wrap: wrap; gap: .2em 1.3em; align-items: baseline; margin-top: .65em; }
 .home-page .press-related-links a { color: var(--quiet); }
-.press-page-links a { display: inline-block; max-width: 100%; padding-block: max(.35em,calc((44px - 1.46em) / 2)); }
+.press-page-links a { display: inline-block; min-inline-size: 44px; max-width: 100%; padding-block: max(.35em,calc((44px - 1.46em) / 2)); }
 .home-page .home-editorial .press-page-links a.press-file { text-decoration: none; }
 .press-distribution { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--group); align-items: start; overflow-wrap: anywhere; }
 .press-distribution img { width: 100%; max-block-size: 28rem; object-fit: contain; object-position: left top; }

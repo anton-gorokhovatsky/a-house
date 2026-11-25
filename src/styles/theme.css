@@ -52,9 +52,23 @@ body { background-color: var(--ah-paper); color: var(--ah-ink); }
   color: light-dark(#585858, #c5c5bf);
   background-color: light-dark(#e8e8e8, #3b3c3d);
 }
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .home-page .home-editorial a.home-action:hover,
   .membership-send .membership-action:not(:disabled):hover { background-color: var(--ah-action-hover); }
+}
+.home-page .home-editorial a.home-action:active,
+.membership-send .membership-action:not(:disabled):active {
+  background-color: color-mix(in srgb, var(--ah-action-hover) 82%, var(--ah-paper));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .home-page .home-editorial a.home-action:not(:active, :focus-visible),
+  .membership-send .membership-action:not(:active, :disabled, :focus-visible) {
+    transition: background-color 115ms ease-out;
+  }
+}
+@media (forced-colors: active) {
+  .home-page .home-editorial a.home-action:active,
+  .membership-send .membership-action:not(:disabled):active { text-decoration: underline; }
 }
 
 .theme-footer, footer:not(.home-footer, .theme-footer) > .site-theme {
@@ -194,7 +208,9 @@ body { background-color: var(--ah-paper); color: var(--ah-ink); }
   --ph: var(--ah-surface);
 }
 .ah.ah-program .overlay { background: color-mix(in srgb, var(--ah-paper) 96%, transparent); }
-.ah.ah-program .btn:hover { background-color: var(--ah-action-hover); }
+@media (hover: hover) and (pointer: fine) {
+  .ah.ah-program .btn:hover { background-color: var(--ah-action-hover); }
+}
 
 .services-dialog:not(.services-product) { color: var(--ah-ink); background-color: var(--ah-paper); }
 #allrecords .t678 .t-section__title,

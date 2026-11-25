@@ -4,12 +4,24 @@
   --link-title-underline-offset: .065em;
 }
 :where(h1, h2, h3, h4, h5, h6) { --link-underline-offset: var(--link-title-underline-offset); }
-a:focus-visible, a:active { --link-underline-color: currentColor; }
-@media (hover: hover) { a:hover { --link-underline-color: currentColor; } }
+a:focus-visible, a[href]:active:not([aria-disabled="true"]) {
+  --link-underline-color: currentColor;
+  --link-feedback-duration: 0ms;
+}
+a[href]:active:not([aria-disabled="true"]) { --link-press-thickness: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  a:hover { --link-underline-color: currentColor; }
+}
+.home-page :is(a[href], button:not(:disabled), summary) {
+  -webkit-tap-highlight-color: color-mix(in srgb, currentColor 14%, transparent);
+}
 body { margin: 0; }
 html { overflow-x: clip; }
 @media (prefers-reduced-motion: no-preference) {
   html[data-anchor-scroll] { scroll-behavior: smooth; }
+  :where(.home-page) :where(a[href], .home-event-link h3, .home-project-name, .press-file-label) {
+    transition: text-decoration-color var(--link-feedback-duration, 115ms) ease-out;
+  }
 }
 #allrecords { overflow-x: clip; }
 :focus-visible { outline: 3px solid #3278e6; outline-offset: 3px; }
@@ -65,11 +77,10 @@ main:focus { outline: none; }
   max-width: 100%;
   padding-block: .23em;
   color: inherit;
-  text-decoration: underline 1px var(--link-underline-color);
+  text-decoration: underline var(--link-press-thickness, 1px) var(--link-underline-color);
   text-underline-offset: var(--link-underline-offset);
 }
 #t-footer .footer-legal nav a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-#t-footer .footer-legal nav a:hover { text-decoration-color: currentColor; }
 .footer-registration { container: registration / inline-size; }
 .footer-registration > div {
   display: flex;
@@ -182,7 +193,7 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
 }
 .site-presence-toggle { cursor: pointer; }
 .site-navigation :is(a, button):is(:focus-visible, [aria-current="page"], [aria-expanded="true"]) { text-decoration: underline; }
-@media (hover: hover) { .site-navigation :is(a, button):hover { text-decoration: underline; } }
+@media (hover: hover) and (pointer: fine) { .site-navigation :is(a, button):hover { text-decoration: underline; } }
 #t-header :is(a, button):focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .site-nav-presence { position: relative; }
 #t-header .site-submenu {

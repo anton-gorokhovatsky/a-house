@@ -44,7 +44,6 @@
   text-decoration-thickness: .06em;
   text-underline-offset: var(--link-underline-offset);
 }
-.home-page :is(.publication-reader, .archive-index) a:hover { text-decoration-color: currentColor; }
 .publication-back, .publication-meta a, .publication-issue a {
   display: inline-block;
   max-inline-size: 100%;
@@ -122,9 +121,10 @@
   outline: 2px solid currentColor;
   outline-offset: 1px;
 }
-@media (hover: hover) {
-  .archive-gallery-thumbs button:not([aria-current]):hover img { opacity: .78; }
+@media (hover: hover) and (pointer: fine) {
+  .archive-gallery-thumbs button:not([aria-current], :active):hover img { opacity: .78; }
 }
+.archive-gallery-thumbs button:active img { opacity: .68; }
 .archive-gallery-controls [data-gallery-status] {
   flex: none;
   color: var(--quiet);
