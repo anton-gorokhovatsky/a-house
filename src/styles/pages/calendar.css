@@ -7,7 +7,7 @@
   container: event-calendar / inline-size;
 }
 .calendar-opening h1 { margin: 0; }
-.home-page .calendar-page :is(.calendar-entry-links a, #calendar-filters a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset]) {
+.home-page .calendar-page :is(.calendar-entry-links a, #calendar-filters a, .calendar-months a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset]) {
   color: inherit;
   text-decoration: underline;
   text-decoration-thickness: var(--link-press-thickness, 1px);
@@ -31,10 +31,10 @@
   scroll-margin-top: 1rem;
 }
 .calendar-audience { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1.15rem; }
-.home-page .calendar-page #calendar-filters [aria-current="true"] {
+.home-page .calendar-page :is(#calendar-filters, .calendar-months) [aria-current="true"] {
   text-decoration: none;
 }
-.home-page .calendar-page #calendar-filters [data-calendar-month][aria-current="true"] { font-weight: var(--emphasis-weight); }
+.home-page .calendar-page .calendar-months [data-calendar-month][aria-current="true"] { font-weight: var(--emphasis-weight); }
 .home-page .calendar-page #calendar-filters .calendar-audience a:not([aria-current]) { color: var(--quiet); }
 .calendar-kids::before {
   content: '';
@@ -47,6 +47,7 @@
   vertical-align: .06em;
 }
 .calendar-months { flex-basis: 100%; max-width: 100%; }
+.calendar-months a { scroll-margin-block: 6px; }
 .calendar-filter-year { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: .85rem; }
 .calendar-filter-year p { color: var(--quiet); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .calendar-filter-year ul { display: flex; flex-wrap: wrap; gap: 0 1rem; }
@@ -61,6 +62,8 @@
 .calendar-stream > section[hidden] + section { margin-top: 0; }
 .calendar-list { display: grid; gap: clamp(2.35rem, 4.5vw, 4.5rem); margin-top: var(--group); }
 .calendar-past-heading { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; align-items: baseline; }
+.calendar-stream .calendar-months, .home-page .calendar-stream .calendar-archive-empty { margin-block-start: .75rem; }
+#past:has(> .calendar-months) [data-jump-filters] { display: none; }
 .calendar-archive-tools { display: none; }
 #past:target .calendar-archive-tools { display: flex; flex-wrap: wrap; gap: 0 1.2rem; }
 .calendar-event { min-width: 0; scroll-margin-block-start: 1.25rem; }

@@ -199,6 +199,7 @@ export function renderCalendar(events, base, now = new Date()) {
             <a href="${calendar}?audience=kids" class="calendar-kids" data-family-shortcut>Для детей</a>
           </div>
         </div>
+        <p class="calendar-archive-empty" data-archive-empty hidden>По выбранным фильтрам в архиве нет событий.</p>
         <div class="calendar-list" data-past-list>${entries(past)}</div>
       </section>
       <a class="calendar-family-source" data-family-source href="https://t.me/ahousekids" hidden>Канал A–Kids в Telegram</a>

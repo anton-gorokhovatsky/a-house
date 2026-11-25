@@ -8,6 +8,8 @@
   const events = [...calendar.querySelectorAll('[data-calendar-event]')];
   const upcoming = calendar.querySelector('[data-upcoming-list]');
   const past = calendar.querySelector('[data-past-list]');
+  const archive = document.getElementById('past');
+  const archiveEmpty = archive.querySelector('[data-archive-empty]');
   const empty = calendar.querySelector('[data-calendar-empty]');
   const moscowDate = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
@@ -38,6 +40,28 @@
     for (const row of rows) {
       if (row === next) next = next.nextElementSibling;
       else list.insertBefore(row, next);
+    }
+  }
+
+  function updateArchive() {
+    const hasResults = Boolean(past.querySelector(':scope > :not([hidden])'));
+    const hasMonthPicker = months.parentElement === archive && past.childElementCount > 0;
+    archive.hidden = !hasResults && !hasMonthPicker;
+    archiveEmpty.hidden = hasResults || !empty.hidden;
+  }
+
+  function placeMonthPicker() {
+    // Use the layout's container query to keep the visual and keyboard order in sync.
+    const sidebar = getComputedStyle(filters).display === 'grid';
+    const parent = sidebar ? filters : archive;
+    if (months.parentElement === parent) return;
+    const active = months.contains(document.activeElement) ? document.activeElement : null;
+    const keyboardFocus = active?.matches(':focus-visible');
+    parent.insertBefore(months, sidebar ? filters.querySelector('[data-calendar-count]') : archiveEmpty);
+    updateArchive();
+    if (active && (sidebar || !archive.hidden)) {
+      active.focus({ preventScroll: true });
+      if (keyboardFocus) active.scrollIntoView({ block: 'nearest', behavior: 'instant' });
     }
   }
 
@@ -84,7 +108,6 @@
     const filtered = !!month || kids;
     calendar.querySelector('[data-no-upcoming]').hidden = visibleCurrent > 0;
     document.getElementById('upcoming').hidden = filtered && !visibleCurrent;
-    document.getElementById('past').hidden = !visiblePast;
     document.querySelector('[data-jump-past]').hidden = !pastEvents.length;
     calendar.querySelector('[data-family-source]').hidden = !kids;
     const familyShortcut = calendar.querySelector('[data-family-shortcut]');
@@ -95,6 +118,7 @@
     if (!empty.hidden) empty.querySelector('p').textContent = kids
       ? (month ? 'В выбранном месяце нет событий для детей.' : 'В календаре пока нет событий для детей.')
       : 'В выбранном месяце нет событий.';
+    updateArchive();
   }
 
   calendar.addEventListener('click', event => {
@@ -107,10 +131,13 @@
     if (getComputedStyle(filters).position === 'sticky' && results.getBoundingClientRect().top < 0) {
       results.scrollIntoView({ block: 'start' });
     }
+    if (months.parentElement === archive && months.contains(link)) link.scrollIntoView({ block: 'nearest' });
     if (link.hasAttribute('data-calendar-reset')) audienceLinks[0].focus();
   });
 
   filters.hidden = false;
+  placeMonthPicker();
+  new ResizeObserver(placeMonthPicker).observe(calendar);
   calendar.querySelector('[data-archive-tools]').hidden = false;
   calendar.querySelector('[data-jump-filters]').addEventListener('click', event => {
     if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;

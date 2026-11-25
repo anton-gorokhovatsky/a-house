@@ -242,7 +242,7 @@ async function checkCalendar(page, mobile) {
   const kids = page.locator('[data-calendar-audience="kids"]');
   const months = page.getByRole('navigation', { name: 'Месяц события' });
   const rows = page.locator('[data-calendar-event]:visible');
-  const controlsAndResults = () => page.locator('.calendar-opening h1, [data-calendar-audience], .calendar-months, .calendar-stream').evaluateAll(elements =>
+  const controlsAndResults = () => page.locator('.calendar-opening h1, [data-calendar-audience], #calendar-filters .calendar-months, .calendar-stream').evaluateAll(elements =>
     elements.map(element => {
       const { left, top } = element.getBoundingClientRect();
       return [left, top];
@@ -252,6 +252,11 @@ async function checkCalendar(page, mobile) {
   await page.waitForURL(url + 'calendar/');
   assert.ok(await page.locator('#upcoming').isVisible() && await page.locator('#past').isVisible());
   await kids.waitFor();
+  assert.equal(await months.evaluate(el => el.parentElement.id), mobile ? 'past' : 'calendar-filters');
+  if (mobile) {
+    const firstEvent = await rows.first().boundingBox();
+    assert.ok(firstEvent.y < (await months.boundingBox()).y, 'Upcoming events precede the archive controls on a phone');
+  }
   await page.evaluate(() => document.fonts.ready);
   const shortcut = page.locator('.calendar-results-shortcut');
   await shortcut.focus();
@@ -292,6 +297,7 @@ async function checkCalendar(page, mobile) {
   await page.goto(url + 'calendar/?month=2000-01&audience=kids');
   assert.equal(await rows.count(), 0);
   assert.ok(await page.locator('[data-calendar-empty]').isVisible());
+  assert.ok(await months.isVisible(), 'A visitor can choose another month after an empty result');
   await activate(page.locator('[data-jump-past]'));
   await page.waitForURL(url + 'calendar/#past');
   assert.ok(await page.locator('#past [data-calendar-event]:visible').count() > 0);
