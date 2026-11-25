@@ -1,30 +1,32 @@
-# Шрифты сайта A–House
+# Локальные шрифты рабочего прототипа A-House
 
-Роли взяты с разворотов 249–251 брендбука и описаны в [проектном справочнике](../../docs/interface-design.md). Общие гарнитуры заданы в `src/styles/typography.css`, файлы подключены в `ahouse-fonts.css`.
+Это открытые замены для рабочего прототипа, а не исходные фирменные шрифты. Они нужны, чтобы страницы не загружали неизвестно лицензированные WOFF с Tilda CDN. Файлы Times New Roman VO, Apercu и MTS сюда не включены.
 
-| Роль | Начертание | Исходный файл из комплекта | Веб-файл |
-| --- | --- | --- | --- |
-| Заголовки | Times New Roman Cyr Condensed, 400 | `TimesNewRomanCyr-Cond.ttf` | `times-new-roman-cyr-condensed.woff2` |
-| Наборный текст | Apercu Condensed Pro Regular, 400 | `Apercu Condensed Pro Regular.ttf` | `apercu-condensed-pro-regular.woff2` |
-| Навигация и акценты | Apercu Condensed Pro Medium, 500 | `Apercu Condensed Pro Medium.ttf` | `apercu-condensed-pro-medium.woff2` |
-| Документы | Apercu Pro Regular, 400 | `apercu_regular_pro.otf` | `apercu-pro-regular.woff2` |
-| Жирные выделения в статьях и документах | Apercu Pro Bold, 700 | `apercu_bold_pro.otf` | `apercu-pro-bold.woff2` |
-| Курсив в статьях | Apercu Pro Italic, 400 | `ApercuPro-Italic.ttf` | `apercu-pro-italic.woff2` |
+В исходном CSS имя `AHTimes` обозначает несколько разных гарнитур. Числовой вес выбирает гарнитуру, поэтому его нельзя трактовать как обычную шкалу жирности одного шрифта.
 
-WOFF2 подготовлены из полученных архивов с fontTools 4.60.2 и Brotli 1.2.1. При проверке совпали карта символов, ширины глифов и флаги `OS/2.fsType`. Во всех начертаниях есть русский алфавит с Ё/ё. Noto Serif дополняет заголовочную гарнитуру для отдельных знаков, в том числе номера и рубля. В документах эти знаки берутся из Apercu Condensed Pro.
+| Исходное назначение | Локальная замена | Файл |
+| --- | --- | --- |
+| `AHTimes`, 400: Times New Roman VO Condensed CYR | Noto Serif, `wdth=62.5`, `wght=400` | `noto-serif-extra-condensed-regular.woff2` |
+| `AHTimes`, 500: Apercu Condensed Pro Medium | Roboto Condensed, `wght=500` | `roboto-condensed-medium.woff2` |
+| `AHTimes`, 600: MTS Compact Regular | Roboto Flex, `wdth=75`, `wght=400`, `opsz=14` | `roboto-flex-compact-regular.woff2` |
+| `AHTimes`, 700: MTS Extended Regular | Roboto Flex, `wdth=151`, `XTRA=570`, `wght=400`, `opsz=14` | `roboto-flex-extended-regular.woff2` |
+| `AHTimes`, 300, только `/moscow_business`: Apercu Condensed Pro Medium | Тот же Roboto Condensed Medium | отдельное подключение `ahouse-fonts-moscow.css` |
+| Заголовки редакционной главной | Noto Serif Regular, `wdth=100`, `wght=400` | `noto-serif-regular.woff2` |
 
-## Совместимость с импортированным оформлением
+Подключать `ahouse-fonts.css` после удаления исходных `@font-face` с адресами Tilda. `ahouse-fonts-moscow.css` подключать дополнительно только на странице `/moscow_business`: глобальное добавление веса 300 может изменить подбор гарнитуры для обычного текста остальных страниц. Arial и другие системные запасные семейства, уже заданные исходным CSS, не копировались с устройства.
 
-В исходном CSS имя `AHTimes` обозначает разные гарнитуры. Вес 400 выбирает Times New Roman Cyr Condensed, вес 500 — Apercu Condensed Pro Medium. На `/moscow_business/` отдельный файл `ahouse-fonts-moscow.css` назначает Apercu Condensed Pro Medium и для веса 300.
+Заголовки новой главной используют Noto Serif обычной ширины. Семейство `Noto Serif` объявлено в `src/styles/pages/home.css`. Для печатного названия «Движение» и заголовка выставки используется один файл. Символ номера, неразрывный и узкий неразрывный пробелы входят в его набор.
 
-Для партнёрских ролей `AHTimes` 600 и 700 используются компактный и широкий экземпляры Roboto Flex. Самостоятельный лендинг `/mts/` подключает шрифты из исходного оформления.
+Файлы WOFF2 получены как статические экземпляры официальных вариативных шрифтов Google Fonts. Оси установлены в значения из таблицы; остальные оси Roboto Flex оставлены по умолчанию. Кадрирование, изменение рисунка контуров внешними преобразованиями и ручное редактирование глифов не применялись. Все исходные глифы сохранены. Проверено наличие латиницы, русского алфавита с Ё/ё, цифр, знака рубля, тире и кавычек-ёлочек.
 
-## Открытые гарнитуры
+Эти замены сохраняют разные типографические роли, но не обещают совпадения рисунка букв и переносов. На шести фразах из интерфейса Noto Serif отличается по суммарной ширине примерно от −6% до +8%, Roboto Condensed — от +7% до +9%, компактный Roboto Flex — от −3% до +2%. Для широкого варианта отдельно подобрана штатная ось XTRA, чтобы приблизить ширину русских строк; надписи целиком прописными по-прежнему требуют визуальной проверки. Это сравнение авансов глифов без кернинга, а не приёмка браузерного рендера.
 
-В `provenance.json` собраны адреса исходников, оси, SHA-256, размеры и проверка символов открытых файлов. Тексты лицензий SIL OFL 1.1 лежат рядом с файлами.
+Исходники, SHA-256, применённые оси и размеры выходных файлов записаны в `provenance.json`. Лицензии SIL OFL 1.1 сохранены рядом без изменений:
 
 - [Noto Serif — официальный источник](https://github.com/google/fonts/tree/main/ofl/notoserif), файл `notoserif-OFL.txt`.
 - [Roboto Condensed — официальный источник](https://github.com/google/fonts/tree/main/ofl/robotocondensed), файл `robotocondensed-OFL.txt`.
 - [Roboto Flex — официальный источник](https://github.com/google/fonts/tree/main/ofl/robotoflex), файл `robotoflex-OFL.txt`.
 
-Команда `python3 tools/import_media.py --fonts-only --python-deps /путь/к/fonttools-и-brotli` обновляет открытые файлы и их происхождение. Правила подключения редактируются в CSS.
+Для повторной сборки служит команда `python3 tools/import_media.py --fonts-only --python-deps /путь/к/fonttools-и-brotli`. Импорт сверяет исходник, оси и контрольную сумму готового файла с журналом. Экземпляр Noto Serif Regular обычной ширины собран с fontTools 4.60.2 и Brotli 1.2.1. Исходники скачиваются с `raw.githubusercontent.com/google/fonts/main/ofl/`. В журнале сохранены их хеши. При будущем обновлении источников нужно повторить проверку лицензий, глифов и рендера.
+
+После подтверждения лицензий на исходные фирменные гарнитуры замену можно отменить централизованно в этих двух CSS. Это отдельное изменение: без проверки условий переноса на новый домен и публичного хранения исходные коммерческие файлы возвращать нельзя.

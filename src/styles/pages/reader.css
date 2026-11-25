@@ -60,7 +60,6 @@
   object-fit: contain;
 }
 .publication-body figure img { max-block-size: none; }
-.publication-body :is(strong, b, em, i) { font-family: var(--pro-text); }
 .publication-reader .publication-guide { display: block; cursor: zoom-in; }
 .publication-guide span { display: inline-block; padding-block: .5em; font-size: var(--note-size); }
 .publication-reader .publication-body figcaption { margin-block-start: .45rem; font-size: var(--note-size); }

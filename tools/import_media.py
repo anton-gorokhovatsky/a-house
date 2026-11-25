@@ -271,8 +271,10 @@ def install_open_fonts():
     if manifest.exists():
         previous = {entry['output']: entry for entry in json.loads(manifest.read_text())}
     provenance = []
-    # Font assignment is maintained in ahouse-fonts.css. This import only
-    # refreshes the open font binaries and their provenance.
+    css = ['/* Prototype font alternatives, SIL OFL 1.1. See README.md and provenance.json.', '   The original AHTimes weights select different families, not boldness.', '   Remove the source-site @font-face rules before loading this file. */', '/* Widths were fitted against the original Russian title and paragraph in the annual report. */']
+    moscow_css = ['/* Only /moscow_business had the AHTimes 300 face in the original CSS.', '   Load after ahouse-fonts.css on that page only. */']
+    # The legacy families were optically fitted to the source annual report.
+    size_adjust = {400: ';size-adjust:93%', 500: ';size-adjust:88%', 700: ';size-adjust:112%'}
     for role in FONT_ROLES:
         directory = CACHE / 'fonts' / role['family']
         directory.mkdir(parents=True, exist_ok=True)
@@ -285,6 +287,10 @@ def install_open_fonts():
         shutil.copyfile(directory / 'OFL.txt', output / (role['family'] + '-OFL.txt'))
         source = directory / role['filename']
         destination = output / role['output']
+        for weight in role['css_weights']:
+            target = moscow_css if weight == 300 else css
+            target.append("@font-face{font-family:'AHTimes';src:url('./" + role['output'] + "') format('woff2');font-weight:" + str(weight) + ";font-style:normal;font-display:swap" + size_adjust.get(weight, '') + "}")
+
         source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
         existing = previous.get(role['output'])
         if (existing and all(existing.get(key) == value for key, value in role.items())
@@ -303,6 +309,8 @@ def install_open_fonts():
         if missing:
             raise ValueError('Required characters missing from ' + role['output'] + ': ' + ''.join(missing))
         provenance.append({**role, 'resolved_axes': axes, 'source_url': base + urllib.parse.quote(role['filename']), 'licence_url': base + 'OFL.txt', 'source_sha256': source_hash, 'local_sha256': hashlib.sha256(destination.read_bytes()).hexdigest(), 'local_bytes': destination.stat().st_size, 'coverage_check': 'Latin, Russian incl. Yo, digits, ruble sign, dash, guillemets present', 'transformation': 'Static instance using declared variable-font axes; WOFF2 compression; all source glyphs retained'})
+    (output / 'ahouse-fonts.css').write_text('\n'.join(css) + '\n')
+    (output / 'ahouse-fonts-moscow.css').write_text('\n'.join(moscow_css) + '\n')
     write_json(manifest, provenance)
     print(json.dumps({'stage': 'fonts', 'files': len(provenance), 'bytes': sum(item['local_bytes'] for item in provenance), 'provenance': 'media/fonts/provenance.json'}), flush=True)
 

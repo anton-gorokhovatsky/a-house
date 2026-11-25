@@ -1,9 +1,6 @@
 /* Reading sizes are shared by the main site, publications and service screens.
    The lettering inside posters, research diagrams and the wordmark is artwork. */
 :root {
-  --display: 'Times New Roman Cyr Condensed', 'Noto Serif', Georgia, serif;
-  --text: 'Apercu Condensed Pro', Arial, Helvetica, sans-serif;
-  --pro-text: 'Apercu Pro', var(--text);
   --type-display: clamp(2.5rem, 1.25rem + 5vw, 6.5rem);
   --type-title: clamp(2rem, 1.45rem + 2.2vw, 3.5rem);
   --type-section: clamp(1.625rem, 1.25rem + 1.3vw, 2.5rem);
@@ -27,9 +24,9 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
 @media (max-width: 61.25em) {
   #site-navigation .menu-sections { container: media-label / inline-size; font-size: var(--type-card); }
 }
-/* In the section typeface the noun measures 5.02em and the phrase 5.70em.
+/* In the section typeface the noun measures 6.705em and the phrase 7.64em.
    When only the noun fits, let «и» follow «Журнал» on the preceding line. */
-@container media-label (5.02em <= inline-size < 5.70em) {
+@container media-label (6.705em <= inline-size < 7.64em) {
   .media-title-phrase { display: inline; }
   .media-title-phrase > span { display: inline-block; }
 }
@@ -58,7 +55,7 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
 #site-content .site-address {
   margin: .55em 0 0;
   text-align: center;
-  font: 400 var(--type-body)/1.35 var(--text);
+  font: 400 var(--type-body)/1.35 AHTimes, Georgia, serif;
   color: #111;
 }
 #site-content :is(.t058__text-impact, .js-block-header-title, .t004 .t-text, .t1241__descr, .t153__title, .t-feed__post-popup__text) :is([data-customstyle], [style*="font-size"]) {
@@ -120,11 +117,11 @@ a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underli
   overflow-wrap: break-word;
 }
 .missing-page p { max-width: 50ch; }
-.missing-page .missing-code { font: 500 var(--type-caption)/1.3 var(--text); }
+.missing-page .missing-code { font: 500 var(--type-caption)/1.3 AHTimes, Arial, sans-serif; }
 .missing-page nav { margin-top: 1.25em; gap: .5em 1.5em; }
 .missing-page nav a { display: inline-flex; align-items: center; min-block-size: 44px; }
 .archive-index ol { font-size: var(--type-card); }
-.archive-index time, .archive-index small { font: 500 var(--type-caption)/1.4 var(--text); }
+.archive-index time, .archive-index small { font: 500 var(--type-caption)/1.4 AHTimes, Arial, sans-serif; }
 .archive-index time { padding-top: .25em; white-space: nowrap; }
 .archive-index li { grid-template-columns: max-content minmax(0,1fr); gap: 1rem; }
 .archive-index li a { overflow-wrap: break-word; }
