@@ -11,7 +11,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { collectArchive, renderMovedPublicationLinks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
+import { collectArchive, renderHomeBookmarks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 
@@ -318,7 +318,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- EDITORIAL HEADER -->', () => editorialHeader
         .replaceAll('{{wordmarkTag}}', home ? 'h1' : 'div')
         .replace('{{programCurrent}}', programPage ? ' aria-current="location"' : '')
-        .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : ''))
+        .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : '')
+        .replace('{{partnershipCurrent}}', page.slug === 'partnership' ? ' aria-current="page"' : ''))
       .replace('<!-- MENU THEME CONTROL -->', () => menuTheme)
       .replace(/<!-- REPORT (\d{4}) -->/g, (_, year) => renderReportYear(reportYears[year], year, page.slug))
       .replaceAll('{{eventsLabel}}', 'События')
@@ -342,8 +343,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
       .replace('{{sportStoryHref}}', () => escape(sportStory.href))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(printEditions, projects))
-      .replace('<!-- HOME BOOKS -->', () => renderPressBooks(pressBooks, 'h5'))
-      .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks, 'h3'))
+      .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks))
       .replaceAll('{{friendAction}}', friendAction)
       .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@media/press/a-news-01-daria-belyakova.pdf', 'Читать интервью', 'PDF, с. 24–25'))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
@@ -370,7 +370,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- ARCHIVE PARENT -->', () => page.archiveTopic
         ? '<a class="home-kicker" href="' + base + 'archive/">' + escape(archive.title) + '</a>' : '')
       .replace('{{archiveHeading}}', () => escape(page.archiveTopic?.title ?? archive.title))
-      .replace('<!-- MOVED PUBLICATION LINKS -->', () => renderMovedPublicationLinks(archive, base))
+      .replace('<!-- HOME BOOKMARKS -->', () => renderHomeBookmarks(archive, base))
       .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => footerTheme);

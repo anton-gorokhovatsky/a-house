@@ -17,7 +17,7 @@
       { "file": "media/home/exhibition-architecture-602.webp", "width": 602, "height": 800, "alt": "Архитектурный снимок на деревянном стенде с надписью A–House в выставочном зале" },
       { "file": "media/home/exhibition-light-of-time-602.webp", "width": 602, "height": 800, "alt": "Пейзажные фотографии на соседних стендах", "mobileLead": true }
     ],
-    "links": [{ "url": "https://t.me/ahouseproject/10736?single", "label": "Фотографии с выставки", "role": "report" }],
+    "links": [{ "url": "https://t.me/ahouseproject/10736?single", "label": "Фоторепортаж A–House в Telegram", "role": "report" }],
     "access": "Экскурсия с медиатором длится 40 минут. Вход по записи.",
     "booking": { "url": "https://ahouse.timepad.ru/event/4293210/", "label": "Записаться на экскурсию" }
   },

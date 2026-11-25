@@ -153,7 +153,7 @@ if (header) {
     const input = cancelPositioningOnInput();
     input.signal.addEventListener('abort', () => { entryBookmark = null; }, { once: true });
     window.addEventListener('pageshow', () => requestAnimationFrame(async () => {
-      const bookmark = document.querySelector('main :is(section, article, h1, h2, h3, h4, a[href]):target');
+      const bookmark = document.querySelector('main :is(section, article, h1, h2, h3, h4, dt, a[href]):target');
       if (!bookmark) {
         input.abort();
         return;

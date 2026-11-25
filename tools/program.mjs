@@ -55,9 +55,7 @@ function featurePhoto(event, base) {
     return '<img class="' + classes.join(' ') + '" ' + priority + ' src="' + esc(base + photo.file) +
       '" width="' + esc(photo.width) + '" height="' + esc(photo.height) + '" alt="' + esc(photo.alt) + '">';
   }).join('');
-  const report = event.links?.find(link => link.role === 'report');
-  const caption = report ? '<figcaption><a href="' + esc(report.url) + '">' + esc(report.label) + '</a></figcaption>' : '';
-  return '<figure class="home-feature-photo"><div class="home-photo-pair">' + images + '</div>' + caption + '</figure>';
+  return '<figure class="home-feature-photo"><div class="home-photo-pair">' + images + '</div></figure>';
 }
 
 export function renderVenueProgram(events, venue, base, today = moscow.format(new Date())) {
@@ -80,7 +78,6 @@ export function renderProgram(events, featureTemplate, base, today = moscow.form
     attrs: attributes(spotlight, today), date: dateLine(spotlight, today), kind: esc(spotlight.kind),
     title: esc(spotlight.title).replace(/^(.*?\. )(.+)$/, '$1<span>$2</span>'),
     url: esc(eventDestination(spotlight, base + 'calendar/')),
-    linkLabel: /^выставка(?:\s|$)/iu.test(spotlight.kind) ? 'О выставке' : 'О событии',
     summary: esc(spotlight.summary),
     detail: spotlight.detail ? '<span class="home-detail"> ' + esc(spotlight.detail) + '</span>' : '',
     access: spotlight.access ? '<p class="home-feature-access">' + esc(spotlight.access) + '</p>' : '',

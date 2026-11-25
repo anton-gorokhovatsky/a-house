@@ -19,7 +19,7 @@ function figure(photo, first = false) {
 function sectionContent(section) {
   const paragraphs = (section.paragraphs || []).map(text => '<p>' + escape(text) + '</p>').join('\n');
   const items = section.entries ? '<dl class="institution-entries">' + section.entries.map(entry =>
-    '<div><dt>' + (entry.href ? link({ href: entry.href, label: entry.title }) : escape(entry.title)) + '</dt><dd>' + escape(entry.text) + links(entry.links) + '</dd></div>'
+    '<div><dt' + (entry.id ? ' id="' + escape(entry.id) + '"' : '') + '>' + (entry.href ? link({ href: entry.href, label: entry.title }) : escape(entry.title)) + '</dt><dd>' + escape(entry.text) + links(entry.links) + '</dd></div>'
   ).join('\n') + '</dl>' : '';
   const people = section.people ? '<ul class="institution-people" role="list">' + section.people.map(person =>
     `<li class="editorial-pair">${image(person)}<div><h3 class="editorial-pair-title">${escape(person.name)}</h3>${person.role ? '<p>' + escape(person.role).replace(/\(\d{4}–\d{4}\)/g, '<span class="person-years">$&</span>') + '</p>' : ''}</div></li>`

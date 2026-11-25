@@ -119,8 +119,7 @@ async function checkMobileExhibition(page) {
     assert.equal(await action.getAttribute('href'), feature.booking.url);
     const title = poster.getByRole('heading', { name: feature.title });
     const heading = await title.boundingBox();
-    assert.equal(await title.getByRole('link').count(), 0, 'The exhibition title is a plain heading');
-    const details = poster.locator('a.home-feature-link');
+    const details = title.getByRole('link', { name: feature.title });
     assert.equal(await details.getAttribute('href'), eventDestination(feature, new URL('calendar/', url).pathname));
     assert.ok((await details.boundingBox()).height >= 44);
     const place = await poster.locator('.home-venue-link').boundingBox();
@@ -136,6 +135,13 @@ async function checkMobileExhibition(page) {
     const atProgram = await action.boundingBox();
     assert.ok(atProgram.y >= 0 && atProgram.y + atProgram.height <= height, 'Even on a short phone the opening programme fits with its booking action');
   }
+  await poster.getByRole('link', { name: feature.title }).tap();
+  await page.waitForURL(url + 'calendar/' + feature.id + '/');
+  const report = feature.links?.find(link => link.role === 'report');
+  if (report) assert.equal(await page.getByRole('link', {name:report.label, exact:true}).getAttribute('href'), report.url);
+  await page.goBack();
+  await page.waitForURL(url);
+  assert.ok(await poster.getByRole('link', { name: feature.title }).isVisible());
 }
 
 async function checkProjectMotion(page) {
@@ -367,17 +373,20 @@ async function checkVisitorLinks(page, mobile) {
     printCatalog.map(series => '#' + (series.archiveAnchor || series.seriesId)), 'Every print series opens its own archive');
   assert.equal(await periodicals.locator('.editions-access a[href="#services-checkout"]').count(), 1, 'Subscription terms belong to periodicals');
   assert.equal(await periodicals.locator('.editions-access a[href$="press/#distribution"]').count(), 1);
-  const books = editions.getByRole('region', {name:'Книги', exact:true});
-  assert.deepEqual(await books.getByRole('heading',{level:5}).allInnerTexts(), bookCatalog.map(book => book.title));
-  assert.deepEqual(await books.locator('a').evaluateAll(links => links.map(link => link.href)), bookCatalog.map(book => book.href));
-  const chooseBooks = editions.getByRole('link', {name:'К книгам издательства'});
+  assert.equal(await editions.locator('.press-book').count(), 0, 'Common book catalogue lives on the publisher page');
+  const chooseBooks = editions.getByRole('link', {name:'Книги A–Press'});
   await activate(chooseBooks);
-  await page.waitForURL(url + '#home-books');
+  await page.waitForURL(url + 'press/#books');
+  const books = page.getByRole('region', {name:'Книги', exact:true});
   assert.ok(await books.isVisible());
-  assert.equal(await page.evaluate(() => document.activeElement.id), 'home-books');
-  if (mobile) assert.ok(await page.locator('#home-books').evaluate(h => h.getBoundingClientRect().top >= document.getElementById('t-header').getBoundingClientRect().bottom - 1), 'The sticky menu clears the book heading');
+  assert.deepEqual(await books.getByRole('heading',{level:3}).allInnerTexts(), bookCatalog.map(book => book.title));
+  assert.deepEqual(await books.locator('.press-book a').evaluateAll(links => links.map(link => link.href)), bookCatalog.map(book => book.href));
   await page.goBack();
-  await page.waitForFunction(() => document.activeElement.getAttribute('href') === '#home-books');
+  await page.waitForFunction(() => document.activeElement?.hash === '#books');
+  await page.goto(url + '#home-books');
+  await page.waitForURL(url + 'press/#books');
+  await page.goBack();
+  await chooseBooks.waitFor({state:'visible'});
   for (const work of projects.flatMap(project => (project.works || []).map(work => ({...work, href: work.href || project.href})))) {
     const example = page.locator('.project-examples a').filter({hasText: work.title});
     assert.equal(await example.getAttribute('href'), work.href.replace('@@ROOT@@', new URL(url).pathname));
@@ -528,12 +537,16 @@ async function checkFooterDocuments(page, mobile) {
         };
         labelMarker.remove();
         valueMarker.remove();
+        const range = document.createRange();
+        range.selectNodeContents(value);
+        measurement.valueLines = range.getClientRects().length;
         return measurement;
       });
     });
     assert.ok(rows.every(row => Math.abs(row.labelBaseline - row.valueBaseline) < 1),
       'Registration labels and values must share a line at ' + page.viewportSize().width + ' px on ' + origin + ': ' + JSON.stringify(rows));
     assert.ok(Math.abs(rows[0].valueLeft - rows[1].valueLeft) < 1);
+    assert.ok(rows.every(row => row.valueLines === 1), 'Registration numbers must stay whole on ' + origin);
     assert.equal(await footer.locator('.footer-channels a').count(), 3);
     assert.ok(await footer.locator('.footer-wordmark img').isVisible());
     assert.ok(await footer.getByRole('radio', {name: 'Как в системе'}).isVisible());
@@ -626,6 +639,16 @@ async function checkEnlargedMenu(page) {
   const documents = page.getByRole('navigation', { name: 'Документы' });
   assert.equal(await documents.getByRole('link').count(), 4);
   assert.ok(await documents.getByRole('link').last().isVisible());
+  const numbersFit = await page.locator('.footer-registration dd').evaluateAll(async values => {
+    await document.fonts.ready;
+    return values.every(value => {
+      const range = document.createRange();
+      range.selectNodeContents(value);
+      const lines = range.getClientRects();
+      return lines.length === 1 && lines[0].right <= value.closest('dl').getBoundingClientRect().right + 1;
+    });
+  });
+  assert.ok(numbersFit, 'Both registration numbers must fit at 320px and 200% text');
 
   await page.goto(url);
   await page.addStyleTag({ content: 'html { font-size: 200%; }' });

@@ -96,10 +96,10 @@ export function renderSubscriptionEntries(issues) {
   </div>`).join('\n');
 }
 
-export function renderPressBooks(books, heading) {
+export function renderPressBooks(books) {
   return books.map(({title, subtitle, description, cover, href, linkLabel, metadata}) => `<article class="press-book">
     <img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy" decoding="async">
-    <div><${heading} class="press-book-title">${escape(title)}</${heading}>
+    <div><h3 class="press-book-title">${escape(title)}</h3>
       ${subtitle ? '<p class="book-subtitle">' + escape(subtitle) + '</p>' : ''}
       <p>${escape(description)}</p>
       <div class="book-preview">${metadata ? renderPrintFileLink(href, linkLabel, metadata, title)
@@ -273,8 +273,13 @@ function topicKey(topic) {
   return topic.slug.slice('archive/'.length);
 }
 
-export function renderMovedPublicationLinks(archive, base) {
+export function renderHomeBookmarks(archive, base) {
   const bookmarks = [
+    ['partnership', 'partnership/', 'Сотрудничество'],
+    ['partnership-heading', 'partnership/', 'Сотрудничество'],
+    ['rec2309705331', 'partnership/#rec2309705331', 'Книги и газеты'],
+    ['rec2309704211', 'partnership/#rec2309704211', 'Городские пространства'],
+    ['home-books', 'press/#books', 'Книги A–Press'],
     ['publications', 'archive/', archive.title],
     ['publication-archive', 'archive/', archive.title],
     ['archive-heading', 'archive/', archive.title],

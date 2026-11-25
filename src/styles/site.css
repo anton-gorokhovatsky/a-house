@@ -70,6 +70,7 @@ main:focus { outline: none; }
 }
 #t-footer .footer-legal nav a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 #t-footer .footer-legal nav a:hover { text-decoration-color: currentColor; }
+.footer-registration { container: registration / inline-size; }
 .footer-registration > div {
   display: flex;
   flex-wrap: wrap;
@@ -79,10 +80,13 @@ main:focus { outline: none; }
 .footer-registration > div + div { margin-block-start: .12em; }
 .footer-registration dt { flex: 0 0 3em; }
 .footer-registration dd {
-  /* Both rows wrap together when the 13-digit registration number needs its own line. */
-  flex: 0 1 13ch;
+  flex: 0 1 max-content;
   max-inline-size: 100%;
   font-variant-numeric: tabular-nums;
+}
+@container registration (inline-size < 11em) {
+  .footer-registration dt { flex-basis: 100%; }
+  .footer-registration > div + div { margin-block-start: .4em; }
 }
 #t-footer .footer-legal .footer-registration { margin-top: .3em; }
 #t-footer .footer-legal .footer-legal-notice {
