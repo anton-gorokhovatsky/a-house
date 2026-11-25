@@ -61,7 +61,10 @@
     "summary": "Фотографы из A–Index обсудят, как выбрать точку съёмки и свет, зачем в кадре люди и как соцсети изменили взгляд на архитектуру.",
     "home": "card",
     "booking": { "url": "https://re-store.ru/promo/academy/", "label": "Регистрация на сайте restore:" },
-    "links": [{ "url": "https://t.me/ahouseproject/10801", "label": "Анонс A–House в Telegram", "role": "event-page" }]
+    "links": [
+      { "url": "https://re-store.ru/promo/academy/", "label": "Страница события на сайте restore:", "role": "event-page" },
+      { "url": "https://t.me/ahouseproject/10801", "label": "Анонс A–House в Telegram" }
+    ]
   },
   {
     "id": "business-improvisation",

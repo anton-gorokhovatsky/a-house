@@ -34,13 +34,13 @@ function eventCard(event, today, base) {
     ? '<a class="home-event-admission" href="' + esc(event.booking.url) + '">' + bookingLabel(event) + '</a>'
     : event.price ? '<span class="home-event-amount">' + esc(event.price) + '</span>' : '';
   return `<article class="home-event" ${attributes(event, today)}>
-    <a class="home-event-link" href="${esc(href)}" aria-labelledby="${esc(heading)}">
+    <div class="home-event-main">
       <p class="home-meta"><span>${dateLine(event, today)}</span> <span class="home-event-venue">${esc(event.shortVenue || event.venue)}</span></p>
       <div class="home-event-info">
-        <h3 id="${esc(heading)}">${esc(event.title)}</h3>
+        <h3 id="${esc(heading)}"><a class="home-event-link" href="${esc(href)}">${esc(event.title)}</a></h3>
         <p>${esc(event.summary)}</p>
       </div>
-    </a>
+    </div>
     ${event.address ? '<p class="home-detail">' + esc(event.address) + '.</p>' : ''}
     ${admission ? '<p class="home-event-price">' + admission + '</p>' : ''}
   </article>`;

@@ -29,7 +29,6 @@ function externalWebURL(href, site) {
 }
 
 function labelWithin(anchorClasses) {
-  if (anchorClasses.includes('home-event-link')) return tag => tag === 'h3';
   if (anchorClasses.includes('home-project-row')) return (_, names) => names.includes('home-project-name');
   if (anchorClasses.includes('press-file')) return (_, names) => names.includes('press-file-label');
   return null;

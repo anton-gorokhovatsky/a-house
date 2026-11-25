@@ -19,7 +19,7 @@ body { margin: 0; }
 html { overflow-x: clip; }
 @media (prefers-reduced-motion: no-preference) {
   html[data-anchor-scroll] { scroll-behavior: smooth; }
-  :where(.home-page) :where(a[href], .home-event-link h3, .home-project-name, .press-file-label) {
+  :where(.home-page) :where(a[href], .home-project-name, .press-file-label) {
     transition: text-decoration-color var(--link-feedback-duration, 115ms) ease-out;
   }
 }

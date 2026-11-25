@@ -892,11 +892,10 @@ async function checkEditorialGrouping(page) {
     assert.ok(baselines.every(y => Math.abs(y - baselines[0]) < 1),
       'The first lines of the two smaller event titles must share a text baseline');
     const entries = await list.locator(':scope > article:visible').evaluateAll(cards => cards.map(card => {
-      const link = card.querySelector('.home-event-link');
       const entry = { top: card.getBoundingClientRect().top, paid: Boolean(card.querySelector('.home-event-amount')) };
       const action = card.querySelector('.home-event-admission');
       const address = card.querySelector('.home-detail');
-      const description = address?.getClientRects().length ? address : link?.querySelector('.home-event-info > p:last-child');
+      const description = address?.getClientRects().length ? address : card.querySelector('.home-event-info > p:last-child');
       if (action && description) {
         entry.endOfCopy = description.getBoundingClientRect().bottom;
         entry.actionGap = action.getBoundingClientRect().top - entry.endOfCopy;
@@ -1159,6 +1158,16 @@ async function checkHomeRoutes(page, mobile) {
   await checkReadingReturn(page, mobile);
   await checkEditorialGrouping(page);
   await page.goto(url);
+  const chapterStyle = await headingStyle('#home-friend-title');
+  const chapterTitles = page.locator('#overview > section > .home-section-head > h2:visible');
+  for (const title of await chapterTitles.all()) {
+    assert.deepEqual(await headingStyle('#' + await title.getAttribute('id')), chapterStyle,
+      'All title-level sections in the overview must use the same h2 style');
+  }
+  if (!mobile) {
+    assert.ok(parseFloat(visitHeadingStyle.fontSize) > parseFloat(chapterStyle.fontSize),
+      'A standalone section title has a larger desktop scale than its overview heading');
+  }
   const menu = page.locator('.site-menu-toggle');
   const calendarLink = page.locator('.site-navigation a[href$="/calendar/"]');
   const publisherPath = new URL('press/', url).pathname;

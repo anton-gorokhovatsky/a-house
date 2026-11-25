@@ -40,9 +40,8 @@
       section.hidden = selected ? selected !== section : !section.hasAttribute('data-overview-section');
     }
     const heading = selected && document.getElementById(selected.dataset.homeTitle || selected.getAttribute('aria-labelledby'));
-    const sectionTitle = heading?.querySelector('.home-detail') || heading;
-    document.title = sectionTitle
-      ? sectionTitle.textContent.replaceAll('\u00ad', '').replace(/\s+/g, ' ').trim() + ' — ' + homeTitle
+    document.title = heading
+      ? heading.textContent.replaceAll('\u00ad', '').replace(/\s+/g, ' ').trim() + ' — ' + homeTitle
       : homeTitle;
     const currentSection = selected?.id || 'overview';
     for (const choice of choices) {

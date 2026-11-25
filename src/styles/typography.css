@@ -21,8 +21,8 @@
   --type-caption: .9375rem;
   --type-brand: 1.5rem;
 }
-/* Menu destinations have one title scale on their own page and on the home page. */
-.home-page .home-editorial .section-title {
+/* A section shown on its own uses the page title scale. The overview uses its h2 scale. */
+.home-page .home-editorial:where(:not(#overview), [data-view]:not([data-view="overview"])) .section-title {
   font: 400 var(--type-page-title)/1.1 var(--display);
   letter-spacing: -.004em;
   text-wrap: balance;
