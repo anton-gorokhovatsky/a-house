@@ -73,19 +73,6 @@ function siteVersion() {
   return 'Локальная сборка';
 }
 
-function renderReportYear(year, label, edition) {
-  const [heading, body] = year.records[edition];
-  const items = year.entries.map(entry => '<li>' + entry.map(item => {
-    if (item.copy) return item.copy;
-    if (item.figure) return '<p class="report-stat"><strong>' + item.figure + '</strong> ' + item.label + '</p>';
-    return '<figure>' + year.images[edition][item.photo] + '</figure>';
-  }).join('\n') + '</li>').join('\n');
-  return `<details class="project-disclosure report-year" id="rec${heading}">
-    <summary>${label}<span class="summary-note">${year.summary}</span></summary>
-    <ol class="report-milestones" id="rec${body}">${items}</ol>
-  </details>`;
-}
-
 export function membershipSettings(kind, env = process.env) {
   if (kind !== 'friend' && kind !== 'member') throw new Error('Unknown membership form: ' + kind);
   const prefix = kind === 'friend' ? 'A_FRIEND_' : 'A_MEMBER_';
@@ -203,7 +190,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const printArchive = await renderPrintArchive(printEditions, async name => (await stat(path.join(printDirectory, name))).size);
   const projectGroups = renderProjectDirectory(directions);
   const pages = JSON.parse(await source('routes.json'));
-  const reportYears = JSON.parse(await source('data/report-years.json'));
   const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));
   const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
   const program = renderProgram(events, await source('partials/program-feature.html'), base);
@@ -280,7 +266,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   }
   const cssFor = page => [...new Set([
     'media/fonts/ahouse-fonts.css',
-    ...(page.slug==='moscow_business' ? ['media/fonts/ahouse-fonts-moscow.css'] : []),
     ...pageStyles(page), ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
     ...(page.slug === 'archive' || page.archiveTopic ? ['styles/pages/archive-list.css'] : []),
     'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', 'styles/theme.css'
@@ -314,7 +299,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : '')
         .replace('{{partnershipCurrent}}', page.slug === 'partnership' ? ' aria-current="page"' : ''))
       .replace('<!-- MENU THEME CONTROL -->', () => menuTheme)
-      .replace(/<!-- REPORT (\d{4}) -->/g, (_, year) => renderReportYear(reportYears[year], year, page.slug))
       .replaceAll('{{eventsLabel}}', 'События')
       .replaceAll('{{housesLabel}}', 'Дома и адреса')
       .replaceAll('{{mediaLabel}}', 'Журнал <span class="wrap-group media-title-phrase">и <wbr><span>издательство</span></span>')

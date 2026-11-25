@@ -118,14 +118,7 @@
     "slug": "longevity",
     "title": "Лонжевити и недвижимость — A–House",
     "description": "",
-    "icon": "media/favicon-2-8b77dfa15dce.ico",
-    "styles": [
-      "styles/source/grid-3.0.css",
-      "styles/chrome.css",
-      "styles/pages/home.css",
-      "styles/pages/projects.css"
-    ],
-    "layout": "project"
+    "layout": "standalone"
   },
   {
     "slug": "member",
@@ -143,14 +136,7 @@
     "slug": "moscow_business",
     "title": "Бизнес Москвы",
     "description": "",
-    "icon": "media/favicon-2-8b77dfa15dce.ico",
-    "styles": [
-      "styles/source/grid-3.0.css",
-      "styles/chrome.css",
-      "styles/pages/home.css",
-      "styles/pages/projects.css"
-    ],
-    "layout": "project"
+    "layout": "standalone"
   },
   {
     "slug": "mts",
@@ -256,27 +242,13 @@
     "slug": "report",
     "title": "Годовой отчёт 2023–2026 — A–House",
     "description": "",
-    "icon": "media/favicon-2-8b77dfa15dce.ico",
-    "styles": [
-      "styles/source/grid-3.0.css",
-      "styles/chrome.css",
-      "styles/pages/home.css",
-      "styles/pages/projects.css"
-    ],
-    "layout": "project"
+    "layout": "standalone"
   },
   {
     "slug": "report__",
     "title": "Годовой отчёт 2023–2026. Другая редакция — A–House",
     "description": "",
-    "icon": "media/favicon-2-8b77dfa15dce.ico",
-    "styles": [
-      "styles/source/grid-3.0.css",
-      "styles/chrome.css",
-      "styles/pages/home.css",
-      "styles/pages/projects.css"
-    ],
-    "layout": "project"
+    "layout": "standalone"
   },
   {
     "slug": "residents",
@@ -333,14 +305,7 @@
     "slug": "t_bank",
     "title": "Партнёрство с Т-Банком — A–House",
     "description": "",
-    "icon": "media/favicon-2-8b77dfa15dce.ico",
-    "styles": [
-      "styles/source/grid-3.0.css",
-      "styles/chrome.css",
-      "styles/pages/home.css",
-      "styles/pages/projects.css"
-    ],
-    "layout": "project"
+    "layout": "standalone"
   },
   {
     "slug": "t_business",

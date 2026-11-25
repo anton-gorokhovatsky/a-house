@@ -586,14 +586,29 @@ async function checkFooterDocuments(page, mobile) {
 async function checkSpecialProjectPrograms(page, mobile) {
   const activate = element => mobile ? element.tap() : element.press('Enter');
   await page.goto(url + 'longevity/');
-  const researchTitleFits = await page.locator('.research-opening h1').evaluate(async heading => {
-    await document.fonts.ready;
-    const column = heading.parentElement.getBoundingClientRect();
-    const range = document.createRange();
-    range.selectNodeContents(heading);
-    return [...range.getClientRects()].every(line => line.right <= column.right + 1);
-  });
-  assert.ok(researchTitleFits, 'The research title must fit its own column beside the illustration');
+  await page.getByRole('heading', {level: 1, name: 'Лонжевити и недвижимость'}).waitFor();
+  const researchNav = page.locator('#rec3921425401');
+  assert.equal(await researchNav.locator('a[href="#one"], a[href="#two"], a[href="#three"]').count(), 3);
+  const recommendations = page.locator(mobile ? '#rec3917158401 a[href="#rules"]' : '#rec3921425401 a[href="#rules"]');
+  await page.locator('[data-tooltip-hook="#rules"][data-popup-ready]').waitFor({state: 'attached'});
+  await activate(recommendations);
+  const recommendationsDialog = page.getByRole('dialog', {name: 'Рекомендации для девелопера'});
+  const recommendation = recommendationsDialog.locator('#hacc-h2');
+  await recommendation.waitFor();
+  assert.equal(await recommendationsDialog.locator('.hacc__head').count(), 5);
+  await activate(recommendation);
+  assert.equal(await recommendation.getAttribute('aria-expanded'), 'true');
+  if (mobile) {
+    await activate(recommendationsDialog.getByRole('button', {name: /закрыть/i}).first());
+  } else {
+    for (const key of ['Tab', 'Tab', 'Tab', 'Tab', 'Shift+Tab']) {
+      await page.keyboard.press(key);
+      assert.ok(await recommendationsDialog.evaluate(dialog => dialog.contains(document.activeElement)));
+    }
+    await page.keyboard.press('Escape');
+  }
+  await recommendationsDialog.waitFor({state: 'hidden'});
+  await page.waitForFunction(trigger => document.activeElement === trigger, await recommendations.elementHandle());
 
   await page.goto(url + 't_private/');
   if (mobile) {
@@ -602,14 +617,28 @@ async function checkSpecialProjectPrograms(page, mobile) {
   }
 
   await page.goto(url + 't_bank/');
-  const gift = page.locator('a[href="#second"]').filter({ hasText: /Искусство дарить/i }).first();
-  await activate(gift);
-  const panel = page.getByRole('dialog', {name: /Искусство дарить/});
+  assert.equal(await page.locator('#program a[href^="#"]').count(), 9);
+  assert.equal(await page.locator('.t-popup[data-popup-rec-ids]').count(), 10);
+  const collection = page.locator('#program a[href="#four"]');
+  await page.locator('[data-tooltip-hook="#four"][data-popup-ready]').waitFor({state: 'attached'});
+  await activate(collection);
+  const panel = page.getByRole('dialog', {name: /Изобретая коллекцию: графика/});
   await panel.waitFor();
-  assert.match(await panel.innerText(), /Искусство дарить/i);
-  assert.ok(await panel.evaluate(dialog => dialog.matches(':modal')), 'The event occupies the native modal layer');
-  await activate(panel.getByRole('button', { name: /закрыть/i }).first());
+  const closeCollection = panel.getByRole('button', {name: /закрыть/i}).first();
+  if (!mobile) {
+    for (const direction of ['Tab', 'Shift+Tab']) {
+      await closeCollection.focus();
+      for (let step = 0; step < 8; step++) {
+        await page.keyboard.press(direction);
+        assert.ok(await panel.evaluate(dialog => dialog.contains(document.activeElement)));
+      }
+    }
+  }
+  await panel.locator('.t-popup__container .t396__artboard').waitFor();
+  assert.match(await panel.innerText(), /Изобретая\s+коллекцию:\s+графика/i);
+  await activate(closeCollection);
   await panel.waitFor({state: 'hidden'});
+  await page.waitForFunction(trigger => document.activeElement === trigger, await collection.elementHandle());
 
   await page.goto(url + '#projects');
   await activate(page.locator('.home-project-navigation a[href="#a-industry"]'));
