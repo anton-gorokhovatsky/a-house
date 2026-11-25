@@ -3,6 +3,29 @@ import { eventDate, eventDestination } from './calendar.mjs';
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const link = (href, title, className = '') => `<a${className ? ' class="' + className + '"' : ''} href="${escape(href)}">${escape(title)}</a>`;
 
+export function renderProjectNavigation(directions) {
+  return directions.map(({ id, name, indexLabel = name }) => link('#' + id, indexLabel)).join('\n');
+}
+
+export function renderProjectDirectory(directions) {
+  return directions.map(({ id, name, indexLabel = name, projects }) => {
+    const sectionId = escape(id);
+    const rows = projects.map(project => `<li>
+      <a class="home-project-row" href="${escape(project.href)}">
+        <span class="home-project-name">${escape(project.name)}</span>
+        <span class="home-project-description">${escape(project.indexDescription || project.description)}</span>
+      </a>
+    </li>`).join('\n');
+    return `<section class="home-direction" id="${sectionId}" tabindex="-1" aria-labelledby="title-${sectionId}">
+      <header class="home-direction-heading">
+        <h3 id="title-${sectionId}">${escape(indexLabel)}</h3>
+        <p class="home-direction-brand">${escape(name)}</p>
+      </header>
+      <ul class="home-project-entries" role="list">${rows}</ul>
+    </section>`;
+  }).join('\n');
+}
+
 export function renderProjectWorks(project, useHeadings = false) {
   return '<ul class="project-examples" role="list">' + project.works.map(work => {
     const meta = [work.date && eventDate({start: work.date}), work.source && escape(work.source)].filter(Boolean);

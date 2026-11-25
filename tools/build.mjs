@@ -9,7 +9,7 @@ import { markDeferredBackgrounds } from './deferred-backgrounds.mjs';
 import { loadImageDelivery } from './images.mjs';
 import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } from './calendar.mjs';
 import { renderProgram, renderVenueProgram } from './program.mjs';
-import { renderHomeProjects, renderProjectWorks } from './home-projects.mjs';
+import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
 import { collectArchive, renderHomeBookmarks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
@@ -192,9 +192,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const events = await readEventCatalog();
   const jobs = renderJobs(JSON.parse(await source('data/jobs.json')));
   const directions = JSON.parse(await source('data/projects.json'));
-  const projectNavigation = directions.map(group =>
-    `<a href="#${escape(group.id)}">${escape(group.name)}</a>`
-  ).join('\n');
+  const projectNavigation = renderProjectNavigation(directions);
   const projects = directions.flatMap(group => group.projects);
   const houseProjects = projects.filter(project => project.venue);
   const sportStory = projects.flatMap(project => project.works || []).find(work => work.id === 'issue-a-sport');
@@ -203,22 +201,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const printDirectory = file('media/print');
   const publicPrintFiles = printArchiveFileNames(printEditions);
   const printArchive = await renderPrintArchive(printEditions, async name => (await stat(path.join(printDirectory, name))).size);
-  const projectGroups = directions.map(group => {
-    const {id, name, intro} = group;
-    const rows = group.projects.map(project => `<li>
-      <a class="home-project-row" href="${escape(project.href)}">
-        <span class="home-project-name">${escape(project.name)}</span>
-        <span class="home-project-description">${escape(project.description)}</span>
-      </a>
-    </li>`).join('\n');
-    return `<section class="home-direction" id="${escape(id)}" tabindex="-1" aria-labelledby="title-${escape(id)}">
-      <h3 id="title-${escape(id)}">${escape(name)}</h3>
-      <div class="home-direction-copy">
-        <p>${escape(intro)}</p>
-      </div>
-      <ul class="home-project-entries">${rows}</ul>
-    </section>`;
-  }).join('\n');
+  const projectGroups = renderProjectDirectory(directions);
   const pages = JSON.parse(await source('routes.json'));
   const reportYears = JSON.parse(await source('data/report-years.json'));
   const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));

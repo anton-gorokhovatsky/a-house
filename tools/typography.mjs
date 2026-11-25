@@ -9,7 +9,7 @@ const homeProjectName = namePattern(names + '|Forum|Guide|Industry|Membership');
 const month = '(?:январ[ья]|феврал[ья]|марта?|апрел[ья]|ма[йя]|июн[ья]|июл[ья]|августа?|сентябр[ья]|октябр[ья]|ноябр[ья]|декабр[ья])';
 const dayMonth = new RegExp('(?<=\\d) (?=' + month + '(?!\\p{L}))', 'giu');
 const monthYear = new RegExp('(?<!\\p{L})(' + month + ') (?=\\d{4}(?!\\d))', 'giu');
-const shortWord = /(?<![\p{L}\p{N}@./_–-])(а|в|и|к|о|с|у|во|до|за|из|ко|на|об|от|по|со|без|для|при) (?=[«„(]?[\p{L}\d№])/giu;
+const shortWord = /(?<![\p{L}\p{N}@./_–-])(а|в|и|к|о|с|у|во|до|за|из|ко|на|не|ни|но|об|от|по|со|без|для|над|обо|под|при|про) (?=[«„“(]?[\p{L}\d№])/giu;
 
 // A number may also be an issue number, an address or a clause reference.
 // Bind counts in editorial prose using the things the site actually counts.
@@ -42,6 +42,7 @@ function russianSpacing(text) {
   // Each replacement changes one space in place. The break after a date's
   // comma, after a punctuation dash, or between quantities stays available.
   return text.replace(shortWord, '$1\u00a0')
+    .replace(/(?<![\p{L}\p{N}.,])12 (?=STOREEZ(?![\p{L}\p{N}]))/giu, '12\u00a0')
     .replace(dayMonth, '\u00a0')
     .replace(monthYear, '$1\u00a0')
     .replace(count, formatCount)

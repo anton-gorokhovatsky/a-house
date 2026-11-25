@@ -363,7 +363,8 @@ async function checkVisitorLinks(page, mobile) {
   const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
   assert.deepEqual(await features.locator('.home-project-portfolios h4 a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
-  assert.equal(await editions.getByRole('link', {name:'Каталог изданий'}).getAttribute('href'), new URL('press/', url).pathname);
+  const archiveLink = editions.getByRole('link', {name:'Архив печатных номеров', exact:true});
+  assert.equal(await archiveLink.getAttribute('href'), new URL('press/', url).pathname + '#print-archive');
   const editorialTitles = await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts();
   assert.deepEqual(editorialTitles.map(title => title.replaceAll('\u00ad', '')), ['Издательство A–Press', 'A–Index', 'A–News'],
     'Each project has one heading and follows the intended order');
@@ -435,13 +436,27 @@ async function checkVisitorLinks(page, mobile) {
     await page.goBack();
     await page.waitForFunction(id => document.activeElement.getAttribute('href') === '#' + id, id);
   }
-  assert.equal(await page.getByRole('link', { name: 'Спецпроекты и мероприятия' }).getAttribute('href'), new URL('special_projects/', url).pathname);
+  assert.equal(await page.locator('#projects a[href$="special_projects/"]').count(), 0);
   const press = page.locator('#a-media .home-project-row[href$="/press/"]');
   await activate(press);
   await page.waitForURL(url + 'press/');
   assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
   const printArchive = page.locator('#print-archive');
   const publisherBooks = page.getByRole('region',{name:'Книги', exact:true});
+  const publisherContents = page.getByRole('navigation', { name: 'Разделы каталога A–Press' });
+  await page.evaluate(() => document.fonts.ready);
+  const pressStart = await page.evaluate(() => scrollY);
+  await activate(publisherContents.getByRole('link', {name:'Книги', exact:true}));
+  await page.waitForURL(url + 'press/#books');
+  await page.waitForFunction(() => {
+    const top = document.getElementById('books-heading').getBoundingClientRect().top;
+    return top >= -1 && top < innerHeight / 3;
+  });
+  await page.goBack();
+  await page.waitForURL(url + 'press/');
+  await page.waitForFunction(y => document.activeElement?.hash === '#books' && Math.abs(scrollY - y) < 4, pressStart);
+  assert.equal(await page.locator('#online').getAttribute('href'), 'https://news.ahouseproject.com/');
+  assert.ok(await printArchive.getByRole('heading',{name:'Газета A–News', exact:true}).isVisible());
   assert.deepEqual(await publisherBooks.getByRole('heading',{level:3}).allInnerTexts(), bookCatalog.map(book => book.title));
   assert.deepEqual(await publisherBooks.locator('.book-preview a').evaluateAll(links => links.map(link => link.href)), bookCatalog.map(book => book.href));
   assert.equal(await publisherBooks.locator('#a-focus').count(), 0);
@@ -1090,10 +1105,9 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await choice('media').getAttribute('aria-current'), 'true');
   assert.equal(await section('program').isVisible(), false);
   assert.equal(await section('media').getByRole('heading', {name: 'A–Index', exact: true}).count(), 0);
-  const jumpToNews = section('media').getByRole('link', {name: 'К онлайн-журналу A–News'});
-  await (mobile ? jumpToNews.tap() : jumpToNews.press('Enter'));
-  await page.waitForURL(url + '#a-news');
-  assert.equal(await page.evaluate(() => document.activeElement.id), 'a-news');
+  const newsLink = section('media').locator('#media-heading').getByRole('link', {name: 'Читать онлайн-журнал A–News'});
+  assert.equal(await newsLink.getAttribute('href'), 'https://news.ahouseproject.com/');
+  await page.goto(url + '#a-news');
   const article = section('media').getByRole('article', {name: 'A–News'}).locator('.project-examples a').first();
   assert.ok(await article.isVisible(), 'The reading selection must open an individual editorial item');
   await page.goBack();

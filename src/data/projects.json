@@ -2,10 +2,12 @@
   {
     "id": "a-industry",
     "name": "A–Industry",
+    "indexLabel": "Архитектура и профессия",
     "intro": "В A–Index бюро показывают свои проекты и ищут сотрудников. На лекциях A–School и экскурсиях A–Fest можно познакомиться с работой архитекторов.",
     "projects": [
       {
         "name": "A–Index",
+        "indexDescription": "Справочник бюро и вакансий",
         "overview": "directory",
         "overviewLinkLabel": "Открыть справочник A–Index",
         "bookmark": "project-stories",
@@ -37,6 +39,7 @@
       },
       {
         "name": "A–School",
+        "indexDescription": "Открытые лекции и дискуссии",
         "overview": "community",
         "overviewLinkLabel": "Программа A–School",
         "works": [
@@ -48,6 +51,7 @@
       {
         "id": "a-forum",
         "name": "A–Forum",
+        "indexDescription": "Форум о гостиничной индустрии",
         "overview": "gatherings",
         "description": "На закрытом форуме архитекторы, отельеры и девелоперы обсуждают, как проектировать гостиницы и управлять ими.",
         "href": "#a-forum"
@@ -55,12 +59,14 @@
       {
         "id": "a-fest",
         "name": "A–Fest",
+        "indexDescription": "Архитектурный фестиваль",
         "overview": "gatherings",
         "description": "Ежегодный фестиваль архитектуры в Москве. Архитекторы приглашают горожан на выставки, дискуссии и экскурсии.",
         "href": "#a-fest"
       },
       {
         "name": "Конкурс МТС «Меняя привычное»",
+        "indexDescription": "Архитектура базовых станций",
         "description": "Конкурс МТС и A–House на архитектурную концепцию базовых станций связи. Его представили на A–Fest.",
         "href": "@@ROOT@@mts/"
       }
@@ -69,10 +75,12 @@
   {
     "id": "a-media",
     "name": "A–Media",
+    "indexLabel": "Издания и медиа",
     "intro": "Редакция A–News пишет об архитектуре и дизайне, а издательство A–Press выпускает книги, газеты и журналы. В первом номере A–Kids — прогулка по Петербургу для всей семьи.",
     "projects": [
       {
         "name": "A–News",
+        "indexDescription": "Онлайн-журнал",
         "overview": "news",
         "overviewLinkLabel": "Читать журнал A–News",
         "bookmark": "a-news",
@@ -90,11 +98,13 @@
       },
       {
         "name": "A–Press",
+        "indexDescription": "Книги, газеты и журналы",
         "description": "Издательство A–House выпускает книги, каталоги и периодику. На его странице можно посмотреть издания и найти места, где есть печатные номера.",
         "href": "@@ROOT@@press/"
       },
       {
         "name": "Газета A–News",
+        "indexDescription": "Архитектура, дизайн и культура",
         "overview": "editions",
         "works": [
           {"title": "№ 2. Коллекциониро\u00adвание", "text": "Основательницы ярмарки blazar и кураторы её секции дизайна рассказывают, как новые имена попадают на ярмарку.", "href": "@@ROOT@@tpost/f0997i9441-anews-2/"}
@@ -104,6 +114,7 @@
       },
       {
         "name": "Журнал A–Kids",
+        "indexDescription": "Журнал-перевёртыш для всей семьи",
         "overview": "editions",
         "works": [
           {"title": "Первый номер. Петербург с двух сторон", "text": "Взрослым — путеводитель по городу. Если перевернуть журнал, начинаются игры и задания для детей.", "href": "@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/"}
@@ -113,6 +124,7 @@
       },
       {
         "name": "Газета A–Sport",
+        "indexDescription": "Спорт и культура",
         "overview": "editions",
         "works": [
           {"id": "issue-a-sport", "title": "Как выбрать велосипед и экипировку", "text": "Зачем велотуфлям шипы и что такое бибсы? Команда Velopraktika разбирает велосипед и экипировку для первых тренировок.", "href": "https://news.ahouseproject.com/likbez-ot-velopraktiki-chto-dolzhno-byt-u-nastoyashhego-velosportsmena/"}
@@ -122,6 +134,7 @@
       },
       {
         "name": "Газета A–State",
+        "indexDescription": "Выпуски о регионах",
         "overview": "editions",
         "works": [
           {"title": "Владикавказ Тамары Сокуровой", "text": "В выпуске о Северном Кавказе основательница кинофестиваля «Алания» рассказывает о своём городе.", "href": "https://news.ahouseproject.com/a-talks-tamara-sokurova/"}
@@ -131,6 +144,7 @@
       },
       {
         "name": "Партнёрская газета A–Focus",
+        "indexDescription": "Тематические выпуски на заказ",
         "overview": "editions",
         "specialIssue": {
           "title": "A–Focus «Дом предприни\u00adмателя»", "published": "2026-10-20",
@@ -146,6 +160,7 @@
       },
       {
         "name": "Рубрика A–Guide",
+        "indexDescription": "Авторские путеводители",
         "overview": "editions",
         "works": [
           {"title": "По Аэропорту с Дарьей Беляковой", "text": "В шестом номере A–Kids архитектор ведёт читателя от мастерских художников на Масловке к Петровскому путевому дворцу."}
@@ -155,16 +170,19 @@
       },
       {
         "name": "Канал A–House",
+        "indexDescription": "Анонсы и заметки в Telegram",
         "description": "В Telegram команда объявляет встречи в Доме и публикует фотографии с выставок. Здесь же выходят заметки архитекторов о своей работе.",
         "href": "https://t.me/s/ahouseproject"
       },
       {
         "name": "A–House On Air",
+        "indexDescription": "Репортажи в Telegram",
         "description": "Канал репортажей с ярмарок и форумов. В ленте сохранилась трансляция первого A–Forum о гостиничной индустрии.",
         "href": "https://t.me/s/ahouseonair"
       },
       {
         "name": "Канал A–Kids",
+        "indexDescription": "Семейный архив в Telegram",
         "description": "Архив семейного канала в Telegram. В нём собраны идеи для занятий, детские выставки и разговоры с детьми об искусстве.",
         "href": "https://t.me/s/ahousekids"
       }
@@ -173,10 +191,12 @@
   {
     "id": "a-membership",
     "name": "A–Membership",
+    "indexLabel": "Клуб и подписка",
     "intro": "Участники клуба приходят в Дом на закрытые встречи и лекции. Для тех, кто хочет читать издания A–House, есть отдельная подписка A–Friend.",
     "projects": [
       {
         "name": "Клуб A–House",
+        "indexDescription": "Закрытая программа Дома",
         "overview": "community",
         "overviewLinkLabel": "Программы клуба",
         "bookmark": "club",
@@ -189,6 +209,7 @@
       },
       {
         "name": "A–Friend",
+        "indexDescription": "Подписка на цифровые выпуски",
         "description": "Подписка на полные выпуски A–News, A–Kids, A–Sport и A–State. Их можно читать в PDF в приложении A–House.",
         "href": "#services-checkout"
       }
@@ -197,10 +218,12 @@
   {
     "id": "a-presence",
     "name": "A–Presence",
+    "indexLabel": "Дома и пространства",
     "intro": "Команда открывает городские пространства и готовит для них программу. Дом предпринимателя в Москве — совместный проект A–House и Точка Банка.",
     "projects": [
       {
         "name": "Дом A–House",
+        "indexDescription": "Особняк в Большом Афанасьевском",
         "venue": "house",
         "works": [
           {"title": "Как устроен Дом в Большом Афанасьевском", "text": "На первом этаже за чашкой кофе можно рассмотреть предметы дизайнеров, а в Малом кабинете — архитектурные макеты.", "href": "https://news.ahouseproject.com/novyj-dom-a-house-v-bolshom-afanasevskom-pereulke/"}
@@ -210,6 +233,7 @@
       },
       {
         "name": "Дом предпринимателя",
+        "indexDescription": "Открытые встречи в Малом Каретном",
         "venue": "entrepreneur",
         "works": [
           {"title": "Как появился Дом в Малом Каретном", "text": "Дарья Белякова и Андрей Завадских рассказывают, зачем партнёрам понадобилось собственное пространство в Москве.", "href": "https://news.ahouseproject.com/dom-predprinimatelya-intervyu-dari-belyakovoi-i-andreya-zavadskih/"}

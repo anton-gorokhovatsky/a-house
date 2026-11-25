@@ -37,7 +37,7 @@ const fileSizeFormat = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1
 
 export async function renderPrintArchive(editions, getFileSize) {
   const navigation = editions.map(edition =>
-    `<a href="#${escape(edition.archiveAnchor || edition.seriesId)}">${escape(edition.edition)}</a>`
+    `<a href="#${escape(edition.archiveAnchor || edition.seriesId)}">${escape(edition.archiveLabel || edition.edition)}</a>`
   ).join('');
   const groups = await Promise.all(editions.map(async edition => {
     const anchor = escape(edition.archiveAnchor || edition.seriesId);
@@ -56,7 +56,7 @@ export async function renderPrintArchive(editions, getFileSize) {
         <p>${escape(issue.description)}</p><div class="press-page-links">${files.join('')}</div></div></article>`;
     }));
     return `<section id="${anchor}" class="print-series" aria-labelledby="${anchor}-heading">
-      <h3 id="${anchor}-heading">${escape(edition.edition)}</h3>
+      <h3 id="${anchor}-heading">${escape(edition.archiveLabel || edition.edition)}</h3>
       ${edition.archiveNote ? '<p>' + escape(edition.archiveNote) + '</p>' : ''}
       <div class="print-issues">${cards.join('\n')}</div>
     </section>`;

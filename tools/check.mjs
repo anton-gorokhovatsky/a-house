@@ -23,6 +23,11 @@ const countExpected = '<p>19\u00a0<em>архитектурных</em> бюро �
 if (typesetText(countSample) !== countExpected) {
   errors.push('A count must stay with its noun or first adjective, including across markup');
 }
+const role = '<p>Сооснователь и генеральный директор 12 <em>STOREEZ</em>, но под другим названием.</p>';
+const formattedRole = '<p>Сооснователь и\u00a0генеральный директор 12\u00a0<em>STOREEZ</em>, но\u00a0под\u00a0другим названием.</p>';
+if (typesetText(role) !== formattedRole) {
+  errors.push('Keep 12 STOREEZ and short connectives together across inline tags');
+}
 if (typesetText('<p>на стройплощадки</p>') !== '<p>на\u00a0строй\u00adплощадки</p>') {
   errors.push('Narrow screens need a natural break inside стройплощадки');
 }

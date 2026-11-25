@@ -16,11 +16,24 @@ function figure(photo, first = false) {
   return `<figure>${image(photo, first)}${photo.caption ? '<figcaption>' + escape(photo.caption) + '</figcaption>' : ''}</figure>`;
 }
 
+function partnershipFormat(format) {
+  const headingTarget = format.id ? ` id="${escape(format.id)}" tabindex="-1"` : '';
+  return `<article class="institution-format${format.photo ? ' institution-format-photo editorial-pair' : ''}">
+    <div>
+      <h3 class="editorial-pair-title"${headingTarget}>${escape(format.title)}</h3>
+      <p>${escape(format.text)}</p>
+      ${links(format.links)}
+    </div>
+    ${format.photo ? figure(format.photo) : ''}
+  </article>`;
+}
+
 function sectionContent(section) {
   const paragraphs = (section.paragraphs || []).map(text => '<p>' + escape(text) + '</p>').join('\n');
   const items = section.entries ? '<dl class="institution-entries">' + section.entries.map(entry =>
     '<div><dt' + (entry.id ? ' id="' + escape(entry.id) + '"' : '') + '>' + (entry.href ? link({ href: entry.href, label: entry.title }) : escape(entry.title)) + '</dt><dd>' + escape(entry.text) + links(entry.links) + '</dd></div>'
   ).join('\n') + '</dl>' : '';
+  const formats = section.formats ? '<div class="institution-formats">' + section.formats.map(partnershipFormat).join('\n') + '</div>' : '';
   const people = section.people ? '<ul class="institution-people" role="list">' + section.people.map(person =>
     `<li class="editorial-pair">${image(person)}<div><h3 class="editorial-pair-title">${escape(person.name)}</h3>${person.role ? '<p>' + escape(person.role).replace(/\(\d{4}–\d{4}\)/g, '<span class="person-years">$&</span>') + '</p>' : ''}</div></li>`
   ).join('\n') + '</ul>' : '';
@@ -30,7 +43,7 @@ function sectionContent(section) {
     <p class="institution-film-status" role="status"></p>
     <a class="institution-film-link" href="https://www.youtube.com/watch?v=${escape(section.video)}">Смотреть фильм на YouTube</a>` : '';
   const program = section.program ? '<!-- VENUE PROGRAM ' + section.program + ' -->' : '';
-  return paragraphs + program + items + people + links(section.links) + photos + video;
+  return paragraphs + program + items + formats + people + links(section.links) + photos + video;
 }
 
 export function isInstitutionPage(slug) {
@@ -40,7 +53,7 @@ export function isInstitutionPage(slug) {
 export function renderInstitutionPage(slug) {
   const page = institutionPages[slug];
   const sections = page.sections.map(section => `
-    <section class="institution-section${section.people ? ' institution-section-people' : ''}" id="${escape(section.id)}" aria-labelledby="${escape(section.id)}-title">
+    <section class="institution-section${section.people ? ' institution-section-people' : ''}${section.formats ? ' institution-section-formats' : ''}" id="${escape(section.id)}" aria-labelledby="${escape(section.id)}-title">
       <h2 id="${escape(section.id)}-title">${escape(section.title)}</h2>
       <div class="institution-copy">${sectionContent(section)}</div>
     </section>`).join('\n');

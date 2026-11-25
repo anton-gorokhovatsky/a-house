@@ -2,6 +2,7 @@
   {
     "seriesId": "a-news",
     "edition": "A–News",
+    "archiveLabel": "Газета A–News",
     "latest": {
       "anchor": "friend-a-news",
       "number": 8,

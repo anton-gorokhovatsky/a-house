@@ -157,6 +157,40 @@
   margin-top: .35rem;
 }
 
+.institution-formats {
+  container: partnership-formats / inline-size;
+  display: grid;
+  gap: var(--group);
+}
+
+.institution-format > div { min-inline-size: 0; }
+.institution-format h3 { scroll-margin-block-start: 1rem; overflow-wrap: break-word; }
+.home-page .institution-format p { max-inline-size: 62ch; margin-block-start: .5em; text-wrap: pretty; }
+.home-page .institution-format .institution-links { margin-block-start: .5em; }
+
+.institution-format-photo {
+  display: grid;
+  gap: var(--story-gap);
+}
+.institution-format figure { margin: 0; max-inline-size: 27rem; }
+.institution-format img { display: block; inline-size: 100%; block-size: auto; }
+
+@container partnership-formats (min-width: 40rem) {
+  .institution-format-photo { grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); }
+}
+
+@media (width > 61.25em) {
+  .institution-section-formats > h2 { position: sticky; inset-block-start: 1rem; }
+}
+
+.partnership-parent-link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  margin-block-end: .5rem;
+  font: var(--label-weight) var(--note-size)/1.4 var(--text);
+}
+
 .institution-page .institution-people {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 29rem), 1fr));

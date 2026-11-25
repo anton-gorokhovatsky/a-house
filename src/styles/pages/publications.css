@@ -54,6 +54,7 @@
   line-height: var(--leading-lead); text-wrap: pretty;
 }
 .press-page section, .partnership-stories section { margin-block-start: var(--chapter); }
+.press-page :is(#print-archive, #books, #distribution, #online) { scroll-margin-block-start: 1rem; }
 .home-page :is(.press-page,.partnership-stories) section h2 { margin-bottom: .65em; }
 .press-page picture, .press-page img { display: block; width: 100%; height: auto; }
 .press-inner, .partnership-inner { container: publication-content / inline-size; }
@@ -92,11 +93,12 @@
 .press-partner-edition { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--story-gap); align-items: start; margin-block-start: var(--group); }
 .press-partner-edition picture { max-inline-size: 14rem; }
 .home-page .press-partner-edition h3 { margin: 0 0 .35em; }
-.home-page .press-page .publisher-services { margin-block: 0 var(--story-gap); }
+.home-page .press-page .publisher-services { margin-block: var(--group) 0; }
 @container publication-content (min-width: 36em) {
   .press-partner-edition { grid-template-columns: minmax(0,14rem) minmax(0,36rem); gap: var(--group); }
 }
 .home-page .press-page-links { display: flex; flex-wrap: wrap; gap: .2em 1.3em; align-items: baseline; margin-top: .65em; }
+.home-page .press-related-links a { color: var(--quiet); }
 .press-page-links a { display: inline-block; max-width: 100%; padding-block: max(.35em,calc((44px - 1.46em) / 2)); }
 .home-page .home-editorial .press-page-links a.press-file { text-decoration: none; }
 .press-distribution { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--group); align-items: start; overflow-wrap: anywhere; }

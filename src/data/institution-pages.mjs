@@ -169,7 +169,7 @@ export const institutionPages = {
     sections: [
       {
         id: 'formats', title: 'Форматы партнёрства',
-        entries: [
+        formats: [
           {
             id: 'rec2309705331',
             title: 'Книги и газеты',
@@ -177,9 +177,11 @@ export const institutionPages = {
             links: [link('Партнёрская газета A–Focus', '@@ROOT@@press/#a-focus'), link('Как устроен первый номер A–Kids', '@@ROOT@@tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/')]
           },
           {
+            id: 'special-projects',
             title: 'Спецпроекты и мероприятия',
             text: 'A–House проводит выставки, ужины, концерты и деловые встречи вместе с партнёрами.',
-            links: [link('Посмотреть спецпроекты', '@@ROOT@@special_projects/')]
+            links: [link('Примеры спецпроектов', '@@ROOT@@special_projects/')],
+            photo: photo('DSCF1659_2_8-3ba4976fd60a.webp', 1761, 1765, 'Гости разговаривают в зале. Одна из участниц держит газету.', 'Гости на фоне надписи «Москва 2030».')
           },
           {
             id: 'rec2309704211',
@@ -192,8 +194,7 @@ export const institutionPages = {
             text: 'Клубы и компании могут проводить встречи и презентации в Доме A–House в Большом Афанасьевском переулке.',
             links: [link('Условия резидентства', '@@ROOT@@residents/#residency')]
           }
-        ],
-        photos: [photo('DSCF1659_2_8-3ba4976fd60a.webp', 1761, 1765, 'Посетители встречаются в зале события A–House')]
+        ]
       }
     ]
   }

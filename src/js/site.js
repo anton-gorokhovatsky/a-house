@@ -66,7 +66,8 @@ let followingAnchor = false;
 document.addEventListener('click', event => {
   const link = event.target.closest('a[href]');
   if (reduced.matches || !link?.hash || link.origin !== location.origin || link.pathname !== location.pathname ||
-      link.search !== location.search || link.matches('.skip-content, .calendar-results-shortcut') || event.button !== 0 ||
+      link.search !== location.search || link.matches('.skip-content, .calendar-results-shortcut') ||
+      link.closest('[data-instant-anchors]') || event.button !== 0 ||
       event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || link.hasAttribute('download') ||
       (link.target && link.target !== '_self')) return;
   followingAnchor = true;
@@ -236,7 +237,8 @@ document.addEventListener('click', event => {
   if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   const link = event.target.closest('a[href]');
   if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self') || !/^https?:$/.test(link.protocol)) return;
-  if (link.origin === location.origin && link.pathname === location.pathname && link.search === location.search) return;
+  const samePage = link.origin === location.origin && link.pathname === location.pathname && link.search === location.search;
+  if (samePage && (!link.hash || link.hash === location.hash || !link.closest('[data-instant-anchors]'))) return;
   // The responsive archive separately restores the corresponding visible occurrence of an article.
   if (archiveList?.contains(link) && link.origin === location.origin && /\/tpost\//.test(link.pathname)) {
     if (history.state?.visitorReturn) {
@@ -248,17 +250,17 @@ document.addEventListener('click', event => {
   }
   const matches = [...document.links].filter(item => item.href === link.href);
   const visitorReturn = { from: location.href, href: link.href, occurrence: matches.indexOf(link), top: link.getBoundingClientRect().top };
+  if (samePage) visitorReturn.fragment = true;
   // WebKit can otherwise jump back to the fragment after restoring the visible link.
-  const restoreFragment = location.hash && !header?.contains(link) && history.scrollRestoration === 'auto';
+  const restoreFragment = !samePage && location.hash && !header?.contains(link) && history.scrollRestoration === 'auto';
   if (restoreFragment) visitorReturn.restoreAutomaticScroll = true;
   history.replaceState({ ...history.state, visitorReturn }, '');
   if (restoreFragment) history.scrollRestoration = 'manual';
 });
 
-window.addEventListener('pageshow', event => {
+function restoreVisitor(returning) {
   const entry = history.state?.visitorReturn;
   if (!entry) return;
-  const returning = event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
   const state = { ...history.state };
   delete state.visitorReturn;
   history.replaceState(state, '');
@@ -295,6 +297,13 @@ window.addEventListener('pageshow', event => {
     target.focus({ preventScroll: true });
     if (target === link) window.scrollBy({ top: link.getBoundingClientRect().top - entry.top, behavior: 'instant' });
   });
+}
+
+window.addEventListener('pageshow', event => {
+  restoreVisitor(event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward');
+});
+window.addEventListener('hashchange', event => {
+  if (event.newURL === location.href && history.state?.visitorReturn?.fragment) restoreVisitor(true);
 });
 
 if (archiveList) {
