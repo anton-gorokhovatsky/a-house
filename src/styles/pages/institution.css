@@ -52,7 +52,7 @@
 .home-page .institution-intro .institution-lead {
   margin-top: 1.25rem;
   max-width: 46ch;
-  font: var(--reading-weight) var(--type-lead)/var(--leading-lead) var(--text);
+  font: var(--reading-weight) var(--type-lead)/var(--leading-lead) var(--pro-text);
   hyphens: manual;
   overflow-wrap: break-word;
 }
