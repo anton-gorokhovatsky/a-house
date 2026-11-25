@@ -168,18 +168,28 @@ function prepareConsentDocuments(html) {
   });
 }
 
+export async function readEventCatalog() {
+  const [entries, programme] = await Promise.all(['data/events.json', 'data/mmoma-2026.json'].map(async name =>
+    JSON.parse(await source(name))));
+  const museumEvents = programme.events.map(event => ({
+    ...programme.defaults, ...event, end: event.start,
+    links: [...(event.links || []), ...programme.defaults.links]
+  }));
+  return [...entries, ...museumEvents].map(event => {
+    if (!event.venueId) return event;
+    const venue = venues[event.venueId];
+    if (!venue) throw new Error('Unknown venue ' + event.venueId + ' for event ' + event.id);
+    return { ...event, venue: venue.name, venueMap: venue.map };
+  });
+}
+
 export async function build(base = siteBase(process.env.SITE_BASE), { outputDirectory, env = process.env } = {}) {
   const versionLabel = siteVersion();
   const friend = membershipSettings('friend', env);
   const member = membershipSettings('member', env);
   const output = outputDirectory ?? file('dist');
   const delivery = await loadImageDelivery(projectRoot);
-  const events = JSON.parse(await source('data/events.json')).map(event => {
-    if (!event.venueId) return event;
-    const venue = venues[event.venueId];
-    if (!venue) throw new Error('Unknown venue ' + event.venueId + ' for event ' + event.id);
-    return { ...event, venue: venue.name, venueMap: venue.map };
-  });
+  const events = await readEventCatalog();
   const jobs = renderJobs(JSON.parse(await source('data/jobs.json')));
   const directions = JSON.parse(await source('data/projects.json'));
   const projectNavigation = directions.map(group =>

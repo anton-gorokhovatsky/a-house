@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { formatSiteVersion, membershipSettings, projectRoot, siteBase, standaloneAssetOrigins } from './build.mjs';
+import { formatSiteVersion, membershipSettings, projectRoot, readEventCatalog, siteBase, standaloneAssetOrigins } from './build.mjs';
 import { eventDestination, routesWithEvents } from './calendar.mjs';
 import { collectArchive, printArchiveFileNames } from './archive.mjs';
 import { typesetText } from './typography.mjs';
@@ -53,8 +53,10 @@ const allowedPrint = printArchiveFileNames(printEditions);
 for (const file of files) {
   if (file.startsWith('media/print/') && !allowedPrint.has(file.slice('media/print/'.length))) errors.push('Unlisted print archive file: ' + file);
 }
-const [pages, events] = await Promise.all(['routes.json', 'data/events.json'].map(async file =>
-  JSON.parse(await readFile(path.join(projectRoot, 'src', file), 'utf8'))));
+const [pages, events] = await Promise.all([
+  readFile(path.join(projectRoot, 'src/routes.json'), 'utf8').then(JSON.parse),
+  readEventCatalog()
+]);
 const archive = await collectArchive(pages, slug => readFile(path.join(projectRoot, 'src/pages', slug + '.html'), 'utf8'));
 const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
 const membershipPages = new Map([

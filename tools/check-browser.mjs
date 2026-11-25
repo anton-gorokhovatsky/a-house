@@ -3,7 +3,7 @@ import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
-import { membershipSettings, projectRoot, siteBase } from './build.mjs';
+import { membershipSettings, projectRoot, readEventCatalog, siteBase } from './build.mjs';
 import { eventDestination } from './calendar.mjs';
 import { previewServer } from './preview.mjs';
 import { checkMembershipTransport } from './check-membership.mjs';
@@ -90,7 +90,7 @@ async function checkAboutFilm(page) {
 }
 
 async function checkMobileExhibition(page) {
-  const events = JSON.parse(await readFile(path.join(projectRoot, 'src/data/events.json'), 'utf8'));
+  const events = await readEventCatalog();
   const feature = events.find(event => event.home === 'feature');
   if (!feature?.photos?.length || !feature.booking) return;
   const cover = feature.photos.find(photo => photo.mobileLead) || feature.photos[0];
