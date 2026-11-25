@@ -7,6 +7,9 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
     groups.get(field.name).push(field);
   }
 
+  const applicationResult = form.querySelector('[data-application-result]');
+  const submit = form.querySelector('button[type="submit"]');
+
   const programs = groups.get('offer');
   if (programs && !programs.some(option => option.checked)) {
     const requested = new URLSearchParams(location.search).get('offer');
@@ -105,6 +108,31 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
     return !problem;
   }
 
+  async function sendApplication() {
+    const body = new URLSearchParams(new FormData(form));
+    const editable = fields.filter(field => !field.disabled);
+    for (const field of editable) field.disabled = true;
+    submit.disabled = true;
+    applicationResult.textContent = 'Отправляем заявку…';
+    let invalid = false;
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST', headers: { Accept: 'application/json' }, body,
+        credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(55000)
+      });
+      invalid = response.status === 422;
+      if (!response.ok || (await response.json()).status !== 'accepted') throw new Error('No application receipt');
+      submit.hidden = true;
+      applicationResult.textContent = 'Заявка отправлена. Команда клуба свяжется с вами выбранным способом.';
+    } catch {
+      for (const field of editable) field.disabled = false;
+      submit.disabled = false;
+      applicationResult.textContent = invalid ? 'Проверьте заполнение анкеты. Введённые данные на месте.' :
+        'Не удалось подтвердить отправку. Данные остались в анкете. Попробуйте ещё раз.';
+    }
+    applicationResult.focus();
+  }
+
   form.noValidate = true;
   form.addEventListener('focusout', event => {
     const field = event.target;
@@ -115,7 +143,7 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
     if (controls?.some(field => field.hasAttribute('aria-invalid'))) validate(controls);
   });
   form.addEventListener('submit', event => {
-    if (form.method.toLowerCase() !== 'post' || !form.hasAttribute('action') ||
+    if (submit.disabled || form.method.toLowerCase() !== 'post' || !form.hasAttribute('action') ||
         (basket && basket.querySelector('[data-order-line]').hidden)) {
       event.preventDefault();
       return;
@@ -127,6 +155,9 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
     if (firstInvalid) {
       event.preventDefault();
       firstInvalid.focus();
+    } else if (applicationResult) {
+      event.preventDefault();
+      void sendApplication();
     }
   });
 }

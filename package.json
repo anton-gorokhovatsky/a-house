@@ -14,5 +14,8 @@
   },
   "devDependencies": {
     "playwright-core": "1.62.1"
+  },
+  "dependencies": {
+    "nodemailer": "10.6.1"
   }
 }

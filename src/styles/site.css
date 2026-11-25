@@ -43,7 +43,7 @@ main:focus { outline: none; }
 .home-page .footer-meta {
   max-inline-size: var(--measure); margin: .85rem auto 0; padding-inline: var(--edge);
   color: #c5c5c5; font: 400 var(--note-size)/1.4 var(--text);
-  font-variant-numeric: tabular-nums; text-align: start;
+  text-align: start;
 }
 .home-page #t-footer .footer-meta p { margin: 0; color: inherit; font: inherit; }
 @media print { .footer-wordmark { display: none; } }

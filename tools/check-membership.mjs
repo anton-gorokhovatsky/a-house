@@ -5,8 +5,10 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import https from 'node:https';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import nodemailer from 'nodemailer';
 import { build } from './build.mjs';
 import { previewServer } from './preview.mjs';
+import { createApplicationHandler } from '../server/member-application.mjs';
 
 async function listen(server, protocol) {
   server.listen(0, '127.0.0.1');
@@ -16,10 +18,10 @@ async function listen(server, protocol) {
 
 const declinedEmail = 'retry@example.invalid';
 
-function receiveForm(received) {
+function receiveOrder(received) {
   return async (request, response) => {
     const html = { 'Content-Type': 'text/html; charset=utf-8' };
-    if (request.method === 'POST' && ['/order', '/application'].includes(request.url)) {
+    if (request.method === 'POST' && request.url === '/order') {
       const chunks = [];
       for await (const chunk of request) chunks.push(chunk);
       const fields = Object.fromEntries(new URLSearchParams(Buffer.concat(chunks).toString('utf8')));
@@ -29,7 +31,7 @@ function receiveForm(received) {
       } else {
         response.writeHead(303, { Location: '/received' + request.url }).end();
       }
-    } else if (request.method === 'GET' && ['/received/order', '/received/application'].includes(request.url)) {
+    } else if (request.method === 'GET' && request.url === '/received/order') {
       response.writeHead(200, html).end('<h1>Принято локальным обработчиком</h1>');
     } else if (request.method === 'GET' && ['/terms', '/consent'].includes(request.url)) {
       response.writeHead(200, html).end('<h1>Тестовый документ</h1>');
@@ -43,13 +45,18 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
   const root = await mkdtemp(path.join(tmpdir(), 'a-house-form-'));
   const servers = [];
   let context;
+  let nativeContext;
   try {
     const cert = path.join(root, 'cert.pem');
     const key = path.join(root, 'key.pem');
     execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
       '-subj', '/CN=127.0.0.1', '-keyout', key, '-out', cert], { stdio: 'ignore' });
     const received = [];
-    const receiver = https.createServer({ cert: await readFile(cert), key: await readFile(key) }, receiveForm(received));
+    const order = receiveOrder(received);
+    let application;
+    const receiver = https.createServer({ cert: await readFile(cert), key: await readFile(key) }, (request, response) => {
+      return request.url === '/application' ? application(request, response) : order(request, response);
+    });
     servers.push(receiver);
     const api = await listen(receiver, 'https');
     const consentText = 'Принимаю условия тестовой формы';
@@ -64,6 +71,14 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
     const preview = previewServer(variant, base);
     servers.push(preview);
     const site = await listen(preview, 'http');
+    const mailer = nodemailer.createTransport({ streamTransport: true, buffer: true });
+    let attempts = 0;
+    const delivered = [];
+    application = createApplicationHandler({ siteURL: site + base, consentURL: api + '/consent', deliver: async message => {
+      if (++attempts === 1) throw new Error('Simulated mail gateway failure');
+      const packed = await mailer.sendMail({ ...message, from: 'club@example.invalid', to: 'team@example.invalid' });
+      delivered.push({ message, packed });
+    } });
     context = await browser.newContext({ ...contextOptions, ignoreHTTPSErrors: true });
     const allowed = new Set([site, api]);
     await context.route('**/*', route => allowed.has(new URL(route.request().url()).origin) ? route.continue() : route.abort());
@@ -78,7 +93,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
       await page.goto(site + base + (friend ? 'press/archive/' : 'club/#programs'));
       const destination = friend
         ? page.locator('#print-archive').getByRole('link', { name: 'Оформить подписку A–Friend' })
-        : page.getByRole('link', { name: 'Подать заявку по программе A–Patron' });
+        : page.getByRole('link', { name: 'Заполнить анкету по программе A–Patron' });
       await destination.click();
       await page.waitForURL(entry);
       const form = page.locator('#' + kind + '-form');
@@ -109,13 +124,17 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         assert.match(offer, /12\s000\s₽/);
         assert.match(offer, /за\s+3\s+месяца/);
       } else {
-        assert.match((await page.locator('#member-intro').innerText()).replace(/\s+/g, ' '), /оставьте контакты/);
+        assert.match((await page.locator('#member-intro').innerText()).replace(/\s+/g, ' '), /укажите, как с вами связаться/);
         assert.equal(await form.locator('[name="offer"]:checked').inputValue(), 'patron');
         await field('company').fill('Тестовое бюро');
         await form.locator('[name="connect"][value="Email"]').check();
+        await field('sphere').fill('Архитектура');
+        await field('profession').fill('Архитектор');
+        await field('recommendations').fill('Тестовый участник клуба');
+        await form.locator('textarea[name="comment"]').fill('Тест <письма>\nВторая строка.');
       }
       const email = field('email');
-      const goodEmail = kind + '+reader@example.invalid';
+      const goodEmail = friend ? 'friend+reader@example.invalid' : 'member`reader@example.invalid';
       await field('name').fill(name);
       await field('phone').fill(phone);
       await email.fill('reader');
@@ -147,19 +166,66 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         await email.fill(goodEmail);
         await consent.check();
       }
+      if (!friend) {
+        const status = form.getByRole('status');
+        const [failure] = await Promise.all([page.waitForResponse(api + endpoint), submit.click()]);
+        assert.equal(failure.status(), 503);
+        await status.filter({ hasText: 'Не удалось подтвердить отправку.' }).waitFor();
+        assert.equal(page.url(), entry);
+        for (const [key, value] of Object.entries({ name, phone, email: goodEmail, company: 'Тестовое бюро',
+          sphere: 'Архитектура', profession: 'Архитектор', recommendations: 'Тестовый участник клуба' })) {
+          assert.equal(await field(key).inputValue(), value, 'Preserved club form ' + key);
+        }
+        assert.equal(await form.locator('[name="offer"]:checked').inputValue(), 'patron');
+        assert.equal(await form.locator('[name="connect"]:checked').inputValue(), 'Email');
+        assert.equal(await form.locator('[name="comment"]').inputValue(), 'Тест <письма>\nВторая строка.');
+        assert.ok(await consent.isChecked());
+        const [receipt] = await Promise.all([page.waitForResponse(api + endpoint), submit.click()]);
+        assert.equal(receipt.status(), 200);
+        await status.filter({ hasText: 'Заявка отправлена.' }).waitFor();
+        assert.equal(page.url(), entry);
+        assert.ok(await submit.isHidden());
+        assert.equal(delivered.length, 1);
+        const [{ message, packed }] = delivered;
+        assert.equal(message.subject, 'Заявка в клуб A–House · A–Patron');
+        assert.equal(message.replyTo.address, goodEmail);
+        assert.deepEqual(packed.envelope.to, ['team@example.invalid']);
+        assert.match(packed.message.toString(), /Content-Type: multipart\/alternative/i);
+        for (const value of [name, phone, goodEmail, 'Тестовое бюро', 'По почте', 'Архитектура', 'Архитектор', 'Тестовый участник клуба', 'Тест <письма>\nВторая строка.']) {
+          assert.ok(message.text.includes(value));
+        }
+        assert.ok(message.html.includes('Тест &lt;письма&gt;<br>Вторая строка.'));
+        nativeContext = await browser.newContext({ ...contextOptions, ignoreHTTPSErrors: true, javaScriptEnabled: false });
+        const nativePage = await nativeContext.newPage();
+        await nativePage.goto(entry);
+        const nativeForm = nativePage.locator('#member-form');
+        const data = new URLSearchParams(receipt.request().postData());
+        for (const [key, value] of data) {
+          if (['offer', 'connect', 'consent'].includes(key)) {
+            await nativeForm.locator('[name="' + key + '"][value="' + value + '"]').check();
+          } else {
+            await nativeForm.locator('[name="' + key + '"]').fill(value);
+          }
+        }
+        const [replay] = await Promise.all([nativePage.waitForResponse(api + endpoint), nativeForm.locator('button[type="submit"]').click()]);
+        assert.equal(replay.status(), 200);
+        await nativePage.getByRole('heading', { name: 'Заявка отправлена' }).waitFor();
+        assert.equal(delivered.length, 1, 'Repeating the same submission should not duplicate mail');
+        continue;
+      }
       await Promise.all([page.waitForURL(api + '/received' + endpoint), submit.click()]);
       await page.getByRole('heading', { name: 'Принято локальным обработчиком' }).waitFor();
       const expected = { name, phone, email: goodEmail, consent: '1' };
-      if (friend) Object.assign(expected, { product: 'A-Friend', quantity: '2', workarea: 'Урбанистика', comment: 'Сертификат для получателя' });
-      else Object.assign(expected, { offer: 'patron', company: 'Тестовое бюро', connect: 'Email' });
+      Object.assign(expected, { product: 'A-Friend', quantity: '2', workarea: 'Урбанистика', comment: 'Сертификат для получателя' });
       const last = received.at(-1);
-      assert.equal(received.length, count + (friend ? 2 : 1));
+      assert.equal(received.length, count + 2);
       assert.equal(last.path, endpoint);
       assert.equal(last.type, 'application/x-www-form-urlencoded');
       for (const [key, value] of Object.entries(expected)) assert.equal(last.fields[key], value, kind + ' ' + key);
     }
-    console.log('Membership transport verified: local HTTPS POST, rejection and retry, two confirmed handoffs.');
+    console.log('Membership transport verified: HTTPS orders, club email, rejection, retained data and retry.');
   } finally {
+    await nativeContext?.close();
     await context?.close();
     for (const server of servers) server.close();
     await rm(root, { recursive: true, force: true });

@@ -1021,10 +1021,8 @@ async function checkClubApplication(page) {
   assert.equal(await programs.count(), 3);
   const card = programs.nth(1);
   const programName = await card.getByRole('heading').innerText();
-  const memberOpen = Boolean(membershipSettings('member'));
-  assert.equal(await card.locator('.club-application-status').count(), memberOpen ? 0 : 1);
-  const action = memberOpen ? 'Подать заявку' : 'Посмотреть анкету';
-  const application = card.getByRole('link', { name: action + ' по программе ' + programName });
+  assert.equal(await card.locator('.club-application-status').count(), 0);
+  const application = card.getByRole('link', { name: 'Заполнить анкету по программе ' + programName });
   await application.evaluate(async link => {
     await document.fonts.ready;
     link.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -1046,7 +1044,10 @@ async function checkClubApplication(page) {
   const selected = form.getByRole('radio', { name: programName, exact: true });
   assert.ok(await selected.isChecked(), 'The selected club program must follow the visitor into the form');
   const intro = await page.locator('#member-intro').innerText();
-  assert.match(intro.replace(/\s+/g, ' '), memberOpen ? /оставьте контакты/ : /^Приём заявок на сайте закрыт/);
+  assert.match(intro.replace(/\s+/g, ' '), /укажите, как с вами связаться/);
+  assert.equal(await form.locator('.membership-optional-group [name]:visible').count(), 4);
+  assert.equal(await form.locator('a[href$="/politic_a-com/"]').count(), 0);
+  assert.equal(await page.locator('.footer-legal a[href$="/politic_a-com/"]').count(), 1);
   await checkMembershipForm(page, 'member');
   await page.goBack();
   await card.waitFor();
@@ -1054,9 +1055,8 @@ async function checkClubApplication(page) {
   await page.waitForFunction(({ href, top }) => document.activeElement?.href === href &&
     Math.abs(document.activeElement.getBoundingClientRect().top - top) <= 2 && history.scrollRestoration === 'auto', position);
   await page.goto(url + '#services-checkout');
-  const friendOpen = Boolean(membershipSettings('friend'));
-  assert.equal(await page.locator('#friend-availability').count(), friendOpen ? 0 : 1);
-  assert.equal(await page.locator('#friend-form-heading').innerText(), friendOpen ? 'Оформить подписку' : 'Форма заказа');
+  assert.equal(await page.locator('#friend-availability').count(), 0);
+  assert.equal(await page.locator('#friend-form-heading').innerText(), 'Оформление подписки');
   await checkMembershipForm(page, 'friend');
 }
 

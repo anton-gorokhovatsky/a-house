@@ -14,6 +14,7 @@ import { renderJobs } from './jobs.mjs';
 import { collectArchive, renderHomeBookmarks, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
+import { clubPrograms } from '../src/data/club-programs.mjs';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const file = (...parts) => path.join(projectRoot, ...parts);
@@ -107,13 +108,16 @@ export function membershipSettings(kind, env = process.env) {
 function renderMembership(kind, template, agreementTemplate, settings) {
   const friend = kind === 'friend';
   const legal = { ...settings, kind, termsLabel: friend ? 'Условия покупки' : 'Условия вступления' };
-  const fields = {
-    formAttributes: settings ? `method="post" action="${escape(settings.action)}"` :
-      `method="dialog" aria-describedby="${friend ? 'friend-availability' : 'member-intro'}"`,
-    agreements: settings ? agreementTemplate.replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : `<div class="membership-field">
-      <p class="home-links"><a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${kind}-documents">Политика обработки персональных данных</a></p>
+  const policyLink = `<a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${kind}-documents">Политика обработки персональных данных</a>`;
+  const agreements = settings ? agreementTemplate
+    .replace('{{policyLink}}', friend ? policyLink : '')
+    .replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : friend ? `<div class="membership-field">
+      <p class="home-links">${policyLink}</p>
       <p id="${kind}-documents" class="membership-hint">Документ откроется в новой вкладке.</p>
-    </div>`,
+    </div>` : '';
+  const fields = {
+    formAttributes: settings ? `method="post" action="${escape(settings.action)}"` : 'method="dialog"',
+    agreements,
     submitState: settings ? '' : ' disabled'
   };
   return template.replace(/\{\{(formAttributes|agreements|submitState)\}\}/g, (_, key) => fields[key]);
@@ -211,16 +215,15 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const digitalEditions = new Intl.ListFormat('ru').format(printEditions.filter(issue => issue.latest).map(issue => issue.edition));
   const friendEditions = `Полные выпуски ${digitalEditions} в PDF можно читать в приложении A–House.`;
   const friendExtras = 'В подписку также входят путеводители, подборки фильмов, ресторанов и спектаклей, дайджесты событий, трансляции с международных площадок и приглашения на выставки A–House.';
-  const memberClosed = 'Приём заявок на сайте закрыт.';
-  const memberIntro = member ? 'Выберите программу и оставьте контакты для связи с командой клуба.' :
-    memberClosed + ' Можно посмотреть анкету.';
   const friendAction = friend ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
   const period = env.A_FRIEND_PERIOD?.trim();
   const orderForm = renderMembership('friend', friendTemplate, agreements, friend)
     .replace('{{friendUnitPrice}}', String(friendPrice)).replace('{{friendTotal}}', priceLabel);
+  const programOptions = Object.entries(clubPrograms).map(([id, name]) =>
+    `<label><input type="radio" name="offer" value="${id}" required aria-describedby="member-offer-error"><span>${escape(name)}</span></label>`);
   const applicationForm = renderMembership('member', memberTemplate, agreements, member)
-    .replace('<!-- MEMBER PROGRAMS -->', () => memberPrograms);
+    .replace('<!-- MEMBER PROGRAMS -->', () => memberPrograms.replace('<!-- CLUB PROGRAM OPTIONS -->', programOptions.join('\n  ')));
   if (!outputDirectory) await rm(output, { recursive: true, force: true, maxRetries: 2 });
   // A caller building an alternate variant must supply a new directory.
   await mkdir(output);
@@ -310,11 +313,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
-      .replaceAll('{{memberIntro}}', memberIntro)
-      .replaceAll('{{memberAction}}', member ? 'Подать заявку' : 'Посмотреть анкету')
-      .replaceAll('<!-- CLUB AVAILABILITY -->', member ? '' : `<p class="club-application-status">${memberClosed}</p>`)
-      .replace('<!-- FRIEND AVAILABILITY -->', friend ? '' : '<p id="friend-availability" class="membership-availability">Оплата на сайте пока недоступна.</p>')
-      .replace('{{friendFormHeading}}', friend ? 'Оформить подписку' : 'Форма заказа')
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
       .replace(/<!-- VENUE PROGRAM (\w+) -->/g, (_, key) => renderVenueProgram(events, venues[key].name, base))
@@ -370,11 +368,13 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       : scriptTags;
     const values = {
       TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug), THEME_SCRIPT:urls.get('js/theme.js'),
+      REFERRER_POLICY:page.slug === 'member' && member ? 'strict-origin' : 'no-referrer',
+      CONNECT_SOURCE:escape((page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
       FORM_ACTION:escape((home ? friend : page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
-    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
+    const content = shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|REFERRER_POLICY|CONNECT_SOURCE|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base);
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);
   }
   await writeFile(path.join(output,'.nojekyll'),'');

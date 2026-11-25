@@ -49,8 +49,6 @@
 }
 .home-page .club-programs p { max-width: 34em; }
 .home-page .club-programs p + p { margin-block-start: .65em; }
-.home-page .club-programs p.club-application-status { margin-block-start: 1em; color: var(--quiet); }
-.home-page .club-programs .club-application-status + .club-apply { margin-block-start: 0; }
 
 .home-page .club-opening p a {
   text-decoration: underline; text-decoration-thickness: 1px;
