@@ -5,13 +5,13 @@
 .membership-intro { container: membership-intro / inline-size; }
 .friend-edition { display: none; }
 .friend-edition:target { display: block; scroll-margin-block-start: 1rem; }
-.membership-intro:has(.friend-edition:target) > .home-kicker { display: none; }
 .home-page .membership-intro .friend-archive-return { display: inline-block; min-height: 44px; padding-block: .4rem; font-size: var(--note-size); text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
 .home-page .membership-intro:has(.friend-edition:target) .friend-archive-all { display: none; }
 .home-page .membership-intro :is(h1,h2) {
-  margin: .25em 0 0; font: 400 var(--lead-size)/1.04 var(--display);
+  margin: 0; font: 400 var(--lead-size)/1.04 var(--display);
   text-wrap: balance; overflow-wrap: break-word;
 }
+.home-page .membership-intro:has(> .home-kicker, > .friend-edition:target) :is(h1,h2) { margin-block-start: .25em; }
 @container membership-intro (max-width: 12em) {
   .home-page .membership-intro :is(h1,h2) { font-size: var(--chapter-size); }
   .membership-intro :is(h1,h2) .project-name { white-space: normal; overflow-wrap: anywhere; }
