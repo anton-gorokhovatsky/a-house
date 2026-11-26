@@ -36,25 +36,55 @@ async function queryAs(login, sql, values = []) {
     return (await tx.query(sql, values)).rows;
   });
 }
-const sheet = async login => (await queryAs(login, 'select public.jury_final_sheet() as data'))[0].data;
-const save = async (login, work, answers, comment, revision) => (await queryAs(login,
+const legacySheet = async login => (await queryAs(login, 'select public.jury_final_sheet() as data'))[0].data;
+const legacySave = async (login, work, answers, comment, revision) => (await queryAs(login,
   'select public.jury_save_final_ballot($1,$2,$3,$4) as data', [work, JSON.stringify(answers), comment, revision]))[0].data;
-const regular = { brief: 4, art: 5, ergonomics: 0, economics: 3, landscape: null };
-const tech = { ...regular, equipment: 2, feasibility: 4 };
+const oldAnswers = { brief:4, art:5, ergonomics:0, economics:3, landscape:null };
 const probe = works[14].id;
+await legacySave('jury-02', probe, oldAnswers, 'До обновления', 0);
+await db.exec(await readFile(new URL('voting-50-50.sql', import.meta.url), 'utf8'));
+const currentRubric = 'final_50_50';
+const sheet = async login => (await queryAs(login, 'select public.jury_final_rubric_sheet(null) as data'))[0].data;
+const save = async (login, work, answers, comment, revision, rubric = currentRubric) => (await queryAs(login,
+  'select public.jury_save_rubric_ballot($1,$2,$3,$4,$5) as data', [rubric, work, JSON.stringify(answers), comment, revision]))[0].data;
+const activate = rubric => db.query('update public.jury_final_control set active_rubric=$1 where singleton', [rubric]);
+const stats = async () => (await db.query('select * from public.jury_final_work_summary where work_id=$1', [probe])).rows[0];
+assert.equal((await sheet('jury-02')).rubric, 'original');
+assert.deepEqual((await sheet('jury-02')).ballots[0].answers, oldAnswers);
+await db.query('update public.jury_final_rubrics set criteria_url=$1 where id=$2', ['https://docs.google.com/document/d/fixture',currentRubric]);
+await activate(currentRubric);
+assert.equal((await legacySheet('jury-02')).accepting, false);
+await assert.rejects(legacySave('jury-02', probe, oldAnswers, 'Вчерашняя вкладка', 1), { code:'PT403' });
+assert.equal((await sheet('jury-02')).ballots.length,0);
+assert.equal(Number((await stats()).ballot_count),0);
+const regular = { concept:0 };
+const tech = { concept:0, technical_review:4 };
 assert.equal((await sheet('jury-08')).role, 'observer');
-assert.equal((await sheet('jury-03')).criteria.length, 7);
-assert.equal((await sheet('jury-01')).criteria.length, 5);
+assert.deepEqual((await sheet('jury-03')).criteria.map(c=>[c.key,c.weight]), [['concept',50],['technical_review',50]]);
+assert.deepEqual((await sheet('jury-01')).criteria.map(c=>c.key), ['concept']);
 await assert.rejects(save('jury-08', probe, regular, '', 0), { code: '42501' });
 await assert.rejects(save('jury-02', probe, tech, '', 0), { code: '22023' });
-await assert.rejects(save('jury-02', probe, { ...regular, brief: 6 }, '', 0), { code: '22023' });
-await assert.rejects(save('jury-02', probe, { ...regular, economics: null }, '', 0), { code: '22023' });
+await assert.rejects(save('jury-02', probe, { concept:6 }, '', 0), { code: '22023' });
+await assert.rejects(save('jury-02', probe, { concept:null }, '', 0), { code: '22023' });
+await assert.rejects(save('jury-03', probe, regular, '', 0), { code: '22023' });
 await assert.rejects(queryAs('jury-02', 'select * from public.jury_final_ballots'), { code: '42501' });
-for (const login of ['jury-01', 'jury-02', 'jury-04', 'jury-05']) await save(login, probe, regular, '', 0);
-const stats = async () => (await db.query('select * from public.jury_final_work_summary where work_id=$1', [probe])).rows[0];
+for (const [login, concept] of [['jury-01',1],['jury-02',3],['jury-04',4],['jury-05',5]]) {
+  await save(login, probe, { concept }, '', 0);
+}
 assert.equal((await stats()).working_score, null);
-await save('jury-03', probe, tech, '', 0);
-assert.equal(Number((await stats()).working_score), 3.75);
+await save('jury-03', probe, { concept:2, technical_review:4 }, '', 0);
+assert.equal(Number((await stats()).working_score),3.5);
+assert.equal((await stats()).meets_prize_feasibility_threshold,true);
+await save('jury-03', probe, { concept:2, technical_review:3 }, '', 1);
+assert.equal((await stats()).meets_prize_feasibility_threshold,false);
+await db.exec(await readFile(new URL('rollback-50-50.sql', import.meta.url), 'utf8'));
+assert.equal((await legacySheet('jury-02')).accepting,true);
+assert.equal((await sheet('jury-02')).ballots[0].comment,'До обновления');
+assert.equal(Number((await stats()).ballot_count),1);
+await assert.rejects(save('jury-01', probe, regular, 'Old cached form', 1), {code:'PT412'});
+await activate(currentRubric);
+assert.deepEqual((await sheet('jury-02')).ballots[0].answers,{concept:3});
+assert.equal(Number((await stats()).ballot_count),5);
 await db.exec('update public.jury_final_control set accepting=false');
 await assert.rejects(save('jury-01', works[4].id, regular, '', 0), { code: 'PT403' });
 await db.exec('update public.jury_final_control set accepting=true');
@@ -91,13 +121,13 @@ async function intercept(context, fault) {
     if (!fixtures.has(login)) return reply(403);
     if (endpoint === '/auth/v1/logout') return reply(204);
     if (endpoint === '/rest/v1/jury_works') return reply(200, works);
-    if (endpoint.endsWith('/jury_final_sheet')) return reply(200, await sheet(login));
-    if (endpoint.endsWith('/jury_save_final_ballot')) {
+    if (endpoint.endsWith('/jury_final_rubric_sheet')) return reply(200, await sheet(login));
+    if (endpoint.endsWith('/jury_save_rubric_ballot')) {
       try {
-        const record = await save(login, body.p_work_id, body.p_answers, body.p_comment, body.p_revision);
+        const record = await save(login, body.p_work_id, body.p_answers, body.p_comment, body.p_revision, body.p_rubric);
         if (fault.lost) { fault.lost = false; return route.abort('failed'); }
         return reply(200, record);
-      } catch (e) { return reply(e.code === 'PT409' ? 409 : 403, { message:e.message }); }
+      } catch (e) { return reply(e.code.startsWith('PT') ? Number(e.code.slice(2)) : 403, { message:e.message }); }
     }
     if (endpoint.startsWith('/storage/v1/object/authenticated/')) return route.fulfill({ status:200, headers:cors, contentType:'application/pdf', body:pdf });
     return reply(404);
@@ -124,7 +154,13 @@ try {
       await signIn(login);
       await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
       await page.getByRole('link', { name:'Положение о работе жюри' }).waitFor();
-      assert.equal(await page.locator('.criterion').count(), mobile ? 5 : 7);
+      await page.getByRole('link', { name:'Критерии третьего этапа' }).waitFor();
+      const nominations = page.getByText('Четыре номинации конкурса',{exact:true});
+      await act(nominations);
+      assert.equal(await page.locator('.nominations dt:visible').count(),4);
+      assert.ok(await page.getByText(/Для этой номинации реализуемость необязательна/).isVisible());
+      await act(nominations);
+      assert.equal(await page.locator('.criterion').count(), mobile ? 1 : 2);
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
       const answers = mobile ? regular : tech;
       for (const [key, score] of Object.entries(answers)) {
@@ -149,7 +185,7 @@ try {
       await signIn(login);
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
-      assert.equal(await page.locator('input[name=ergonomics]:checked').inputValue(), '0');
+      assert.equal(await page.locator('input[name=concept]:checked').inputValue(), '0');
       await save(login, id, answers, 'Из другой вкладки', 1);
       await page.locator('textarea').fill('Моя правка');
       await act(submit);
@@ -166,6 +202,17 @@ try {
       await signIn('jury-07');
       await act(page.locator('a[id="' + id + '"]'));
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
+      await activate('original');
+      const stale = page.locator('input[name=concept][value="2"]');
+      if (mobile) await stale.locator('..').tap(); else { await stale.focus(); await stale.press('Space'); }
+      await act(submit);
+      await act(page.getByRole('button',{name:'Открыть действующий лист'}));
+      await page.locator('input[name=brief]').first().waitFor({state:'attached'});
+      assert.equal(await page.locator('.criterion').count(),5);
+      await activate(currentRubric);
+      await page.reload();
+      await signIn('jury-07');
+      await page.getByRole('link',{name:'Критерии третьего этапа'}).waitFor();
       if (mobile) {
         await page.addStyleTag({url:'/text-200.css'});
         const overflow = await page.evaluate(() => [...document.querySelectorAll('main *')].filter(el =>
@@ -173,7 +220,7 @@ try {
         assert.deepEqual(overflow, []);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       }
-      console.log((mobile ? 'iPhone 13 WebKit' : 'Chrome') + ': scoring, retry, return, sign in again, conflict, edit and separate accounts passed.');
+      console.log((mobile ? 'iPhone 13 WebKit' : 'Chrome') + ': 50/50, roles, nominations, retry, sign-in, conflict and rollback with preserved ballots passed.');
     } finally { await browser.close(); }
   }
 } finally {
