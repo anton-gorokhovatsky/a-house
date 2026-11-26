@@ -55,6 +55,10 @@
 
   function hashTarget() {
     const id = location.hash.slice(1);
+    if (id === 'services-checkout') {
+      history.replaceState(history.state, '', '#a-friend');
+      return document.getElementById('a-friend');
+    }
     const target = document.getElementById(id);
     if (!target && id.startsWith('job-')) {
       history.replaceState(history.state, '', '#jobs');

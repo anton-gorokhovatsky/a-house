@@ -228,9 +228,9 @@ async function checkReadingReturn(page, mobile) {
   for (const [path, section] of origins) {
     const origin = url + path;
     await page.goto(origin);
-    const subscription = page.locator(section + ' a[href$="#services-checkout"]');
+    const subscription = page.locator(section + ' a[href$="#a-friend"]');
     assert.equal((await subscription.innerText()).replace(/\s+/g, ' '), friendLabel);
-    assert.equal(await subscription.evaluate(link => link.href), url + '#services-checkout');
+    assert.equal(await subscription.evaluate(link => link.href), url + '#a-friend');
     const activationMarker = 'Subscription link position ';
     await subscription.evaluate(async (link, marker) => {
       await document.fonts.ready;
@@ -243,21 +243,33 @@ async function checkReadingReturn(page, mobile) {
     ]);
     const top = Number(activation.text().slice(activationMarker.length));
     assert.ok(Number.isFinite(top));
-    await page.waitForURL(url + '#services-checkout');
+    await page.waitForURL(url + '#a-friend');
     await form.waitFor();
     assert.equal(await page.locator('dialog[open]').count(), 0);
     assert.equal(await form.locator('input[name="product"]').getAttribute('value'), 'A-Friend');
-    assert.equal(await page.locator('#services-checkout').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
+    assert.equal(await page.locator('#a-friend').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
     await page.goBack();
     await page.waitForURL(origin);
     await page.waitForFunction(({link, top}) => link === document.activeElement &&
       Math.abs(link.getBoundingClientRect().top - top) < 4, { link: await subscription.elementHandle(), top });
   }
   await page.goForward();
-  await page.waitForURL(url + '#services-checkout');
+  await page.waitForURL(url + '#a-friend');
   await form.waitFor();
   await page.goto(url + '#friend');
   assert.ok(await form.isVisible(), 'The former subscription bookmark reaches the same terms and order');
+  await page.goto(url + '?bookmark=friend#services-checkout');
+  await page.waitForURL(url + '?bookmark=friend#a-friend');
+  assert.ok(await form.isVisible(), 'Published checkout bookmarks open the subscription at its current address');
+
+  const freshIssues = page.locator('#a-friend').getByRole('link', { name: 'Свежие выпуски', exact: true });
+  if (mobile) await freshIssues.tap();
+  else await freshIssues.press('Enter');
+  await page.waitForURL(url + 'press/#current-issues');
+  assert.ok(await page.locator('#current-issues-title').isVisible());
+  await page.goBack();
+  await page.waitForURL(url + '?bookmark=friend#a-friend');
+  assert.ok(await form.isVisible());
 }
 
 async function checkCalendar(page, mobile) {
@@ -1076,7 +1088,7 @@ async function checkClubApplication(page) {
   assert.equal(new URL(page.url()).hash, '#programs');
   await page.waitForFunction(({ href, top }) => document.activeElement?.href === href &&
     Math.abs(document.activeElement.getBoundingClientRect().top - top) <= 2 && history.scrollRestoration === 'auto', position);
-  await page.goto(url + '#services-checkout');
+  await page.goto(url + '#a-friend');
   assert.equal(await page.locator('#friend-availability').count(), 0);
   assert.equal(await page.locator('#friend-form-heading').innerText(), 'Оформление подписки');
   await checkMembershipForm(page, 'friend');
@@ -1159,7 +1171,7 @@ async function checkHomeRoutes(page, mobile) {
     return {fontFamily, fontSize, fontWeight, lineHeight};
   });
   let visitHeadingStyle;
-  for (const [anchor, title] of [['visit', 'Дома и адреса'], ['services-checkout', 'A–Friend']]) {
+  for (const [anchor, title] of [['visit', 'Дома и адреса'], ['a-friend', 'A–Friend']]) {
     await page.goto(url + '#' + anchor);
     assert.equal(await page.title(), title + ' — A–House');
     if (anchor === 'visit') visitHeadingStyle = await headingStyle('#visit-heading');
@@ -1278,7 +1290,7 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await friendLink.evaluate(link => link.closest('li').previousElementSibling?.querySelector('a')?.href), url + 'club/');
   if (mobile) await friendLink.tap();
   else await friendLink.press('Enter');
-  await page.waitForURL(url + '#services-checkout');
+  await page.waitForURL(url + '#a-friend');
   await page.locator('#friend-form').waitFor();
   assert.equal(await friendLink.getAttribute('aria-current'), 'true');
   assert.equal(await page.locator('dialog[open]').count(), 0);

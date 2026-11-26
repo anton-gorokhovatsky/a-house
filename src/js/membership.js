@@ -69,7 +69,7 @@ for (const form of document.querySelectorAll('form[data-membership-form]')) {
       const link = event.target.closest('a[href^="#"]');
       if (!empty || !link || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       const section = document.getElementById(link.hash.slice(1))?.closest('[data-home-section]');
-      if (section?.id === 'services-checkout') {
+      if (section && section.contains(form)) {
         empty = false;
         quantity.value = 1;
         displayQuantity();
