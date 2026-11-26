@@ -165,23 +165,37 @@ try {
       await page.goto(url + '#work/' + id);
       await signIn(login);
       await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
-      const nextSheet = () => page.locator('.sheet-bar').getByRole('button', { name: 'Следующий лист' });
-      const nextLarge = () => page.locator('dialog[open]').getByRole('button', { name: 'Следующий лист' });
-      const loaded = () => page.waitForFunction(() => document.querySelector('.sheet-preview img[src]')?.naturalWidth > 0 && document.querySelector('.sheets > .sheet-status')?.textContent === '');
+      const strip = page.locator('.sheet-strip');
+      const dialog = page.locator('dialog[open]');
+      const second = strip.locator('[data-page="2"]');
+      const loaded = number => page.waitForFunction(n => {
+        const img = document.querySelector('dialog[open] img');
+        return img?.naturalWidth && img.alt.endsWith(' ' + n) && !document.querySelector('dialog .sheet-status').textContent;
+      }, number);
       await act(page.getByRole('button', { name: 'Повторить загрузку листа' }));
-      await loaded();
-      await act(nextSheet());
-      await loaded();
-      assert.match(await page.locator('.sheet-preview img').getAttribute('alt'), /2$/);
-      await act(page.getByRole('button', { name: 'На весь экран' }));
-      await page.locator('dialog[open]').waitFor();
-      await act(nextLarge());
-      await loaded();
-      assert.equal(await nextLarge().getAttribute('aria-disabled'), 'true');
-      await act(page.getByRole('button', { name: 'Увеличить' }));
-      if (mobile) await act(page.getByRole('button', { name: 'Закрыть' }));
+      await strip.locator('[data-page="1"] img[src]').waitFor();
+      assert.equal(await strip.locator('button').count(), 3);
+      assert.equal(await page.getByRole('heading', { name: 'Листы проекта' }).count(), 0);
+      assert.equal(await page.getByRole('button', { name: 'Следующий лист' }).count(), 0);
+      const dimensions = await strip.evaluate(el => [el.clientWidth, el.scrollWidth, el.firstElementChild.clientWidth]);
+      assert.ok(dimensions[1] > dimensions[0] && dimensions[2] < dimensions[0]);
+      if (mobile) await second.scrollIntoViewIfNeeded();
+      else await strip.locator('button').first().press('ArrowRight');
+      await act(second);
+      await loaded(2);
+      const next = dialog.getByRole('button', { name: 'Следующий лист' });
+      await act(next);
+      await loaded(3);
+      await act(next);
+      await loaded(1);
+      await act(dialog.getByRole('button', { name: 'Увеличить' }));
+      assert.equal(await dialog.locator('.zoom-value').innerText(), '130 %');
+      await act(dialog.getByRole('button', { name: 'Сбросить' }));
+      assert.equal(await dialog.locator('.zoom-value').innerText(), '100 %');
+      if (mobile) await act(dialog.getByRole('button', { name: 'Закрыть' }));
       else await page.keyboard.press('Escape');
       await page.locator('dialog').waitFor({ state: 'hidden' });
+      await page.waitForFunction(() => document.activeElement?.dataset.page === '2');
       await page.getByRole('link', { name:'Положение о работе жюри' }).waitFor();
       assert.equal(await page.getByRole('link', { name:'Критерии третьего этапа' }).count(), 0);
       const guide = page.getByText('Что учитывать при оценке концепции', { exact:true });
@@ -283,9 +297,21 @@ try {
       if (mobile) {
         await page.addStyleTag({url:'/text-200.css'});
         const overflow = await page.evaluate(() => [...document.querySelectorAll('main *')].filter(el =>
-          el.getBoundingClientRect().right > innerWidth + 1).map(el => el.tagName + '.' + el.className));
+          !el.parentElement?.closest('.sheet-strip') && el.getBoundingClientRect().right > innerWidth + 1).map(el => el.tagName + '.' + el.className));
         assert.deepEqual(overflow, []);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        await page.setViewportSize({ width: 320, height: 728 });
+        const enlargedDialog = page.locator('dialog[open]');
+        await act(page.locator('.sheet-strip [data-page="1"]'));
+        await loaded(1);
+        const view = await enlargedDialog.evaluate(el => ({
+          imageHeight: el.querySelector('.sheet-pan').clientHeight,
+          height: el.clientHeight,
+          controlsEnd: el.querySelector('.sheet-controls').getBoundingClientRect().bottom,
+          widthFits: el.scrollWidth <= el.clientWidth
+        }));
+        assert.ok(view.imageHeight >= view.height * .45 && view.controlsEnd <= view.height + 1 && view.widthFits);
+        await act(enlargedDialog.getByRole('button', { name: 'Закрыть' }));
       }
       console.log((mobile ? 'iPhone 13 WebKit' : 'Chrome') + ': 50/50, roles, nominations, retry, sign-in, conflict and rollback with preserved ballots passed.');
     } finally { await browser.close(); }
