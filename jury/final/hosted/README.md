@@ -37,11 +37,11 @@ node jury/final/hosted/provision.mjs /private/contest/setup /private/contest/fin
 ```sh
 export JURY_SUPABASE_URL=https://PROJECT_REF.supabase.co
 export JURY_SUPABASE_PUBLISHABLE_KEY=sb_publishable_EXAMPLE
-node jury/final/hosted/build.mjs /tmp/a-house-jury-site
+node jury/final/hosted/build.mjs /tmp/a-house-jury-site --jury-path
 ```
 
-Публикуйте только файлы сборки. Браузерная проверка проходит путь от входа до PDF и обратно в эмуляции iPhone 13 и в Chrome.
+Публикуйте файлы сборки в корне сайта кабинета. Корень открывает `./jury/` и сохраняет ссылку на работу, если она была в адресе. При обновлении проекта на GitHub Pages сохраняйте назначенный сайту файл `CNAME`. Браузерная проверка проходит путь от входа до PDF и обратно в эмуляции iPhone 13 и в Chrome.
 
 ```sh
-node jury/final/hosted/check.mjs https://YOUR_PAGES_URL/ /private/contest/setup /private/contest/final
+node jury/final/hosted/check.mjs https://YOUR_PAGES_URL/jury/ /private/contest/setup /private/contest/final
 ```

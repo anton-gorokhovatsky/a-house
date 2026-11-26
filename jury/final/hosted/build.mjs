@@ -11,6 +11,9 @@ assert.match(publishableKey, /^sb_publishable_[a-zA-Z0-9_-]+$/);
 
 const output = process.argv[2];
 assert.ok(output, 'Specify an empty output directory.');
+const withJuryPath = process.argv[3] === '--jury-path';
+const entryDirectory = withJuryPath ? path.join(output, 'jury') : output;
+const assets = withJuryPath ? '../' : './';
 await mkdir(output, { mode: 0o755 });
 for (const filename of ['cabinet.css', 'logo.svg']) {
   await copyFile(new URL('../' + filename, import.meta.url), path.join(output, filename));
@@ -28,7 +31,13 @@ for (const [name, source] of Object.entries(modules)) {
   const versioned = source.replace(/(from '\.\/(?:config|views|voting)\.js)'/g, "$1?v=" + version + "'");
   await writeFile(path.join(output, name), versioned);
 }
-await writeFile(path.join(output, 'index.html'), `<!doctype html>
+if (withJuryPath) {
+  await mkdir(entryDirectory);
+  await copyFile(path.join(output, 'logo.svg'), path.join(entryDirectory, 'logo.svg'));
+  await copyFile(new URL('./redirect.html', import.meta.url), path.join(output, 'index.html'));
+  await copyFile(new URL('./redirect.js', import.meta.url), path.join(output, 'redirect.js'));
+}
+await writeFile(path.join(entryDirectory, 'index.html'), `<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -37,8 +46,8 @@ await writeFile(path.join(output, 'index.html'), `<!doctype html>
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src ${endpoint.origin}; form-action 'none'; base-uri 'none'">
 <title>Кабинет жюри · Меняя привычное</title>
-<link rel="stylesheet" href="./cabinet.css?v=${version}">
-<script type="module" src="./cabinet.js?v=${version}"></script>
+<link rel="stylesheet" href="${assets}cabinet.css?v=${version}">
+<script type="module" src="${assets}cabinet.js?v=${version}"></script>
 </head>
 <body>
 <div id="cabinet"><main class="scene"><div class="wrap content"><p role="status">Загрузка кабинета…</p><noscript>Для входа включите JavaScript.</noscript></div></main></div>
