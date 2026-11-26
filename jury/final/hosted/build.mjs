@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { signInContent } from '../views.mjs';
 
 const { JURY_SUPABASE_URL, JURY_SUPABASE_PUBLISHABLE_KEY: publishableKey } = process.env;
 const endpoint = new URL(JURY_SUPABASE_URL);
@@ -45,12 +46,16 @@ await writeFile(path.join(entryDirectory, 'index.html'), `<!doctype html>
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src ${endpoint.origin}; form-action 'none'; base-uri 'none'">
-<title>Кабинет жюри · Меняя привычное</title>
+<title>Вход для жюри · Меняя привычное</title>
 <link rel="stylesheet" href="${assets}cabinet.css?v=${version}">
+<link rel="modulepreload" href="${assets}views.js?v=${version}">
+<link rel="modulepreload" href="${assets}config.js?v=${version}">
+<link rel="modulepreload" href="${assets}voting.js?v=${version}">
 <script type="module" src="${assets}cabinet.js?v=${version}"></script>
 </head>
 <body>
-<div id="cabinet"><main class="scene"><div class="wrap content"><p role="status">Загрузка кабинета…</p><noscript>Для входа включите JavaScript.</noscript></div></main></div>
+<div id="cabinet">${signInContent({ logo: './logo.svg', method: 'dialog', action: '#', ready: false })}</div>
+<noscript><p>Для входа включите JavaScript.</p></noscript>
 </body>
 </html>
 `);

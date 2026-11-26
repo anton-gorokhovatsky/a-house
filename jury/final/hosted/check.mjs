@@ -51,7 +51,8 @@ async function useFixture(context) {
     if (endpoint.pathname === '/auth/v1/token') {
       const data = request.postDataJSON();
       const success = data.email === 'jury-01@jury.example.com' && data.password === juror.password;
-      return success ? reply({ json: { access_token: 'fixture-token', refresh_token: 'fixture-refresh', expires_in: 3600 } })
+      return success ? reply({ json: { access_token: 'fixture-token', refresh_token: 'fixture-refresh', expires_in: 3600,
+        user: { id: '00000000-0000-4000-8000-000000000001' } } })
         : reply({ status: 400, json: {} });
     }
     if (request.headers().authorization !== 'Bearer fixture-token') return reply({ status: 403 });
@@ -92,6 +93,7 @@ try {
       await filling('incorrect');
       await page.getByRole('alert').waitFor();
       assert.equal(await page.getByLabel('Логин', { exact: true }).inputValue(), juror.login);
+      assert.equal(await page.getByLabel('Пароль', { exact: true }).inputValue(), 'incorrect');
       await filling(juror.password);
       const open = button('Открыть PDF');
       await open.waitFor({ timeout: 20000 });

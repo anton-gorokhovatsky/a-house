@@ -43,6 +43,7 @@ const oldAnswers = { brief:4, art:5, ergonomics:0, economics:3, landscape:null }
 const probe = works[14].id;
 await legacySave('jury-02', probe, oldAnswers, 'До обновления', 0);
 await db.exec(await readFile(new URL('voting-50-50.sql', import.meta.url), 'utf8'));
+await db.exec(await readFile(new URL('organizer-comments.sql', import.meta.url), 'utf8'));
 const currentRubric = 'final_50_50';
 const sheet = async login => (await queryAs(login, 'select public.jury_final_rubric_sheet(null) as data'))[0].data;
 const save = async (login, work, answers, comment, revision, rubric = currentRubric) => (await queryAs(login,
@@ -80,6 +81,14 @@ assert.equal((await stats()).meets_prize_feasibility_threshold,false);
 await db.exec(await readFile(new URL('rollback-50-50.sql', import.meta.url), 'utf8'));
 assert.equal((await legacySheet('jury-02')).accepting,true);
 assert.equal((await sheet('jury-02')).ballots[0].comment,'До обновления');
+const comments = 'select * from jury_admin.comments';
+const organizerRow = (await db.query(comments)).rows[0];
+assert.equal(organizerRow['Работа'], works[14].title);
+assert.equal(organizerRow['Логин жюри'], 'jury-02');
+assert.equal(organizerRow['Комментарий'], 'До обновления');
+assert.equal(organizerRow['Тестовая запись'], false);
+assert.equal((await db.query("select has_schema_privilege('anon','jury_admin','usage') as granted")).rows[0].granted, false);
+assert.equal((await db.query("select has_schema_privilege('authenticated','jury_admin','usage') as granted")).rows[0].granted, false);
 assert.equal(Number((await stats()).ballot_count),1);
 await assert.rejects(save('jury-01', probe, regular, 'Old cached form', 1), {code:'PT412'});
 await activate(currentRubric);
@@ -116,7 +125,8 @@ async function intercept(context, fault) {
     const body = req.method() === 'POST' ? req.postDataJSON() : {};
     if (endpoint === '/auth/v1/token') {
       const name = body.email.split('@')[0];
-      return fixtures.has(name) && body.password === 'test' ? reply(200, { access_token:name, refresh_token:'fixture', expires_in:3600 }) : reply(400, {});
+      return fixtures.has(name) && body.password === 'test' ? reply(200, { access_token:name, refresh_token:'fixture', expires_in:3600,
+        user:{ id:fixtures.get(name) } }) : reply(400, {});
     }
     if (!fixtures.has(login)) return reply(403);
     if (endpoint === '/auth/v1/logout') return reply(204);
@@ -142,7 +152,7 @@ try {
       const context = await browser.newContext(mobile ? devices['iPhone 13'] : { viewport:{ width:1440, height:900 } });
       const fault = { lost:true };
       await intercept(context, fault);
-      const page = await context.newPage();
+      let page = await context.newPage();
       const act = loc => mobile ? loc.tap() : loc.press('Enter');
       const signIn = async who => {
         await page.getByLabel('Логин', { exact:true }).fill(who);
@@ -172,6 +182,21 @@ try {
       await act(page.getByRole('link',{name:'К списку работ'}));
       await act(page.locator('a[id="' + id + '"]'));
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
+      await page.reload();
+      await signIn('jury-08');
+      await page.getByText('Этот аккаунт даёт доступ к просмотру работ.').waitFor();
+      await act(page.getByRole('button', { name:'Выйти' }));
+      await signIn('jury-07');
+      assert.equal(await page.locator('textarea').inputValue(), '');
+      assert.equal(await page.locator('.criterion input:checked').count(), 0);
+      await act(page.getByRole('button', { name:'Выйти' }));
+      await page.close();
+      page = await context.newPage();
+      await page.goto(url + '#work/' + id);
+      await signIn(login);
+      assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
+      assert.equal(await page.locator('input[name=concept]:checked').inputValue(), '0');
+      assert.equal((await sheet(login)).ballots.some(b => b.work_id === id), false);
       const submit = page.locator('.save-ballot');
       await act(submit);
       await page.getByText(/Сервер не подтвердил сохранение/).waitFor();
