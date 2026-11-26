@@ -165,7 +165,7 @@ try {
       await signIn(login);
       await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
       await page.getByRole('link', { name:'Положение о работе жюри' }).waitFor();
-      await page.getByRole('link', { name:'Критерии третьего этапа' }).waitFor();
+      assert.equal(await page.getByRole('link', { name:'Критерии третьего этапа' }).count(), 0);
       const guide = page.getByText('Что учитывать при оценке концепции', { exact:true });
       await act(guide);
       await page.waitForFunction(() =>
@@ -248,7 +248,7 @@ try {
       assert.equal(await page.locator('.criterion').count(),5);
       await activate(currentRubric);
       await page.reload();
-      await page.getByRole('link',{name:'Критерии третьего этапа'}).waitFor();
+      await page.getByText('Критерии номинаций', { exact:true }).waitFor();
       if (mobile) {
         await page.addStyleTag({url:'/text-200.css'});
         const overflow = await page.evaluate(() => [...document.querySelectorAll('main *')].filter(el =>
