@@ -269,6 +269,12 @@ try {
       await act(page.getByRole('link',{ name:'К списку работ' }));
       await page.getByRole('link', { name: 'Регламент жюри' }).waitFor();
       assert.equal((await page.locator('.jury-welcome').innerText()).includes('требованиям'), !mobile);
+      const regulations = page.getByRole('link', { name: 'Регламент жюри' });
+      assert.match(await regulations.getAttribute('href'), /^blob:/);
+      const marked = page.locator('a[id="' + id + '"]');
+      assert.equal(await marked.locator('.work-mark.is-scored svg').count(), 1);
+      assert.ok((await marked.ariaSnapshot()).includes('Оценена'));
+      assert.equal(await page.locator('.works .work-mark:not(.is-scored)').count(), 13);
       await act(page.getByRole('link', { name: 'Мой рейтинг работ' }));
       await page.locator('.ranking').waitFor();
       assert.equal(await page.locator('.ranking tbody tr').count(), 2);

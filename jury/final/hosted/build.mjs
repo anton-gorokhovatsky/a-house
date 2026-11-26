@@ -64,7 +64,7 @@ await writeFile(path.join(entryDirectory, 'index.html'), `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; font-src 'self' blob: ${contestFontOrigin}; img-src 'self' blob: data:; connect-src 'self' ${endpoint.origin} https://cloud-api.yandex.net; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; font-src 'self' blob: ${contestFontOrigin}; img-src 'self' blob: data:; connect-src 'self' ${endpoint.origin}; form-action 'none'; base-uri 'none'">
 <title>Вход для жюри · Меняя привычное</title>
 <link rel="preconnect" href="${contestFontOrigin}" crossorigin>
 <link rel="stylesheet" href="${assets}cabinet.css?v=${version}">
