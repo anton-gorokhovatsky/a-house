@@ -6,11 +6,6 @@ const originalDimensions = {
   'media/2023-10-17_200210-d98d7fee9957.jpg': {width: 1024, height: 1208},
   'media/2024-03-07_144932-6a3405f16f43.jpg': {width: 750, height: 453}
 };
-const tagLinks = /<a\b(?=[^>]*\bclass=["'][^"']*\bt-feed__post-popup__tag\b[^"']*["'])[^>]*>([\s\S]*?)<\/a>/gi;
-const paths = new Map([
-  ['Архитектура', 'architecture'], ['Выставки', 'exhibitions'], ['Дизайн', 'design'],
-  ['События', 'events'], ['Трансляции', 'broadcasts']
-]);
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
 
 export function renderPrintFileLink(href, label, metadata, context = '') {
@@ -261,19 +256,18 @@ function publicationCover(original) {
   return '<div class="publication-cover">' + sizeImages(content) + '</div>';
 }
 
-function renderPublication(page, original, topics) {
+export function renderPublication(page, original) {
   const related = relatedReading.get(page.slug);
   const relatedDate = related?.published ? '<span class="publication-meta">' + dateMarkup(related.published) + '</span>' : '';
-  const topicLinks = topics.map(topic => '<a href="@@ROOT@@' + escape(topic.slug) + '/">' + escape(topic.title) + '</a>');
+  const section = page.section ? '<span>' + escape(page.section) + '</span>' : '';
   const timestamps = [...original.matchAll(/<meta itemprop="date(?:Published|Modified)" content="[^"]+">/g)].map(([tag]) => tag).join('');
   return `<div class="home-page" id="allrecords">
     <!-- EDITORIAL HEADER -->
     <main id="site-content" class="home-editorial publication-reader" tabindex="-1">
       <article itemscope itemtype="https://schema.org/BlogPosting">
         ${timestamps}
-        <a class="publication-back" href="@@ROOT@@archive/">В архив материалов</a>
         <header class="publication-heading">
-          <div class="publication-meta">${[dateMarkup(page.published), ...topicLinks].filter(Boolean).join(' ')}</div>
+          <div class="publication-meta">${dateMarkup(page.published)}${section}</div>
           <h1 itemprop="headline">${escape(page.title)}</h1>
         </header>
         ${publicationCover(original)}
@@ -283,43 +277,6 @@ function renderPublication(page, original, topics) {
     </main>
     <!-- FOOTER -->
   </div>`;
-}
-
-export async function collectArchive(routes, readArticle) {
-  const articles = new Map();
-  const topics = new Map();
-  const source = routes.filter(page => page.slug.startsWith('tpost/'))
-    .sort((a,b) => (b.published || '').localeCompare(a.published || '') || a.title.localeCompare(b.title,'ru'));
-  const originals = await Promise.all(source.map(page => readArticle(page.slug)));
-  for (const [index, page] of source.entries()) {
-    const tags = new Set();
-    const articleTopics = [];
-    for (const [,contents] of originals[index].matchAll(tagLinks)) {
-      const title = contents.replace(/<[^>]*>/g, '').replace(/&nbsp;|&#160;/gi, ' ').replaceAll('&amp;', '&').trim();
-      if (!title || tags.has(title)) continue;
-      const directory = paths.get(title) || title.toLocaleLowerCase('ru').normalize('NFC')
-        .replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
-      if (!directory) continue;
-      const slug = 'archive/' + directory;
-      const topic = topics.get(slug) || {title, slug, articles:[]};
-      if (topic.title !== title) throw new Error('Two archive topics share ' + slug);
-      topic.articles.push(page.slug);
-      tags.add(title);
-      articleTopics.push(topic);
-      topics.set(slug, topic);
-    }
-    const html = renderPublication(page, originals[index], articleTopics);
-    articles.set(page.slug, {page, html, topics:articleTopics});
-  }
-  const main = routes.find(page => page.slug === 'archive');
-  const topicRoutes = [...topics.values()].map(topic => ({
-    ...main, slug:topic.slug, archiveTopic:topic, title:topic.title + ' — ' + main.title
-  }));
-  return {title: main.title, articles, topicRoutes};
-}
-
-function topicKey(topic) {
-  return topic.slug.slice('archive/'.length);
 }
 
 const pressBooksTitle = 'Книги A–Press';
@@ -348,7 +305,7 @@ export function renderPressBookmarks(newsHref) {
   ]);
 }
 
-export function renderHomeBookmarks(archive, base) {
+export function renderHomeBookmarks(base) {
   const bookmarks = [
     ['partnership', 'partnership/', 'Сотрудничество'],
     ['partnership-heading', 'partnership/', 'Сотрудничество'],
@@ -356,38 +313,7 @@ export function renderHomeBookmarks(archive, base) {
     ['rec2309704211', 'partnership/#rec2309704211', 'Городские пространства'],
     ['home-books', 'press/books/', 'Книги A–Press'],
     ['home-periodicals', 'press/#periodicals', 'Газеты и журналы'],
-    ['publications', 'archive/', archive.title],
-    ['publication-archive', 'archive/', archive.title],
-    ['archive-heading', 'archive/', archive.title],
-    ['issue-a-sport', 'press/#a-sport-02', 'A–Sport № 2 «Движение»'],
-    ...archive.topicRoutes.map(({archiveTopic: topic}) =>
-      ['publication-archive-' + topicKey(topic), topic.slug + '/', topic.title])
+    ['issue-a-sport', 'press/#a-sport-02', 'A–Sport № 2 «Движение»']
   ];
   return renderSectionBookmarks(bookmarks.map(([id, path, title]) => [id, base + path, title]));
-}
-
-function renderArchiveEntries(archive, topic, base) {
-  const slugs = topic ? topic.articles : [...archive.articles.keys()];
-  return slugs.map(slug => {
-    const {page,topics} = archive.articles.get(slug);
-    const date = dateMarkup(page.published);
-    const keys = topics.map(topicKey).join(' ');
-    const labels = topics.map(item => item.title).join(', ');
-    const meta = date + (labels && !topic ? '<small>' + escape(labels) + '</small>' : '');
-    return '<li data-archive-topics="' + escape(keys) + '"><div class="publication-meta">' + meta +
-      '</div><a class="word-underlined-link" href="' + escape(base + slug + '/') + '">' + escape(page.title) + '</a></li>';
-  }).join('\n');
-}
-
-export function renderArchiveCatalog(archive, base, current) {
-  const options = [null, ...archive.topicRoutes.map(page => page.archiveTopic).sort((a,b) => a.title.localeCompare(b.title,'ru'))];
-  const links = options.map(topic => {
-    const key = topic ? topicKey(topic) : '';
-    const slug = topic?.slug || 'archive';
-    const selected = topic?.slug === current?.slug ? ' aria-current="page"' : '';
-    return '<a href="' + escape(base + slug + '/') + '" data-archive-topic="' + escape(key) + '"' + selected +
-      '>' + escape(topic?.title || 'Все материалы') + '</a>';
-  });
-  return '<div class="publication-catalog"><nav class="archive-topics" aria-label="Рубрики архива">' + links.join('') + '</nav>' +
-    '<ol class="publication-list" aria-label="Публикации">' + renderArchiveEntries(archive, current, base) + '</ol></div>';
 }

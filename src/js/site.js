@@ -252,7 +252,7 @@ if (header) {
   }
 }
 
-const archiveList = document.querySelector('.publication-catalog, [data-page="special_projects"] main');
+const partnerProjects = document.querySelector('[data-page="special_projects"] main');
 
 // Browsers restore the URL on Back. Restore the place to continue reading or tabbing as well.
 document.addEventListener('click', event => {
@@ -261,8 +261,8 @@ document.addEventListener('click', event => {
   if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self') || !/^https?:$/.test(link.protocol)) return;
   const samePage = link.origin === location.origin && link.pathname === location.pathname && link.search === location.search;
   if (samePage && (!link.hash || link.hash === location.hash || !link.closest('[data-restore-fragment]'))) return;
-  // The responsive archive separately restores the corresponding visible occurrence of an article.
-  if (archiveList?.contains(link) && link.origin === location.origin && /\/tpost\//.test(link.pathname)) {
+  // Partner projects restore the corresponding visible occurrence of an article.
+  if (partnerProjects?.contains(link) && link.origin === location.origin && /\/tpost\//.test(link.pathname)) {
     if (history.state?.visitorReturn) {
       const state = { ...history.state };
       delete state.visitorReturn;
@@ -333,9 +333,8 @@ window.addEventListener('hashchange', event => {
   if (event.newURL === location.href && history.state?.visitorReturn?.fragment) restoreVisitor(true);
 });
 
-if (archiveList) {
-  const list = archiveList;
-  const articles = [...list.querySelectorAll('a[href]')].filter(link =>
+if (partnerProjects) {
+  const articles = [...partnerProjects.querySelectorAll('a[href]')].filter(link =>
     link.origin === location.origin && /\/tpost\/[^/]+\/?$/.test(link.pathname));
   const matchingLinks = path => articles.filter(link => link.pathname === path);
 

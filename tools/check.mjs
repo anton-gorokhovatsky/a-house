@@ -2,7 +2,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { formatSiteVersion, membershipSettings, projectRoot, readEventCatalog, siteBase } from './build.mjs';
 import { eventDestination, routesWithEvents } from './calendar.mjs';
-import { collectArchive, printArchiveFileNames } from './archive.mjs';
+import { printArchiveFileNames } from './archive.mjs';
 import { typesetText } from './typography.mjs';
 
 const dist = path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist'));
@@ -67,8 +67,7 @@ const [pages, events] = await Promise.all([
   readFile(path.join(projectRoot, 'src/routes.json'), 'utf8').then(JSON.parse),
   readEventCatalog()
 ]);
-const archive = await collectArchive(pages, slug => readFile(path.join(projectRoot, 'src/pages', slug + '.html'), 'utf8'));
-const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
+const routes = routesWithEvents(pages, events);
 const membershipPages = new Map([
   ['index.html', { kind: 'friend', settings: membershipSettings('friend') }],
   ['member/index.html', { kind: 'member', settings: membershipSettings('member') }]
@@ -77,6 +76,7 @@ const expectedFiles = routes.map(({slug}) => slug==='home' ? 'index.html' : slug
 const standaloneFiles = new Set(routes.filter(page => page.layout === 'standalone').map(page => page.slug + '/index.html'));
 const htmlFiles = [...files].filter(file => file.endsWith('.html'));
 for (const file of expectedFiles) if (!files.has(file)) errors.push('Missing page ' + file);
+if (htmlFiles.some(file => file.startsWith('archive/'))) errors.push('The former site-wide archive must not be published');
 const documents = new Map();
 const checkedStandaloneStyles = new Set();
 const routeTitles = new Map(routes.map(({slug, title}) => [base + slug + '/', title]));
@@ -117,15 +117,11 @@ for (const file of htmlFiles) {
       }
     }
   }
-  const topic = archive.topicRoutes.find(page => page.slug + '/index.html' === file)?.archiveTopic;
-  if (topic || file === 'archive/index.html') {
-    const articles = [...source.matchAll(/<li data-archive-topics="[^"]*">([\s\S]*?)<\/li>/g)]
-      .map(([, row]) => row.match(/<a\b[^>]*?\shref="([^"]+)"/)?.[1]);
-    const expected = (topic ? topic.articles : [...archive.articles.keys()]).map(slug => base + slug + '/');
-    if (JSON.stringify(articles) !== JSON.stringify(expected)) errors.push(file + ' has an incorrect selection of publications');
+  if (file.startsWith('tpost/') && !source.includes('itemprop="articleBody"')) {
+    errors.push(file + ' must keep the publication at its original address');
   }
-  if (file === 'index.html' && (source.includes('class="publication-catalog"') || source.includes('home-archived-issue'))) {
-    errors.push('The media overview must keep site articles and archived print issues in their own catalogues');
+  if (file === 'index.html' && source.includes('home-archived-issue')) {
+    errors.push('Archived print issues belong in the A–Press archive');
   }
   const head = source.slice(0, source.indexOf('</head>'));
   const standalone = standaloneFiles.has(file);

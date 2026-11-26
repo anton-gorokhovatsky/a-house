@@ -12,7 +12,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { collectArchive, renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
+import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 import { clubPrograms } from '../src/data/club-programs.mjs';
@@ -184,8 +184,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const [mediaKit, pressInterview] = await Promise.all([mediaKitPath, pressInterviewPath].map(name => stat(file(name))));
   const projectGroups = renderProjectDirectory(directions);
   const pages = JSON.parse(await source('routes.json'));
-  const archive = await collectArchive(pages, slug => source('pages/' + slug + '.html'));
-  const routes = routesWithEvents([...pages, ...archive.topicRoutes], events);
+  const routes = routesWithEvents(pages, events);
   const homeEvents = events.filter(event => event.home !== false);
   const program = renderProgram(homeEvents, await source('partials/program-feature.html'), base);
   const comfort = events.find(event => event.id === 'designing-comfort');
@@ -251,7 +250,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const documents = new Set(['agreement', 'agreement2', 'rules', 'politic_a-com', 'mts_docs']);
   const pressPages = new Set(['press', 'press/archive', 'press/books']);
   const features = new Set(['special_projects', '404']);
-  const readerPage = page => page.slug === 'archive' || Boolean(page.archiveTopic) || archive.articles.has(page.slug);
+  const readerPage = page => page.slug.startsWith('tpost/');
   function pageStyles(page) {
     const {slug} = page;
     let style;
@@ -265,7 +264,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const cssFor = page => [...new Set([
     'media/fonts/ahouse-fonts.css',
     ...pageStyles(page), ...(clubPages.has(page.slug) ? ['styles/pages/home.css'] : []),
-    ...(page.slug === 'archive' || page.archiveTopic ? ['styles/pages/archive-list.css'] : []),
     'styles/site.css', 'styles/interactions.css', 'styles/services.css', 'styles/typography.css', externalLinksStyle, 'styles/theme.css'
   ])];
   const nearbyImages = 'js/nearby-images.js';
@@ -290,9 +288,9 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       continue;
     }
     const programPage = page.slug === 'calendar' || Boolean(page.event);
-    const template = page.event ? 'event' : page.archiveTopic ? 'archive' : page.slug;
-    const pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug)
-      : archive.articles.get(page.slug)?.html ?? await source('pages/' + template + '.html');
+    const template = page.event ? 'event' : page.slug;
+    let pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug) : await source('pages/' + template + '.html');
+    if (readerPage(page)) pageContent = renderPublication(page, pageContent);
     const markup = pageContent.includes('<!-- EDITORIAL HEADER -->') ? pageContent :
       '<div id="allrecords" class="t-records home-page">\n<!-- EDITORIAL HEADER -->\n' + pageContent + '\n<!-- FOOTER -->\n</div>';
     const body = markup
@@ -350,11 +348,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       })
       .replace('{{siteVersion}}', versionLabel)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
-      .replace('<!-- ARCHIVE PARENT -->', () => page.archiveTopic
-        ? '<a class="home-kicker" href="' + base + 'archive/">' + escape(archive.title) + '</a>' : '')
-      .replace('{{archiveHeading}}', () => escape(page.archiveTopic?.title ?? archive.title))
-      .replace('<!-- HOME BOOKMARKS -->', () => renderHomeBookmarks(archive, base))
-      .replace('<!-- PUBLICATION CATALOG -->', () => renderArchiveCatalog(archive, base, page.archiveTopic));
+      .replace('<!-- HOME BOOKMARKS -->', () => renderHomeBookmarks(base));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => footerTheme);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => footerTheme + '</footer>');

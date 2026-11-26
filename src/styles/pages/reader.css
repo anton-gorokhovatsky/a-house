@@ -1,4 +1,4 @@
-.home-page :is(.publication-reader, .archive-index) {
+.home-page .publication-reader {
   --reading-weight: 400;
   inline-size: 100%;
   max-inline-size: 67rem;
@@ -7,7 +7,6 @@
   padding: var(--page-entry) var(--edge) var(--chapter);
   font: var(--reading-weight) var(--copy-size)/var(--leading-reading) var(--pro-text);
 }
-.home-page .publication-reader { padding-block-start: var(--page-entry-with-back-link); }
 .home-page .publication-heading h1 {
   margin: .3em 0 0;
   color: var(--ink);
@@ -25,7 +24,7 @@
     hyphenate-limit-chars: 8 4 4;
   }
 }
-.publication-reader .publication-heading { container: reader-title / inline-size; margin: 1.2rem 0 var(--group); }
+.publication-reader .publication-heading { container: reader-title / inline-size; margin: 0 0 var(--group); }
 @container reader-title (max-width: 12em) {
   .publication-heading h1 .project-name { white-space: normal; overflow-wrap: anywhere; letter-spacing: -.01em; }
 }
@@ -37,21 +36,20 @@
   color: var(--quiet);
   font: var(--label-weight) var(--note-size)/1.4 var(--text);
 }
-.home-page :is(.publication-reader, .archive-index) a {
+.home-page .publication-reader a {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: var(--link-underline-color);
   text-decoration-thickness: .06em;
   text-underline-offset: var(--link-underline-offset);
 }
-.publication-back, .publication-meta a, .publication-issue a {
+.publication-issue a {
   display: inline-block;
   max-inline-size: 100%;
   min-block-size: 44px;
   padding-block: max(.22em, calc((44px - 1.4em) / 2));
   overflow-wrap: anywhere;
 }
-.publication-back { font-size: var(--note-size); font-weight: var(--label-weight); }
 .publication-reader :is(.publication-cover, .publication-body, .publication-issue) {
   max-inline-size: 65ch;
   margin-inline: auto;

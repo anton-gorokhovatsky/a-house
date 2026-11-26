@@ -120,7 +120,8 @@ export async function checkTheme(browser, url) {
     assert.deepEqual(await reading(), beforeMenu);
     assert.equal(await page.locator('body').getAttribute('data-page'), 'a-friend');
     assert.equal(await page.locator('#friend-name').inputValue(), 'Анна');
-    for (const path of ['calendar/', 'calendar/light-of-time/', 'club/', 'member/', 'agreement/', 'archive/', '404.html']) {
+    for (const path of ['calendar/', 'calendar/light-of-time/', 'club/', 'member/', 'agreement/', '404.html',
+      'tpost/gmkzl28hy1-otkritii-lektorii-stemps-ahouse-rabota-s/']) {
       await page.goto(url + path);
       assert.ok(await choice(page, 'Тёмная').isChecked(), path + ' keeps the manual theme');
       assert.equal(await canvas(page), dark);
@@ -128,9 +129,6 @@ export async function checkTheme(browser, url) {
         assert.equal(await contacts(page), dark, path + ' uses one dark surface for content and contacts');
       }
     }
-    await page.goto(url + 'archive/');
-    await page.waitForURL(url + 'archive/');
-    await page.locator('.archive-index .publication-list a').first().tap();
     await checkReadable(page.getByRole('main').getByRole('heading', {level: 1}));
     const other = await context.newPage();
     await other.goto(url + 'member/');

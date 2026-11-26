@@ -449,7 +449,7 @@ async function checkVisitorLinks(page, mobile) {
   if (mobile) await checkAboutFilm(page);
   await page.goBack();
   await page.waitForFunction(() => document.activeElement?.pathname?.endsWith('/about/'));
-  assert.equal(await page.locator('#publication-archive').isVisible(), false);
+  assert.equal(await page.locator('#publication-archive').count(), 0);
   assert.equal(await page.locator('#projects').isVisible(), false, 'The catalogue opens from navigation as its own view');
   const projects = projectGroups.flatMap(group => group.projects);
   const selected = ['news','directory'].map(key => projects.find(project => project.overview === key));
@@ -675,20 +675,6 @@ async function checkVisitorLinks(page, mobile) {
       });
     }
   }
-  await page.goto(url + '#publications');
-  await page.waitForURL(url + 'archive/');
-  const archive = page.getByRole('main');
-  assert.ok(await archive.getByRole('heading', {name: 'Архив материалов A–House', level: 1}).isVisible());
-  const all = await archive.locator('.publication-list li').count();
-  const design = archive.getByRole('link', {name: 'Дизайн', exact: true});
-  await activate(design);
-  await page.waitForURL(url + 'archive/design/');
-  const rows = archive.locator('.publication-list li');
-  assert.ok(await rows.count() > 0 && await rows.count() < all);
-  assert.ok(await rows.evaluateAll(items => items.every(item => item.dataset.archiveTopics.split(' ').includes('design'))));
-  await page.goBack();
-  await page.waitForURL(url + 'archive/');
-  assert.equal(await rows.count(), all);
 }
 
 async function checkFooterDocuments(page, mobile) {
@@ -987,45 +973,34 @@ async function checkEditorialGrouping(page) {
     'The issue date and title must sit beside the cover or directly below it');
 }
 
-async function checkArchiveReading(page) {
-  const missing = await page.goto(url + 'missing-publication-for-browser-check/');
-  assert.equal(missing.status(), 404);
-  await page.getByRole('main').getByRole('link', { name: /в архив материалов/i }).click();
-  await page.waitForURL(url + 'archive/');
-  const listing = page.getByRole('main').getByRole('list', {name: 'Публикации', exact:true});
-  const articles = listing.getByRole('link');
-  const index = Math.floor(await articles.count() / 2);
-  const entry = articles.nth(index);
-  const title = (await entry.textContent()).replace(/\s+/g, ' ').trim();
-  const address = await entry.evaluate(link => link.href);
-  assert.ok(title, 'The catalogue must name the article it links to');
-  await entry.scrollIntoViewIfNeeded();
-  await entry.focus();
-  const scroll = await page.evaluate(() => scrollY);
-  await entry.press('Enter');
-  await page.waitForURL(address);
+async function checkPublicationEntry(page, mobile) {
   const main = page.getByRole('main');
-  const heading = main.getByRole('heading', { name: title, level: 1, exact: true });
-  await heading.waitFor({ state: 'visible' });
-  const body = main.locator('[itemprop="articleBody"]');
-  await body.waitFor({ state: 'visible' });
-  if (!(await body.innerText()).trim()) {
-    const media = body.locator('img[src], video, [data-archive-video]').filter({ visible: true }).first();
-    assert.ok(await media.isVisible(), 'The selected publication must have visible text or editorial media');
+  for (const path of ['archive/', 'archive/design/']) {
+    const missing = await page.goto(url + path);
+    assert.equal(missing.status(), 404);
+    assert.equal(await main.getByRole('link').count(), 1);
   }
-  for (let visit = 0; visit < 2; visit++) {
-    await page.goBack();
-    await page.waitForFunction(({ address, scroll }) =>
-      document.activeElement?.href === address && Math.abs(scrollY - scroll) <= 2, { address, scroll });
-    await page.keyboard.press('Tab');
-    assert.ok(await articles.nth(index + 1).evaluate(link => link === document.activeElement), 'Tab must continue to the next publication');
-    await page.goForward();
-  }
-  await main.getByRole('link', { name: /в архив материалов/i }).click();
-  await page.waitForURL(url + 'archive/');
-  assert.ok(await listing.getByRole('link', { name: title, exact: true }).isVisible(),
-    'The archive must contain the same article on return');
+  const activate = link => mobile ? link.tap() : link.press('Enter');
+  await activate(main.getByRole('link', { name: 'На главную', exact: true }));
+  await page.waitForURL(url);
 
+  const about = url + 'about/';
+  await page.goto(about);
+  const entry = main.getByRole('link', { name: 'Как открылось первое пространство A–House', exact: true });
+  const address = url + 'tpost/hf4zfkc051-otkritie-ahouse/';
+  assert.equal(await entry.evaluate(link => link.href), address);
+  await activate(entry);
+  await page.waitForURL(address);
+  await main.getByRole('heading', { name: 'Открытие A–House', level: 1, exact: true }).waitFor();
+  assert.ok(await main.locator('[itemprop="articleBody"]').isVisible());
+  assert.equal(await main.locator('header a').count(), 0, 'The source rubric is article metadata');
+  await page.goBack();
+  await page.waitForURL(about);
+  await page.waitForFunction(href => document.activeElement?.href === href, address);
+}
+
+async function checkPublicationReading(page, mobile) {
+  await checkPublicationEntry(page, mobile);
   await page.goto(url + 'tpost/svnul2ze71-pervii-vipusk-detskogo-zhurnala-akids-so/');
   const covers = page.getByRole('group', { name: 'Выбрать изображение' }).getByRole('button');
   assert.equal(await covers.count(), 2);
@@ -1293,9 +1268,10 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(new URL(await article.evaluate(link => link.href)).origin, 'https://news.ahouseproject.com');
   await page.goBack();
   await page.waitForURL(url + '#media');
-  assert.equal(await media.locator('.publication-list, .print-issue, .press-book').count(), 0);
+  assert.equal(await media.locator('.print-issue, .press-book').count(), 0);
   await page.evaluate(() => { location.hash = 'publication-archive-design'; });
-  await page.waitForURL(url + 'archive/design/');
+  await page.waitForURL(url + '#publication-archive-design');
+  assert.ok(await section('program').isVisible(), 'The retired bookmark remains on the homepage');
   await page.goBack();
   await page.waitForURL(url + '#media');
   await page.waitForFunction(() => document.title === 'A–House');
@@ -1348,6 +1324,7 @@ async function checkWebKit() {
   // In macOS WebKit, Option-Tab includes links in the default tab order.
   const nextTab = process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
   const phone = await browserPage({ ...devices['iPhone 13'], reducedMotion: 'reduce' });
+  await checkPublicationEntry(phone, true);
   await checkMobileExhibition(phone);
   await phone.goto(url + '#visit');
   await checkSkipLink(phone, 'visit', nextTab);
@@ -1413,7 +1390,7 @@ async function checkChrome() {
       await checkArchiveMonths(futurePage);
       await futurePage.close();
     }
-    await checkArchiveReading(page);
+    await checkPublicationReading(page, mobile);
     await checkCalendar(page, mobile);
     await page.goto(url + 'calendar/a-forum-2026/');
     const report = page.getByRole('main').getByRole('link', {name: 'Репортаж A–House On Air'});
@@ -1425,7 +1402,7 @@ async function checkChrome() {
     await checkFeaturePages(page, url, {mobile});
     await checkClubApplication(page);
     await checkConsentReturn(page);
-    console.log('Archive reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');
+    console.log('Publication reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');
     await page.close();
   }
 }
