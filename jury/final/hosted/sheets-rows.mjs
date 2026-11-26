@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict';
+
+const moscow = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: 'Europe/Moscow', dateStyle: 'short', timeStyle: 'medium', hourCycle: 'h23',
+});
+
+function sheetDate(value) {
+  assert.ok(typeof value === 'string' && Number.isFinite(Date.parse(value)), 'Invalid report timestamp');
+  return moscow.format(new Date(value)); // Year first keeps Moscow times sortable as well as readable.
+}
+
+export const tabs = [
+  {
+    name: 'Сводка', columns: ['Работа', 'Рабочий балл', 'Голосов', 'Концепция, среднее', 'Техоценка МТС', 'Порог для премии\n(техоценка ≥ 4)'],
+    widths: [159, 115, 77, 139, 132, 160], note: 'Шкала 0–5. Для рабочего балла нужны минимум 4 голоса и техоценка. Вес каждой части — 50 %. Для архитектурного эксперимента реализуемость необязательна.',
+  },
+  {
+    name: 'Оценки жюри', columns: ['Работа', 'Логин жюри', 'Комментарий', 'Концепция', 'Техоценка МТС', 'Тип записи', 'Изменено (МСК)'],
+    widths: [169, 108, 353, 95, 128, 100, 169], note: 'Шкала 0–5. Одна строка — последняя сохранённая оценка члена жюри за работу. Тестовые записи исключены из сводки.',
+  },
+];
+
+export function reportRows(report) {
+  assert.equal(report?.rubric, 'final_50_50', 'Unexpected jury rubric');
+  assert.ok(Array.isArray(report.works) && report.works.length > 0, 'No finalist catalogue');
+  assert.ok(Array.isArray(report.ballots), 'Missing ballots');
+  const ids = new Set(report.works.map(w => w.work_id));
+  assert.equal(ids.size, report.works.length, 'Duplicate finalist');
+  const saved = new Set();
+  for (const b of report.ballots) {
+    assert.ok(ids.has(b.work_id) && typeof b.login === 'string' && b.login.length, 'Unknown ballot');
+    assert.equal(typeof b.is_test, 'boolean', 'Missing ballot type');
+    const pair = JSON.stringify([b.work_id, b.login]);
+    assert.ok(!saved.has(pair), 'Duplicate ballot');
+    saved.add(pair);
+  }
+  return {
+    time: sheetDate(report.as_of),
+    bodies: [report.works.map(w => [w.title, w.working_score, w.ballot_count, w.mean_concept, w.mean_feasibility,
+      w.meets_prize_feasibility_threshold == null ? null : w.meets_prize_feasibility_threshold ? 'Достигнут' : 'Ниже порога']),
+    report.ballots.map(b => [b.title, b.login, b.comment || null, b.concept, b.technical_score,
+      b.is_test ? 'Тестовая' : 'Жюри', sheetDate(b.updated_at)])],
+  };
+}
+
+function cell(value) {
+  if (value == null) return {};
+  if (typeof value === 'number') {
+    assert.ok(Number.isFinite(value), 'Invalid numeric cell');
+    return { userEnteredValue: { numberValue: value } };
+  }
+  assert.equal(typeof value, 'string', 'Invalid text cell');
+  return { userEnteredValue: { stringValue: value } };
+}
+
+// Replace both report bodies in one Sheets batch. The bounded columns belong to this export.
+// An updateCells range also clears old values left beyond the new snapshot, including deleted tests.
+export function makeSheetUpdates(report, sheets) {
+  const { time, bodies } = reportRows(report);
+  return tabs.flatMap((tab, index) => {
+    const sheet = sheets.find(s => s.title === tab.name);
+    assert.ok(sheet && Number.isInteger(sheet.sheetId) && sheet.rowCount >= 3, 'Missing results tab');
+    const sheetId = sheet.sheetId;
+    const rowCount = Math.max(sheet.rowCount, bodies[index].length + 2);
+    const updates = [];
+    if (rowCount > sheet.rowCount) updates.push({ appendDimension: { sheetId, dimension: 'ROWS', length: rowCount - sheet.rowCount } });
+    updates.push({ updateCells: { start: { sheetId, rowIndex: 0, columnIndex: 1 },
+      rows: [{ values: [cell(time)] }], fields: 'userEnteredValue' } });
+    updates.push({ updateCells: { range: { sheetId, startRowIndex: 2, endRowIndex: rowCount,
+      startColumnIndex: 0, endColumnIndex: tab.columns.length },
+      rows: bodies[index].map(row => ({ values: row.map(cell) })), fields: 'userEnteredValue' } });
+    if (index === 1 && bodies[index].length) updates.push({ autoResizeDimensions: { dimensions: {
+      sheetId, dimension: 'ROWS', startIndex: 2, endIndex: bodies[index].length + 2,
+    } } });
+    return updates;
+  });
+}
