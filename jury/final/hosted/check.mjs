@@ -10,7 +10,7 @@ const live = Boolean(privateSetup);
 const fixtureOrigin = 'https://aaaaaaaaaaaaaaaaaaaa.supabase.co';
 const files = new Map([
   ['index.html', 'text/html'], ['cabinet.css', 'text/css'], ['logo.svg', 'image/svg+xml'],
-  ['views.js', 'text/javascript'], ['config.js', 'text/javascript'], ['cabinet.js', 'text/javascript']
+  ['views.js', 'text/javascript'], ['config.js', 'text/javascript'], ['cabinet.js', 'text/javascript'], ['voting.js', 'text/javascript']
 ]);
 let server;
 let url = site;
