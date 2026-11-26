@@ -1,8 +1,16 @@
 .external-link-ending { white-space: nowrap; }
 .external-link-mark {
   display: inline-block;
-  inline-size: .75em;
-  block-size: .75em;
-  margin-inline-start: .23em;
+  inline-size: var(--external-link-size, .75em);
+  block-size: var(--external-link-size, .75em);
+  margin-inline-start: var(--external-link-gap, .23em);
   vertical-align: .04em;
+}
+.external-link-mark > path { stroke-width: var(--external-link-stroke, 1.2px); }
+
+/* Match the thinner strokes and closer spacing of the serif display headings. */
+:where(.home-editorial :is(h1, h2, h3), .home-project-feature h4) .external-link-mark {
+  --external-link-size: .64em;
+  --external-link-gap: .19em;
+  --external-link-stroke: .92px;
 }
