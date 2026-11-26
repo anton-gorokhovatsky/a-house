@@ -217,6 +217,20 @@ async function checkExpiredProgram(page) {
   assert.ok(await past.locator('#light-of-time').isVisible(), 'Earlier home links must reach the archived event');
 }
 
+async function checkMembershipLayout(page) {
+  const layouts = [];
+  for (const route of ['a-friend/', 'member/?offer=member']) {
+    await page.goto(url + route);
+    layouts.push(await page.locator('.membership-layout').evaluate(layout => {
+      return ['.membership-intro', '.membership-request'].map(selector => {
+        const { left, width } = layout.querySelector(selector).getBoundingClientRect();
+        return [left, width];
+      });
+    }));
+  }
+  assert.deepEqual(layouts[0], layouts[1], 'A–Friend and the club application share the same column edges and widths');
+}
+
 async function checkReadingReturn(page, mobile) {
   const friendLabel = membershipSettings('friend') ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
   const form = page.locator('#friend-form');
@@ -1365,6 +1379,7 @@ async function checkChrome() {
       if (request.isNavigationRequest() && request.frame() === page.mainFrame()) requested.clear();
       requested.add(request.url());
     });
+    await checkMembershipLayout(page);
     await checkHomeRoutes(page, mobile);
     const link = page.getByRole('main').getByRole('heading', { name: /^Дом\s+A[–‑-]House$/i, level: 1 });
     const [gap] = await renderedWordGaps(link);
