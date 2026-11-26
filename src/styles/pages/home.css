@@ -368,7 +368,6 @@
   display: grid; grid-template-columns: minmax(0, 1fr);
   column-gap: var(--group); margin-block-start: .4rem;
 }
-.project-specialties li + li { border-block-start: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); }
 .home-project-row {
   display: flex; flex-wrap: wrap; align-items: baseline; align-content: center;
   gap: .08em .65em; min-block-size: 44px; padding-block: .25em;
