@@ -1273,8 +1273,14 @@ async function checkHomeRoutes(page, mobile) {
   await page.goBack();
   await media.waitFor({ state: 'visible' });
   assert.equal(new URL(page.url()).hash, '#media', 'Back must restore the reading bookmark');
-  await page.goto(url + '#services-checkout');
+  if (mobile) await menu.tap();
+  const friendLink = page.locator('#site-navigation').getByRole('link', {name: 'Подписка A–Friend', exact: true, includeHidden: true});
+  assert.equal(await friendLink.evaluate(link => link.closest('li').previousElementSibling?.querySelector('a')?.href), url + 'club/');
+  if (mobile) await friendLink.tap();
+  else await friendLink.press('Enter');
+  await page.waitForURL(url + '#services-checkout');
   await page.locator('#friend-form').waitFor();
+  assert.equal(await friendLink.getAttribute('aria-current'), 'true');
   assert.equal(await page.locator('dialog[open]').count(), 0);
   await page.goto(url + '#visit');
   await section('visit').waitFor({ state: 'visible' });
