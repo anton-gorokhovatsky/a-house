@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { formatSiteVersion, membershipSettings, projectRoot, readEventCatalog, siteBase, standaloneAssetOrigins } from './build.mjs';
+import { formatSiteVersion, membershipSettings, projectRoot, readEventCatalog, siteBase } from './build.mjs';
 import { eventDestination, routesWithEvents } from './calendar.mjs';
 import { collectArchive, printArchiveFileNames } from './archive.mjs';
 import { typesetText } from './typography.mjs';
@@ -78,6 +78,7 @@ const standaloneFiles = new Set(routes.filter(page => page.layout === 'standalon
 const htmlFiles = [...files].filter(file => file.endsWith('.html'));
 for (const file of expectedFiles) if (!files.has(file)) errors.push('Missing page ' + file);
 const documents = new Map();
+const checkedStandaloneStyles = new Set();
 const routeTitles = new Map(routes.map(({slug, title}) => [base + slug + '/', title]));
 function validateURL(source, value, asset) {
   value=value.trim().replaceAll('&amp;','&');
@@ -86,7 +87,7 @@ function validateURL(source, value, asset) {
   try { url = new URL(value,'https://preview.invalid'+base+source); }
   catch { errors.push(source+' contains invalid URL '+value);return; }
   if (url.origin!=='https://preview.invalid') {
-    if (asset && !(standaloneFiles.has(source) && standaloneAssetOrigins.includes(url.origin))) {
+    if (asset) {
       errors.push(source+' loads an external asset '+value);
     }
     if (url.protocol==='javascript:') errors.push(source+' contains a javascript: URL');
@@ -129,7 +130,10 @@ for (const file of htmlFiles) {
   const standalone = standaloneFiles.has(file);
   if (standalone) {
     if (!head.includes('http-equiv="Content-Security-Policy"') || !head.includes("connect-src 'none'; form-action 'none'")) {
-      errors.push(file + ' must keep the standalone export separate from live integrations');
+      errors.push(file + ' must keep the standalone page separate from live integrations');
+    }
+    if (!head.includes("script-src 'self'") || !head.includes("font-src 'self'") || /tildacdn\.|cdn\.jsdelivr\./i.test(head)) {
+      errors.push(file + ' must load its own scripts, styles and fonts');
     }
   } else {
     const styles = [...head.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)];
@@ -161,6 +165,14 @@ for (const file of htmlFiles) {
     const value=tag[0].match(new RegExp('\\s'+attribute+'\\s*=\\s*["\\x27]([^"\\x27]*)','i'))?.[1];
     const canonical = standalone && element === 'link' && /\brel="canonical"/.test(tag[0]);
     if (value!==undefined) validateURL(file,value,element!=='a' && !canonical);
+    if (standalone && value?.startsWith(base) && element === 'link' && /\brel="stylesheet"/.test(tag[0])) {
+      const stylesheet = value.slice(base.length).split('?')[0];
+      if (files.has(stylesheet) && !checkedStandaloneStyles.has(stylesheet)) {
+        checkedStandaloneStyles.add(stylesheet);
+        const css = await readFile(path.join(dist, stylesheet), 'utf8');
+        for (const ref of css.matchAll(/url\(\s*['"]?([^)'"]+)/g)) validateURL(stylesheet, ref[1], true);
+      }
+    }
     if (element==='a' && value===base+'404.html') errors.push(file+' links straight to the error page');
     if (element==='img' || element==='source') {
       const candidates=tag[0].match(/\bsrcset="([^"]+)"/i)?.[1];
@@ -170,7 +182,7 @@ for (const file of htmlFiles) {
         errors.push(file+' is missing its reduced-motion picture');
       }
     }
-    if (element==='script' && !value && !standalone) errors.push(file+' contains an inline script');
+    if (element==='script' && !value) errors.push(file+' contains an inline script');
     if (element === 'form') {
       const memberPage = membershipPages.get(file);
       const id = tag[0].match(/\sid="([^"]+)"/i)?.[1];
@@ -183,7 +195,8 @@ for (const file of htmlFiles) {
     }
   }
   if (/\son(?:click|submit|error|load|change)\s*=/i.test(source) || /data-tilda-formskey|formservices\[\]/i.test(source)) errors.push(file+' contains a live integration');
-  for (const ref of source.matchAll(/url\(\s*['"]?([^)'"]+)/g)) validateURL(file,ref[1],true);
+  const inlineStyleSource = source.replaceAll('&quot;', '"');
+  for (const ref of inlineStyleSource.matchAll(/url\(\s*['"]?([^)'"]+)/g)) validateURL(file,ref[1],true);
 }
 
 // Bookmarks and partner programmes can open any HTML document directly.
@@ -203,7 +216,9 @@ const documentsCitingOfficialSite = new Set(['politic_a-com/index.html', 'rules/
 const citedSite = 'https://ahouseproject.com/';
 for (const [file, html] of documents) {
   if (standaloneFiles.has(file)) {
-    if (!html.includes('role="main"') || /class="(?:site-header|home-footer)/.test(html)) {
+    if (!/<main\b[^>]*\bid="site-content"/i.test(html) ||
+        !html.includes('class="feature-skip" href="#site-content"') ||
+        /class="(?:site-header|home-footer)|data-record-type=|\bt396__artboard\b/i.test(html)) {
       errors.push(file + ' must render its own standalone content');
     }
     continue;

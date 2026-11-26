@@ -36,9 +36,11 @@ jobs:
           node-version: 22
       - uses: actions/configure-pages@v5
       - run: npm ci --ignore-scripts
+      - run: node_modules/.bin/playwright-core install --with-deps webkit
       - run: npm run build
       - run: npm run check
       - run: npm run check:browser
+      - run: npm run check:browser:webkit
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

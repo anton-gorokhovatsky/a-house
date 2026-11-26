@@ -2,15 +2,18 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { chromium } from 'playwright-core';
+import { chromium, devices, webkit } from 'playwright-core';
 import { membershipSettings, projectRoot, readEventCatalog, siteBase } from './build.mjs';
 import { eventDestination } from './calendar.mjs';
 import { previewServer } from './preview.mjs';
 import { checkMembershipTransport } from './check-membership.mjs';
 import { checkTheme } from './check-theme.mjs';
+import { checkFeaturePages } from './check-feature-pages.mjs';
 
+const useWebKit = process.argv[2] === '--webkit';
+const outputDirectory = process.argv[useWebKit ? 3 : 2];
 const base = siteBase(process.env.SITE_BASE);
-const server = previewServer(path.resolve(process.argv[2] ?? path.join(projectRoot, 'dist')), base);
+const server = previewServer(path.resolve(outputDirectory ?? path.join(projectRoot, 'dist')), base);
 server.listen(0, '127.0.0.1');
 await once(server, 'listening');
 const url = 'http://127.0.0.1:' + server.address().port + base;
@@ -684,114 +687,6 @@ async function checkFooterDocuments(page, mobile) {
   }
 }
 
-async function checkSpecialProjectPrograms(page, mobile) {
-  const activate = element => mobile ? element.tap() : element.press('Enter');
-  await page.goto(url + 'longevity/');
-  await page.getByRole('heading', {level: 1, name: 'Лонжевити и недвижимость'}).waitFor();
-  const researchNav = page.locator('#rec3921425401');
-  assert.equal(await researchNav.locator('a[href="#one"], a[href="#two"], a[href="#three"]').count(), 3);
-  const recommendations = page.locator(mobile ? '#rec3917158401 a[href="#rules"]' : '#rec3921425401 a[href="#rules"]');
-  await page.locator('[data-tooltip-hook="#rules"][data-popup-ready]').waitFor({state: 'attached'});
-  await activate(recommendations);
-  const recommendationsDialog = page.getByRole('dialog', {name: 'Рекомендации для девелопера'});
-  const recommendation = recommendationsDialog.locator('#hacc-h2');
-  await recommendation.waitFor();
-  assert.equal(await recommendationsDialog.locator('.hacc__head').count(), 5);
-  await activate(recommendation);
-  assert.equal(await recommendation.getAttribute('aria-expanded'), 'true');
-  if (mobile) {
-    await activate(recommendationsDialog.getByRole('button', {name: /закрыть/i}).first());
-  } else {
-    for (const key of ['Tab', 'Tab', 'Tab', 'Tab', 'Shift+Tab']) {
-      await page.keyboard.press(key);
-      assert.ok(await recommendationsDialog.evaluate(dialog => dialog.contains(document.activeElement)));
-    }
-    await page.keyboard.press('Escape');
-  }
-  await recommendationsDialog.waitFor({state: 'hidden'});
-  await page.waitForFunction(trigger => document.activeElement === trigger, await recommendations.elementHandle());
-
-  await page.goto(url + 't_private/');
-  if (mobile) {
-    assert.equal(await page.getByRole('dialog').count(), 0,
-      'A mobile visitor must reach the program before choosing an event');
-  }
-
-  await page.goto(url + 't_bank/');
-  assert.equal(await page.locator('#program a[href^="#"]').count(), 9);
-  assert.equal(await page.locator('.t-popup[data-popup-rec-ids]').count(), 10);
-  const collection = page.locator('#program a[href="#four"]');
-  await page.locator('[data-tooltip-hook="#four"][data-popup-ready]').waitFor({state: 'attached'});
-  await activate(collection);
-  const panel = page.getByRole('dialog', {name: /Изобретая коллекцию: графика/});
-  await panel.waitFor();
-  const closeCollection = panel.getByRole('button', {name: /закрыть/i}).first();
-  if (!mobile) {
-    for (const direction of ['Tab', 'Shift+Tab']) {
-      await closeCollection.focus();
-      for (let step = 0; step < 8; step++) {
-        await page.keyboard.press(direction);
-        assert.ok(await panel.evaluate(dialog => dialog.contains(document.activeElement)));
-      }
-    }
-  }
-  await panel.locator('.t-popup__container .t396__artboard').waitFor();
-  assert.match(await panel.innerText(), /Изобретая\s+коллекцию:\s+графика/i);
-  await activate(closeCollection);
-  await panel.waitFor({state: 'hidden'});
-  await page.waitForFunction(trigger => document.activeElement === trigger, await collection.elementHandle());
-
-  await page.goto(url + '#projects');
-  await activate(page.locator('.home-project-navigation a[href="#a-industry"]'));
-  const contest = page.locator('#a-industry').getByRole('link', {name: /Конкурс МТС «Меняя привычное»/});
-  await activate(contest);
-  await page.waitForURL(url + 'mts/');
-  assert.equal(await page.locator('.site-header, .home-footer').count(), 0);
-  const contestHeading = page.getByRole('heading', {level: 1, name: 'Меняя привычное', exact: false});
-  assert.ok(await contestHeading.isVisible());
-  assert.equal(await page.locator('form').count(), 0);
-  assert.equal(await page.locator('.t367__opener:not([hidden]), .t367__opener:not([tabindex="-1"])').count(), 0);
-  const notice = page.getByRole('dialog', {name: /портфолио.*окончен/i});
-  await notice.and(page.locator('.t-popup_show')).waitFor();
-  assert.match(await notice.innerText(), /aindex@ahouseproject\.com/);
-  await activate(notice.getByRole('button', {name: /закрыть/i}));
-  await notice.waitFor({state: 'hidden'});
-  await page.waitForFunction(heading => {
-    const box = heading.getBoundingClientRect();
-    return document.activeElement === heading && box.top < innerHeight && box.bottom > 0;
-  }, await contestHeading.elementHandle());
-  const more = page.getByRole('button', {name: 'Подробнее о конкурсе'});
-  await activate(more);
-  await page.waitForFunction(() => document.getElementById('rec2291513081').classList.contains('open-accord'));
-  assert.match(await page.locator('#rec2291513081').innerText(), /российские\s+и\s+зарубежные\s+бюро/i);
-  const secondStage = page.getByRole('button', {name: 'Этап 2. Эскизное задание'});
-  // The export layers the caption and hit area over the same visible control.
-  if (mobile) await secondStage.tap({force: true});
-  else await secondStage.press('Enter');
-  await page.waitForFunction(() => document.getElementById('rec2291517501').classList.contains('open-accord'));
-  assert.equal(await more.getAttribute('aria-expanded'), 'false');
-  assert.match(await page.locator('#rec2291517501').innerText(), /подписание\s+NDA/);
-  const rules = page.getByRole('link', {name: /правила\s+конкурса\s+на\s+Яндекс\s+Диске/i});
-  assert.equal(await rules.getAttribute('href'), 'https://disk.360.yandex.ru/d/kAckYUQ5My6vfg');
-
-  await page.goto(url + 'moscow_business/#program');
-  const captions = page.locator('#ah-grid .card :is(.meta,.more)');
-  await captions.first().waitFor();
-  const ratios = await captions.evaluateAll(items => {
-    const luminance = color => color.match(/\d+/g).slice(0, 3).map(Number).reduce((total, channel, index) => {
-      const normalized = channel / 255;
-      const linear = normalized <= .04045 ? normalized / 12.92 : ((normalized + .055) / 1.055) ** 2.4;
-      return total + linear * [.2126, .7152, .0722][index];
-    }, 0);
-    const background = luminance(getComputedStyle(document.getElementById('program')).backgroundColor);
-    return items.map(item => {
-      const foreground = luminance(getComputedStyle(item).color);
-      return (Math.max(background, foreground) + .05) / (Math.min(background, foreground) + .05);
-    });
-  });
-  assert.ok(ratios.every(ratio => ratio >= 4.5), 'Program captions and controls must reach 4.5:1');
-}
-
 async function checkEnlargedMenu(page) {
   await page.goto(url);
   await page.addStyleTag({ content: 'html { font-size: 200%; }' });
@@ -1214,6 +1109,16 @@ async function checkConsentReturn(page) {
   assert.equal(await checkbox.isChecked(), false, 'Reading a document must not give consent');
 }
 
+async function checkSkipLink(page, anchor, nextTab = 'Tab') {
+  await page.locator('.skip-content').press('Enter');
+  assert.equal(page.url(), url + '#' + anchor, 'Skipping the header must preserve the selected view');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'site-content');
+  await page.keyboard.press(nextTab);
+  const section = page.locator('[data-home-section][id="' + anchor + '"]');
+  assert.ok(await section.evaluate(el => el.contains(document.activeElement)),
+    'Reading must continue inside the original section');
+}
+
 async function checkHomeRoutes(page, mobile) {
   const section = name => page.locator('[data-home-section][id="' + name + '"]');
   const headingStyle = selector => page.locator(selector).evaluate(element => {
@@ -1225,13 +1130,7 @@ async function checkHomeRoutes(page, mobile) {
     await page.goto(url + '#' + anchor);
     assert.equal(await page.title(), title + ' — A–House');
     if (anchor === 'visit') visitHeadingStyle = await headingStyle('#visit-heading');
-    await page.locator('.skip-content').press('Enter');
-    assert.equal(page.url(), url + '#' + anchor, 'Skipping the header must preserve the selected view');
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'site-content');
-    await page.keyboard.press('Tab');
-    const visibleSection = section(anchor);
-    assert.ok(await visibleSection.evaluate(el => el.contains(document.activeElement)),
-      'Reading must continue inside the original section');
+    await checkSkipLink(page, anchor);
   }
   await checkReadingReturn(page, mobile);
   await checkEditorialGrouping(page);
@@ -1370,8 +1269,31 @@ async function browserPage(options) {
   page.setDefaultTimeout(30_000);
   return page;
 }
-try {
-  browser = await chromium.launch({ channel: 'chrome' });
+
+async function checkWebKit() {
+  // In macOS WebKit, Option-Tab includes links in the default tab order.
+  const nextTab = process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
+  const phone = await browserPage({ ...devices['iPhone 13'], reducedMotion: 'reduce' });
+  await checkMobileExhibition(phone);
+  await phone.goto(url + '#visit');
+  await checkSkipLink(phone, 'visit', nextTab);
+  await checkUpcomingMonthFromArchive(phone);
+  await checkFeaturePages(phone, url, {mobile: true, nextTab});
+  await phone.close();
+  console.log('WebKit iPhone 13: exhibition, skip link, calendar and project pages.');
+
+  const narrow = await browserPage({viewport: {width: 320, height: 844}});
+  await checkEnlargedMenu(narrow);
+  await narrow.close();
+
+  const desktop = await browserPage({viewport: {width: 1511, height: 900}, reducedMotion: 'reduce'});
+  await checkHomeNavigation(desktop);
+  await checkFeaturePages(desktop, url, {mobile: false, nextTab});
+  await desktop.close();
+  console.log('WebKit desktop: enlarged menu, project pages, keyboard controls and dialog focus.');
+}
+
+async function checkChrome() {
   const narrowPage = await browserPage({ viewport: { width: 320, height: 844 } });
   await checkEnlargedMenu(narrowPage);
   await narrowPage.close();
@@ -1426,14 +1348,28 @@ try {
     assert.ok(reportGaps.every(gap => gap > 1), 'All three word spaces in the A–Forum report link must be visible');
     await checkVisitorLinks(page, mobile);
     await checkFooterDocuments(page, mobile);
-    await checkSpecialProjectPrograms(page, mobile);
+    await checkFeaturePages(page, url, {mobile});
     await checkClubApplication(page);
     await checkConsentReturn(page);
     console.log('Archive reading, club application and visible word space verified at ' + width + ' px (' + gap.toFixed(2) + ' px).');
     await page.close();
   }
-  await checkTheme(browser, url);
-  await checkMembershipTransport(browser);
+}
+
+try {
+  if (useWebKit) {
+    browser = await webkit.launch();
+    await checkWebKit();
+  } else {
+    const launchOptions = { channel: 'chrome' };
+    browser = await chromium.launch(launchOptions);
+    await checkChrome();
+    await browser.close();
+    // The image-heavy project pages and the local transport fixtures use separate browser processes.
+    browser = await chromium.launch(launchOptions);
+    await checkTheme(browser, url);
+    await checkMembershipTransport(browser);
+  }
 } finally {
   await browser?.close();
   server.close();
