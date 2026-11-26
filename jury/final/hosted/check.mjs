@@ -64,7 +64,7 @@ async function checkLoginTypography(page, alignLeft) {
       })
     };
   });
-  assert.deepEqual(title.fonts, ['Roboto Flex Compact', 'Roboto Flex Extended']);
+  assert.ok(['MTS Compact', 'MTS Extended'].every(face => title.fonts.includes(face)), 'Load both original contest typefaces.');
   assert.deepEqual(title.words.map(word => word.lines), [1, 1], 'Each word of the contest title must fit on one line.');
   assert.ok(title.formWords.every(lines => lines === 1), 'The sign-in heading should wrap between words.');
   if (alignLeft) assert.ok(title.words.every(word => Math.abs(word.inkOffset) <= 2), 'Align both opening capitals with the logo.');

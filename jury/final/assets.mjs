@@ -1,5 +1,6 @@
 const local = file => new URL(file, import.meta.url);
 const sharedFonts = local('../../media/fonts/');
+export const contestFontOrigin = 'https://static.tildacdn.com';
 
 export const cabinetAssets = new Map([
   ['cabinet.css', { source: local('cabinet.css'), type: 'text/css; charset=utf-8' }],

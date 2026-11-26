@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { signInContent } from '../views.mjs';
-import { cabinetAssets } from '../assets.mjs';
+import { cabinetAssets, contestFontOrigin } from '../assets.mjs';
 
 const { JURY_SUPABASE_URL, JURY_SUPABASE_PUBLISHABLE_KEY: publishableKey } = process.env;
 const endpoint = new URL(JURY_SUPABASE_URL);
@@ -19,12 +19,10 @@ const assets = withJuryPath ? '../' : './';
 await mkdir(output, { mode: 0o755 });
 await mkdir(path.join(output, 'fonts'));
 const hash = createHash('sha256');
-const fontPreloads = [];
 for (const [filename, asset] of cabinetAssets) {
   const target = path.join(output, filename);
   await copyFile(asset.source, target);
   hash.update(await readFile(target));
-  if (asset.type === 'font/woff2') fontPreloads.push(`<link rel="preload" href="${assets}${filename}" as="font" type="font/woff2" crossorigin>`);
 }
 const modules = {
   'views.js': await readFile(new URL('../views.mjs', import.meta.url), 'utf8'),
@@ -51,9 +49,9 @@ await writeFile(path.join(entryDirectory, 'index.html'), `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src ${endpoint.origin}; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self' ${contestFontOrigin}; img-src 'self'; connect-src ${endpoint.origin}; form-action 'none'; base-uri 'none'">
 <title>Вход для жюри · Меняя привычное</title>
-${fontPreloads.join('\n')}
+<link rel="preconnect" href="${contestFontOrigin}" crossorigin>
 <link rel="stylesheet" href="${assets}cabinet.css?v=${version}">
 <link rel="modulepreload" href="${assets}views.js?v=${version}">
 <link rel="modulepreload" href="${assets}config.js?v=${version}">

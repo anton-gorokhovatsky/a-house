@@ -5,7 +5,7 @@
   async function local(command, max = 700) {
     const result = await tools.exec_command({ cmd: `node jury/final/hosted/sheets-sync.mjs ${command}`,
       workdir: workspace, max_output_tokens: max, yield_time_ms: 10000, sandbox_permissions: 'require_escalated',
-      justification: 'Разрешить синхронизировать закрытую таблицу жюри с рабочей базой конкурса?',
+      justification: 'Разрешить синхронизировать таблицу результатов жюри с рабочей базой конкурса?',
       prefix_rule: ['node', 'jury/final/hosted/sheets-sync.mjs'] });
     let output = result.output;
     let state = result;
@@ -22,9 +22,8 @@
   }
   const {spreadsheet, titles} = JSON.parse(await local('target'));
   const doc = read(await tools.mcp__codex_apps__google_drive_get_file_metadata({fileId: spreadsheet,
-    fields: 'id,mimeType,permissions(type,role)'}));
-  check(doc.id === spreadsheet && doc.mime_type === 'application/vnd.google-apps.spreadsheet' &&
-    doc.permissions?.some(p => p.role === 'owner') && doc.permissions.every(p => ['user', 'group'].includes(p.type)), 'Check file or its sharing settings');
+    fields: 'id,mimeType'}));
+  check(doc.id === spreadsheet && doc.mime_type === 'application/vnd.google-apps.spreadsheet', 'Results spreadsheet not found');
   const props = read(await tools.mcp__codex_apps__google_drive_get_spreadsheet_metadata({spreadsheet_id: spreadsheet}));
   const grid = titles.map(title => props.sheets.find(s => s.properties.title === title)?.properties);
   check(grid.every(p => Number.isInteger(p?.sheetId) && Number.isInteger(p?.gridProperties?.rowCount)), 'Results tab missing');

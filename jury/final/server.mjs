@@ -7,7 +7,7 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { pathToFileURL } from 'node:url';
 import { createSupabaseAuth } from './supabase.mjs';
-import { cabinetAssets } from './assets.mjs';
+import { cabinetAssets, contestFontOrigin } from './assets.mjs';
 import { cataloguePage, signInPage, statusPage, workPage } from './views.mjs';
 
 const workId = /^[a-f0-9]{24}$/;
@@ -19,7 +19,7 @@ const htmlHeaders = {
   'content-type': 'text/html; charset=utf-8',
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'same-origin',
-  'content-security-policy': "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+  'content-security-policy': `default-src 'none'; style-src 'self'; font-src 'self' ${contestFontOrigin}; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`
 };
 
 function destination(value) {
