@@ -11,7 +11,7 @@ const live = Boolean(privateSetup);
 const fixtureOrigin = 'https://aaaaaaaaaaaaaaaaaaaa.supabase.co';
 const files = new Map([
   ['index.html', 'text/html'], ...Array.from(cabinetAssets, ([name, asset]) => [name, asset.type]),
-  ['views.js', 'text/javascript'], ['config.js', 'text/javascript'], ['cabinet.js', 'text/javascript'], ['voting.js', 'text/javascript'],
+  ['views.js', 'text/javascript'], ['config.js', 'text/javascript'], ['cabinet.js', 'text/javascript'], ['voting.js', 'text/javascript'], ['gallery.js', 'text/javascript'], ['sheets.js', 'text/javascript'], ['ranking.js', 'text/javascript'],
   ['criteria.js', 'text/javascript'], ['typography.js', 'text/javascript']
 ]);
 let server;
@@ -19,8 +19,8 @@ let url = site;
 if (!/^https?:\/\//.test(site)) {
   server = http.createServer(async (request, response) => {
     const name = new URL(request.url, 'http://local').pathname.slice(1) || 'index.html';
-    if (!files.has(name)) return response.writeHead(404).end();
-    response.writeHead(200, { 'content-type': files.get(name) });
+    if (!files.has(name) && !/^pdfjs-[0-9.]+\/(?:(?:cmaps|iccs|wasm|standard_fonts)\/)?[\w.-]+$/.test(name)) return response.writeHead(404).end();
+    response.writeHead(200, { 'content-type': files.get(name) || (/\.m?js$/.test(name) ? 'text/javascript' : name.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream') });
     response.end(await readFile(path.join(site, name)));
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -30,7 +30,7 @@ if (!/^https?:\/\//.test(site)) {
 const readJson = async filename => JSON.parse(await readFile(filename, 'utf8'));
 const juror = live ? (await readJson(path.join(privateSetup, 'jurors.json')))[0]
   : { login: 'jury-01', password: 'synthetic-review-Aa1!' };
-const fixturePdf = Buffer.from('%PDF-1.4\n%%EOF\n');
+const fixturePdf = await readFile(new URL('./test/sheets.pdf', import.meta.url));
 const works = live ? (await readJson(path.join(privateMaterials, 'catalogue.json'))).works
   : Array.from({ length: 15 }, (_, index) => ({
     id: (index + 1).toString(16).padStart(24, '0'), title: 'Работа ' + (index + 1), bytes: fixturePdf.length

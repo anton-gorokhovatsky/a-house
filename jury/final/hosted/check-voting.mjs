@@ -12,7 +12,7 @@ const fixtures = new Map(Array.from({ length: 15 }, (_, i) => {
   const login = 'jury-' + String(i + 1).padStart(2, '0');
   return [login, '00000000-0000-4000-8000-' + String(i + 1).padStart(12, '0')];
 }));
-const pdf = Buffer.from('%PDF-1.4\n%%EOF\n');
+const pdf = await readFile(new URL('./test/sheets.pdf', import.meta.url));
 const works = [...fixtures].map((_, i) => ({ id: (i + 1).toString(16).padStart(24, '0'), title: 'Работа ' + (i + 1), bytes: pdf.length }));
 await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
   create schema auth; create schema storage; create table storage.objects(bucket_id text);
@@ -99,15 +99,15 @@ await db.exec('update public.jury_final_control set accepting=false');
 await assert.rejects(save('jury-01', works[4].id, regular, '', 0), { code: 'PT403' });
 await db.exec('update public.jury_final_control set accepting=true');
 
-const files = new Set(['index.html', ...cabinetAssets.keys(), 'config.js', 'cabinet.js', 'voting.js', 'views.js', 'criteria.js', 'typography.js']);
+const files = new Set(['index.html', ...cabinetAssets.keys(), 'config.js', 'cabinet.js', 'gallery.js', 'ranking.js', 'sheets.js', 'voting.js', 'views.js', 'criteria.js', 'typography.js']);
 const server = http.createServer(async (req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname.slice(1) || 'index.html';
   if (name === 'text-200.css') {
     res.writeHead(200, { 'content-type':'text/css' });
     return res.end('html { font-size:200% }');
   }
-  if (!files.has(name)) return res.writeHead(404).end();
-  const type = cabinetAssets.get(name)?.type ?? (name.endsWith('.js') ? 'text/javascript' : 'text/html');
+  if (!files.has(name) && !/^pdfjs-[0-9.]+\/(?:(?:cmaps|iccs|wasm|standard_fonts)\/)?[\w.-]+$/.test(name)) return res.writeHead(404).end();
+  const type = cabinetAssets.get(name)?.type ?? (/\.m?js$/.test(name) ? 'text/javascript' : name.endsWith('.wasm') ? 'application/wasm' : name.endsWith('.html') ? 'text/html' : 'application/octet-stream');
   res.writeHead(200, { 'content-type': type });
   res.end(await readFile(path.join(site, name)));
 });
@@ -140,6 +140,7 @@ async function intercept(context, fault) {
         return reply(200, record);
       } catch (e) { return reply(e.code.startsWith('PT') ? Number(e.code.slice(2)) : 403, { message:e.message }); }
     }
+    if (req.headers().range && fault.sheetError) { fault.sheetError = false; return reply(503); }
     if (endpoint.startsWith('/storage/v1/object/authenticated/')) return route.fulfill({ status:200, headers:cors, contentType:'application/pdf', body:pdf });
     return reply(404);
   });
@@ -151,7 +152,7 @@ try {
     const browser = await engine.launch(mobile ? {} : { channel: 'chrome' });
     try {
       const context = await browser.newContext(mobile ? devices['iPhone 13'] : { viewport:{ width:1440, height:900 } });
-      const fault = { lost:true };
+      const fault = { lost:true, sheetError:true };
       await intercept(context, fault);
       let page = await context.newPage();
       const act = loc => mobile ? loc.tap() : loc.press('Enter');
@@ -164,6 +165,23 @@ try {
       await page.goto(url + '#work/' + id);
       await signIn(login);
       await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
+      const nextSheet = () => page.locator('.sheet-bar').getByRole('button', { name: 'Следующий лист' });
+      const nextLarge = () => page.locator('dialog[open]').getByRole('button', { name: 'Следующий лист' });
+      const loaded = () => page.waitForFunction(() => document.querySelector('.sheet-preview img[src]')?.naturalWidth > 0 && document.querySelector('.sheets > .sheet-status')?.textContent === '');
+      await act(page.getByRole('button', { name: 'Повторить загрузку листа' }));
+      await loaded();
+      await act(nextSheet());
+      await loaded();
+      assert.match(await page.locator('.sheet-preview img').getAttribute('alt'), /2$/);
+      await act(page.getByRole('button', { name: 'На весь экран' }));
+      await page.locator('dialog[open]').waitFor();
+      await act(nextLarge());
+      await loaded();
+      assert.equal(await nextLarge().getAttribute('aria-disabled'), 'true');
+      await act(page.getByRole('button', { name: 'Увеличить' }));
+      if (mobile) await act(page.getByRole('button', { name: 'Закрыть' }));
+      else await page.keyboard.press('Escape');
+      await page.locator('dialog').waitFor({ state: 'hidden' });
       await page.getByRole('link', { name:'Положение о работе жюри' }).waitFor();
       assert.equal(await page.getByRole('link', { name:'Критерии третьего этапа' }).count(), 0);
       const guide = page.getByText('Что учитывать при оценке концепции', { exact:true });
@@ -197,6 +215,7 @@ try {
       await page.reload();
       await signIn('jury-08');
       await page.getByText('Этот аккаунт даёт доступ к просмотру работ.').waitFor();
+      assert.equal(await page.getByRole('link', { name: 'Мой рейтинг работ' }).count(), 0);
       await act(page.getByRole('button', { name:'Выйти' }));
       await signIn('jury-07');
       assert.equal(await page.locator('textarea').inputValue(), '');
@@ -234,6 +253,18 @@ try {
       await act(submit);
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       await act(page.getByRole('link',{ name:'К списку работ' }));
+      await page.getByRole('link', { name: 'Регламент жюри' }).waitFor();
+      assert.equal((await page.locator('.jury-welcome').innerText()).includes('требованиям'), !mobile);
+      await act(page.getByRole('link', { name: 'Мой рейтинг работ' }));
+      await page.locator('.ranking').waitFor();
+      assert.equal(await page.locator('.ranking tbody tr').count(), 2);
+      if (!mobile) await page.locator('#ranking-order').selectOption('technical_review');
+      await act(page.locator('#rank-' + id));
+      await page.getByRole('heading', { name: works[0].title }).waitFor();
+      await act(page.getByRole('link', { name: 'К моему рейтингу' }));
+      await page.waitForFunction(id => document.activeElement?.id === 'rank-' + id, id);
+      if (!mobile) assert.equal(await page.locator('#ranking-order').inputValue(), 'technical_review');
+      await act(page.getByRole('link', { name: 'К списку работ' }));
       assert.equal(await page.locator('.sheet-progress').innerText().then(t => t.replace(/\s+/g, ' ')), 'Оценено 2 из 15');
       await act(page.getByRole('button',{ name:'Выйти' }));
       await signIn('jury-07');

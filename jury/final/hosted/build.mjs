@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { signInContent } from '../views.mjs';
 import { cabinetAssets, contestFontOrigin } from '../assets.mjs';
@@ -24,18 +24,31 @@ for (const [filename, asset] of cabinetAssets) {
   await copyFile(asset.source, target);
   hash.update(await readFile(target));
 }
+const distribution = new URL('./node_modules/pdfjs-dist/', import.meta.url);
+const pdfVersion = JSON.parse(await readFile(new URL('package.json', distribution), 'utf8')).version;
+const pdfDirectory = 'pdfjs-' + pdfVersion;
+await mkdir(path.join(output, pdfDirectory));
+for (const filename of ['pdf.min.mjs', 'pdf.worker.min.mjs']) {
+  await copyFile(new URL('legacy/build/' + filename, distribution), path.join(output, pdfDirectory, filename));
+}
+for (const filename of ['cmaps', 'iccs', 'standard_fonts', 'wasm', 'LICENSE']) {
+  await cp(new URL(filename, distribution), path.join(output, pdfDirectory, filename), { recursive: true });
+}
 const modules = {
   'typography.js': await readFile(new URL('../../../tools/typography.mjs', import.meta.url), 'utf8'),
   'criteria.js': await readFile(new URL('./criteria.mjs', import.meta.url), 'utf8'),
   'views.js': (await readFile(new URL('../views.mjs', import.meta.url), 'utf8')).replace('../../tools/typography.mjs', './typography.js'),
   'cabinet.js': await readFile(new URL('./cabinet.mjs', import.meta.url), 'utf8'),
+  'sheets.js': (await readFile(new URL('./sheets.mjs', import.meta.url), 'utf8')).replace('./pdfjs-dist/', './' + pdfDirectory + '/'),
+  'gallery.js': await readFile(new URL('./gallery.mjs', import.meta.url), 'utf8'),
+  'ranking.js': await readFile(new URL('./ranking.mjs', import.meta.url), 'utf8'),
   'voting.js': await readFile(new URL('./voting.mjs', import.meta.url), 'utf8'),
   'config.js': 'export const backend = ' + JSON.stringify({ origin: endpoint.origin, publishableKey }) + ';\n'
 };
 for (const source of Object.values(modules)) hash.update(source);
 const version = hash.digest('hex').slice(0, 12);
 for (const [name, source] of Object.entries(modules)) {
-  const versioned = source.replace(/(from '\.\/(?:config|views|voting|typography|criteria)\.js)'/g, "$1?v=" + version + "'");
+  const versioned = source.replace(/(from '\.\/(?:config|views|voting|typography|criteria|gallery|ranking|sheets)\.js)'/g, "$1?v=" + version + "'");
   await writeFile(path.join(output, name), versioned);
 }
 if (withJuryPath) {
@@ -51,7 +64,7 @@ await writeFile(path.join(entryDirectory, 'index.html'), `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self' ${contestFontOrigin}; img-src 'self'; connect-src ${endpoint.origin}; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; font-src 'self' blob: ${contestFontOrigin}; img-src 'self' blob: data:; connect-src 'self' ${endpoint.origin} https://cloud-api.yandex.net; form-action 'none'; base-uri 'none'">
 <title>Вход для жюри · Меняя привычное</title>
 <link rel="preconnect" href="${contestFontOrigin}" crossorigin>
 <link rel="stylesheet" href="${assets}cabinet.css?v=${version}">

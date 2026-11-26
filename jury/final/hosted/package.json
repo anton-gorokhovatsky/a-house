@@ -1,0 +1,8 @@
+{
+  "name": "a-house-jury-final",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pdfjs-dist": "6.5.438"
+  }
+}
