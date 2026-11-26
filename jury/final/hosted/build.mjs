@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { signInContent } from '../views.mjs';
+import { cabinetAssets } from '../assets.mjs';
 
 const { JURY_SUPABASE_URL, JURY_SUPABASE_PUBLISHABLE_KEY: publishableKey } = process.env;
 const endpoint = new URL(JURY_SUPABASE_URL);
@@ -16,8 +17,14 @@ const withJuryPath = process.argv[3] === '--jury-path';
 const entryDirectory = withJuryPath ? path.join(output, 'jury') : output;
 const assets = withJuryPath ? '../' : './';
 await mkdir(output, { mode: 0o755 });
-for (const filename of ['cabinet.css', 'logo.svg']) {
-  await copyFile(new URL('../' + filename, import.meta.url), path.join(output, filename));
+await mkdir(path.join(output, 'fonts'));
+const hash = createHash('sha256');
+const fontPreloads = [];
+for (const [filename, asset] of cabinetAssets) {
+  const target = path.join(output, filename);
+  await copyFile(asset.source, target);
+  hash.update(await readFile(target));
+  if (asset.type === 'font/woff2') fontPreloads.push(`<link rel="preload" href="${assets}${filename}" as="font" type="font/woff2" crossorigin>`);
 }
 const modules = {
   'views.js': await readFile(new URL('../views.mjs', import.meta.url), 'utf8'),
@@ -25,7 +32,6 @@ const modules = {
   'voting.js': await readFile(new URL('./voting.mjs', import.meta.url), 'utf8'),
   'config.js': 'export const backend = ' + JSON.stringify({ origin: endpoint.origin, publishableKey }) + ';\n'
 };
-const hash = createHash('sha256').update(await readFile(path.join(output, 'cabinet.css')));
 for (const source of Object.values(modules)) hash.update(source);
 const version = hash.digest('hex').slice(0, 12);
 for (const [name, source] of Object.entries(modules)) {
@@ -45,8 +51,9 @@ await writeFile(path.join(entryDirectory, 'index.html'), `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src ${endpoint.origin}; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src ${endpoint.origin}; form-action 'none'; base-uri 'none'">
 <title>Вход для жюри · Меняя привычное</title>
+${fontPreloads.join('\n')}
 <link rel="stylesheet" href="${assets}cabinet.css?v=${version}">
 <link rel="modulepreload" href="${assets}views.js?v=${version}">
 <link rel="modulepreload" href="${assets}config.js?v=${version}">

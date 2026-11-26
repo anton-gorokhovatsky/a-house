@@ -3,13 +3,14 @@ import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
 import { chromium, devices, webkit } from 'playwright-core';
+import { cabinetAssets } from '../assets.mjs';
 
 const [site, privateSetup, privateMaterials] = process.argv.slice(2);
 assert.ok(site, 'Pass a built directory or a live URL.');
 const live = Boolean(privateSetup);
 const fixtureOrigin = 'https://aaaaaaaaaaaaaaaaaaaa.supabase.co';
 const files = new Map([
-  ['index.html', 'text/html'], ['cabinet.css', 'text/css'], ['logo.svg', 'image/svg+xml'],
+  ['index.html', 'text/html'], ...Array.from(cabinetAssets, ([name, asset]) => [name, asset.type]),
   ['views.js', 'text/javascript'], ['config.js', 'text/javascript'], ['cabinet.js', 'text/javascript'], ['voting.js', 'text/javascript']
 ]);
 let server;
@@ -18,7 +19,7 @@ if (!/^https?:\/\//.test(site)) {
   server = http.createServer(async (request, response) => {
     const name = new URL(request.url, 'http://local').pathname.slice(1) || 'index.html';
     if (!files.has(name)) return response.writeHead(404).end();
-    response.writeHead(200, { 'content-type': files.get(name) + '; charset=utf-8' });
+    response.writeHead(200, { 'content-type': files.get(name) });
     response.end(await readFile(path.join(site, name)));
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -36,6 +37,38 @@ const works = live ? (await readJson(path.join(privateMaterials, 'catalogue.json
 const smallest = works.reduce((a, b) => a.bytes < b.bytes ? a : b);
 const largest = works.reduce((a, b) => a.bytes > b.bytes ? a : b);
 const last = works.at(-1);
+
+async function checkLoginTypography(page, alignLeft) {
+  const title = await page.locator('.hero h1').evaluate(async heading => {
+    await document.fonts.ready;
+    const style = getComputedStyle(heading);
+    const canvas = document.createElement('canvas').getContext('2d');
+    canvas.font = style.fontSize + ' ' + style.fontFamily;
+    const logoLeft = document.querySelector('.hero img').getBoundingClientRect().left;
+    const words = Array.from(heading.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+    const formTitle = document.querySelector('.login-card h2').firstChild;
+    return {
+      fonts: [...document.fonts].filter(face => face.status === 'loaded').map(face => face.family.replace(/["']/g, '')).sort(),
+      formWords: Array.from(formTitle.textContent.matchAll(/\S+/g), match => {
+        const range = document.createRange();
+        range.setStart(formTitle, match.index);
+        range.setEnd(formTitle, match.index + match[0].length);
+        return range.getClientRects().length;
+      }),
+      words: words.map(node => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rects = range.getClientRects();
+        const bearing = canvas.measureText(node.textContent[0].toUpperCase()).actualBoundingBoxLeft;
+        return { lines: rects.length, inkOffset: rects[0].left - bearing - logoLeft };
+      })
+    };
+  });
+  assert.deepEqual(title.fonts, ['Roboto Flex Compact', 'Roboto Flex Extended']);
+  assert.deepEqual(title.words.map(word => word.lines), [1, 1], 'Each word of the contest title must fit on one line.');
+  assert.ok(title.formWords.every(lines => lines === 1), 'The sign-in heading should wrap between words.');
+  if (alignLeft) assert.ok(title.words.every(word => Math.abs(word.inkOffset) <= 2), 'Align both opening capitals with the logo.');
+}
 
 async function useFixture(context) {
   await context.route(fixtureOrigin + '/**', async route => {
@@ -86,6 +119,16 @@ try {
       };
       await page.goto(url + '#work/' + profile.work.id);
       await button('Войти').waitFor();
+      await checkLoginTypography(page, !profile.touch);
+      if (profile.touch) {
+        const original = page.viewportSize();
+        await page.setViewportSize({ width: 320, height: 568 });
+        await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+        assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), '32px');
+        await checkLoginTypography(page, false);
+        await page.evaluate(() => { document.documentElement.style.removeProperty('font-size'); });
+        await page.setViewportSize(original);
+      }
       assert.equal(await page.locator('.work-link').count(), 0);
       if (process.env.JURY_QA_SCREENSHOTS && !live) {
         await page.screenshot({ path: path.join(process.env.JURY_QA_SCREENSHOTS, profile.name + '-login.png') });

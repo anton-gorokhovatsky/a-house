@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
 import { chromium, devices, webkit } from 'playwright-core';
+import { cabinetAssets } from '../assets.mjs';
 
 const [site, postgresModule = '@electric-sql/pglite'] = process.argv.slice(2);
 const { PGlite } = await import(postgresModule);
@@ -98,7 +99,7 @@ await db.exec('update public.jury_final_control set accepting=false');
 await assert.rejects(save('jury-01', works[4].id, regular, '', 0), { code: 'PT403' });
 await db.exec('update public.jury_final_control set accepting=true');
 
-const files = new Set(['index.html', 'cabinet.css', 'logo.svg', 'config.js', 'cabinet.js', 'voting.js', 'views.js']);
+const files = new Set(['index.html', ...cabinetAssets.keys(), 'config.js', 'cabinet.js', 'voting.js', 'views.js']);
 const server = http.createServer(async (req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname.slice(1) || 'index.html';
   if (name === 'text-200.css') {
@@ -106,8 +107,8 @@ const server = http.createServer(async (req, res) => {
     return res.end('html { font-size:200% }');
   }
   if (!files.has(name)) return res.writeHead(404).end();
-  const type = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.svg':'image/svg+xml' }[path.extname(name)];
-  res.writeHead(200, { 'content-type': type + '; charset=utf-8' });
+  const type = cabinetAssets.get(name)?.type ?? (name.endsWith('.js') ? 'text/javascript' : 'text/html');
+  res.writeHead(200, { 'content-type': type });
   res.end(await readFile(path.join(site, name)));
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));

@@ -7,6 +7,7 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { pathToFileURL } from 'node:url';
 import { createSupabaseAuth } from './supabase.mjs';
+import { cabinetAssets } from './assets.mjs';
 import { cataloguePage, signInPage, statusPage, workPage } from './views.mjs';
 
 const workId = /^[a-f0-9]{24}$/;
@@ -18,7 +19,7 @@ const htmlHeaders = {
   'content-type': 'text/html; charset=utf-8',
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'same-origin',
-  'content-security-policy': "default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+  'content-security-policy': "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
 };
 
 function destination(value) {
@@ -114,8 +115,8 @@ export async function createFinalServer({ directory, origin, members, auth, onEr
   const approved = new Set(members);
   assert.equal(approved.size, members.length, 'members.json contains duplicate accounts.');
   const works = await loadWorks(path.resolve(directory));
-  const css = await readFile(new URL('./cabinet.css', import.meta.url));
-  const logo = await readFile(new URL('./logo.svg', import.meta.url));
+  const assets = new Map();
+  for (const [name, { source, type }] of cabinetAssets) assets.set('/' + name, { type, body: await readFile(source) });
   const cookieName = secure ? '__Host-final-jury' : 'final-jury';
 
   function cookie(token, age) {
@@ -166,12 +167,12 @@ export async function createFinalServer({ directory, origin, members, auth, onEr
         response.writeHead(405, { ...cacheHeaders, allow: 'GET, HEAD' }).end();
         return;
       }
-      if (p === '/cabinet.css' || p === '/logo.svg') {
-        const style = p === '/cabinet.css';
+      const asset = assets.get(p);
+      if (asset) {
         response.writeHead(200, {
           ...cacheHeaders, 'x-content-type-options': 'nosniff',
-          'content-type': style ? 'text/css; charset=utf-8' : 'image/svg+xml'
-        }).end(request.method === 'HEAD' ? undefined : style ? css : logo);
+          'content-type': asset.type
+        }).end(request.method === 'HEAD' ? undefined : asset.body);
         return;
       }
 
