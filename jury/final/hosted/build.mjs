@@ -25,7 +25,9 @@ for (const [filename, asset] of cabinetAssets) {
   hash.update(await readFile(target));
 }
 const modules = {
-  'views.js': await readFile(new URL('../views.mjs', import.meta.url), 'utf8'),
+  'typography.js': await readFile(new URL('../../../tools/typography.mjs', import.meta.url), 'utf8'),
+  'criteria.js': await readFile(new URL('./criteria.mjs', import.meta.url), 'utf8'),
+  'views.js': (await readFile(new URL('../views.mjs', import.meta.url), 'utf8')).replace('../../tools/typography.mjs', './typography.js'),
   'cabinet.js': await readFile(new URL('./cabinet.mjs', import.meta.url), 'utf8'),
   'voting.js': await readFile(new URL('./voting.mjs', import.meta.url), 'utf8'),
   'config.js': 'export const backend = ' + JSON.stringify({ origin: endpoint.origin, publishableKey }) + ';\n'
@@ -33,7 +35,7 @@ const modules = {
 for (const source of Object.values(modules)) hash.update(source);
 const version = hash.digest('hex').slice(0, 12);
 for (const [name, source] of Object.entries(modules)) {
-  const versioned = source.replace(/(from '\.\/(?:config|views|voting)\.js)'/g, "$1?v=" + version + "'");
+  const versioned = source.replace(/(from '\.\/(?:config|views|voting|typography|criteria)\.js)'/g, "$1?v=" + version + "'");
   await writeFile(path.join(output, name), versioned);
 }
 if (withJuryPath) {
@@ -55,6 +57,8 @@ await writeFile(path.join(entryDirectory, 'index.html'), `<!doctype html>
 <link rel="stylesheet" href="${assets}cabinet.css?v=${version}">
 <link rel="modulepreload" href="${assets}views.js?v=${version}">
 <link rel="modulepreload" href="${assets}config.js?v=${version}">
+<link rel="modulepreload" href="${assets}typography.js?v=${version}">
+<link rel="modulepreload" href="${assets}criteria.js?v=${version}">
 <link rel="modulepreload" href="${assets}voting.js?v=${version}">
 <script type="module" src="${assets}cabinet.js?v=${version}"></script>
 </head>

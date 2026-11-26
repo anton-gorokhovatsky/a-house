@@ -38,7 +38,7 @@ function wrapNames(text, pattern) {
       '<span class="legal-name"><span>«$1</span>&shy;$2&shy;$3&shy;$4»$5</span>');
 }
 
-function russianSpacing(text) {
+export function russianSpacing(text) {
   // Each replacement changes one space in place. The break after a date's
   // comma, after a punctuation dash, or between quantities stays available.
   return text.replace(shortWord, '$1\u00a0')
@@ -97,7 +97,8 @@ function cleanLinkUnderlines(tokens) {
 // Join a paragraph's text across inline tags, including links and <time>,
 // then put its characters back in the original text nodes. This keeps both
 // sides of a link and its complete opening tag exactly where the author put them.
-export function typesetText(html) {
+export function typesetText(html, { formatFormText = false } = {}) {
+  const protectedTags = formatFormText ? /^(dialog|pre|code)$/ : /^(dialog|form|pre|code)$/;
   const tokens = html.match(htmlTokens) ?? [];
   const run = [];
   let excludedDepth = 0;
@@ -128,8 +129,8 @@ export function typesetText(html) {
     if (token.startsWith('<')) {
       if (!/^<\/?(?:a|abbr|b|em|i|small|span|strong|sub|sup|time|u)\b/i.test(token)) finishRun();
       if (/^<\/?h[1-6]\b/i.test(token)) heading = token[1] !== '/';
-      if (/^<(?:dialog|form|pre|code)\b/i.test(token)) excludedDepth++;
-      if (/^<\/(?:dialog|form|pre|code)\s*>/i.test(token)) excludedDepth--;
+      const tag = /^<(\/?)(dialog|form|pre|code)\b/i.exec(token);
+      if (tag && protectedTags.test(tag[2].toLowerCase())) excludedDepth += tag[1] ? -1 : 1;
     } else if (excludedDepth) {
       // Keep the original rendering of the imported subscription dialog.
       tokens[index] = wrapNames(token, projectName);

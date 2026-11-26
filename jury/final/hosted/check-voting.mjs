@@ -99,7 +99,7 @@ await db.exec('update public.jury_final_control set accepting=false');
 await assert.rejects(save('jury-01', works[4].id, regular, '', 0), { code: 'PT403' });
 await db.exec('update public.jury_final_control set accepting=true');
 
-const files = new Set(['index.html', ...cabinetAssets.keys(), 'config.js', 'cabinet.js', 'voting.js', 'views.js']);
+const files = new Set(['index.html', ...cabinetAssets.keys(), 'config.js', 'cabinet.js', 'voting.js', 'views.js', 'criteria.js', 'typography.js']);
 const server = http.createServer(async (req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname.slice(1) || 'index.html';
   if (name === 'text-200.css') {
@@ -166,10 +166,16 @@ try {
       await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
       await page.getByRole('link', { name:'Положение о работе жюри' }).waitFor();
       await page.getByRole('link', { name:'Критерии третьего этапа' }).waitFor();
-      const nominations = page.getByText('Четыре номинации конкурса',{exact:true});
+      const guide = page.getByText('Что учитывать при оценке концепции', { exact:true });
+      await act(guide);
+      await page.waitForFunction(() =>
+        document.querySelector('.guide-list li:last-child')?.innerText.includes('тревожность, радиофобию'));
+      assert.equal(await page.locator('.guide-list li:visible').count(), 6);
+      await act(guide);
+      const nominations = page.getByText('Критерии номинаций',{exact:true});
       await act(nominations);
-      assert.equal(await page.locator('.nominations dt:visible').count(),4);
-      assert.ok(await page.getByText(/Для этой номинации реализуемость необязательна/).isVisible());
+      assert.equal(await page.locator('.nominations h3:visible').count(),4);
+      assert.ok(await page.getByText(/Реализуемость\s+не\s+является обязательным условием/).isVisible());
       await act(nominations);
       assert.equal(await page.locator('.criterion').count(), mobile ? 1 : 2);
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
@@ -183,6 +189,11 @@ try {
       await act(page.getByRole('link',{name:'К списку работ'}));
       await act(page.locator('a[id="' + id + '"]'));
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
+      await page.reload();
+      await page.locator('.save-ballot').waitFor();
+      assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
+      assert.equal(await page.locator('input[name=concept]:checked').inputValue(), '0');
+      await act(page.getByRole('button', { name:'Выйти' }));
       await page.reload();
       await signIn('jury-08');
       await page.getByText('Этот аккаунт даёт доступ к просмотру работ.').waitFor();
@@ -200,7 +211,7 @@ try {
       assert.equal((await sheet(login)).ballots.some(b => b.work_id === id), false);
       const submit = page.locator('.save-ballot');
       await act(submit);
-      await page.getByText(/Сервер не подтвердил сохранение/).waitFor();
+      await page.getByText(/Сервер\s+не\s+подтвердил\s+сохранение/).waitFor();
       await act(submit);
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       assert.equal((await sheet(login)).ballots.find(b => b.work_id === id).revision, 1);
@@ -223,7 +234,7 @@ try {
       await act(submit);
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       await act(page.getByRole('link',{ name:'К списку работ' }));
-      assert.equal(await page.locator('.sheet-progress').textContent(), 'Оценено 2 из 15');
+      assert.equal(await page.locator('.sheet-progress').innerText().then(t => t.replace(/\s+/g, ' ')), 'Оценено 2 из 15');
       await act(page.getByRole('button',{ name:'Выйти' }));
       await signIn('jury-07');
       await act(page.locator('a[id="' + id + '"]'));
@@ -237,7 +248,6 @@ try {
       assert.equal(await page.locator('.criterion').count(),5);
       await activate(currentRubric);
       await page.reload();
-      await signIn('jury-07');
       await page.getByRole('link',{name:'Критерии третьего этапа'}).waitFor();
       if (mobile) {
         await page.addStyleTag({url:'/text-200.css'});

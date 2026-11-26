@@ -11,7 +11,8 @@ const live = Boolean(privateSetup);
 const fixtureOrigin = 'https://aaaaaaaaaaaaaaaaaaaa.supabase.co';
 const files = new Map([
   ['index.html', 'text/html'], ...Array.from(cabinetAssets, ([name, asset]) => [name, asset.type]),
-  ['views.js', 'text/javascript'], ['config.js', 'text/javascript'], ['cabinet.js', 'text/javascript'], ['voting.js', 'text/javascript']
+  ['views.js', 'text/javascript'], ['config.js', 'text/javascript'], ['cabinet.js', 'text/javascript'], ['voting.js', 'text/javascript'],
+  ['criteria.js', 'text/javascript'], ['typography.js', 'text/javascript']
 ]);
 let server;
 let url = site;
@@ -46,15 +47,19 @@ async function checkLoginTypography(page, alignLeft) {
     canvas.font = style.fontSize + ' ' + style.fontFamily;
     const logoLeft = document.querySelector('.hero img').getBoundingClientRect().left;
     const words = Array.from(heading.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
-    const formTitle = document.querySelector('.login-card h2').firstChild;
+    const walker = document.createTreeWalker(document.querySelector('.login-card h2'), NodeFilter.SHOW_TEXT);
+    const titleWords = [];
+    for (let node; (node = walker.nextNode());) {
+      for (const match of node.textContent.matchAll(/\S+/g)) {
+        const range = document.createRange();
+        range.setStart(node, match.index);
+        range.setEnd(node, match.index + match[0].length);
+        titleWords.push(range.getClientRects().length);
+      }
+    }
     return {
       fonts: [...document.fonts].filter(face => face.status === 'loaded').map(face => face.family.replace(/["']/g, '')).sort(),
-      formWords: Array.from(formTitle.textContent.matchAll(/\S+/g), match => {
-        const range = document.createRange();
-        range.setStart(formTitle, match.index);
-        range.setEnd(formTitle, match.index + match[0].length);
-        return range.getClientRects().length;
-      }),
+      formWords: titleWords,
       words: words.map(node => {
         const range = document.createRange();
         range.selectNodeContents(node);
@@ -66,11 +71,12 @@ async function checkLoginTypography(page, alignLeft) {
   });
   assert.ok(['MTS Compact', 'MTS Extended'].every(face => title.fonts.includes(face)), 'Load both original contest typefaces.');
   assert.deepEqual(title.words.map(word => word.lines), [1, 1], 'Each word of the contest title must fit on one line.');
+  assert.equal(title.formWords.length, 3);
   assert.ok(title.formWords.every(lines => lines === 1), 'The sign-in heading should wrap between words.');
   if (alignLeft) assert.ok(title.words.every(word => Math.abs(word.inkOffset) <= 2), 'Align both opening capitals with the logo.');
 }
 
-async function useFixture(context) {
+async function useFixture(context, fault) {
   await context.route(fixtureOrigin + '/**', async route => {
     const request = route.request();
     const endpoint = new URL(request.url());
@@ -83,13 +89,22 @@ async function useFixture(context) {
     if (request.method() === 'OPTIONS') return reply({ status: 204 });
     if (endpoint.pathname === '/auth/v1/token') {
       const data = request.postDataJSON();
+      if (endpoint.searchParams.get('grant_type') === 'refresh_token') {
+        fault.refreshes++;
+        return data.refresh_token === 'fixture-refresh' && !fault.revoked
+          ? reply({ json: { access_token: 'fixture-token', refresh_token: 'fixture-refresh', expires_in: 3600,
+            user: { id: '00000000-0000-4000-8000-000000000001' } } })
+          : reply({ status: 400, json: {} });
+      }
       const success = data.email === 'jury-01@jury.example.com' && data.password === juror.password;
       return success ? reply({ json: { access_token: 'fixture-token', refresh_token: 'fixture-refresh', expires_in: 3600,
         user: { id: '00000000-0000-4000-8000-000000000001' } } })
         : reply({ status: 400, json: {} });
     }
     if (request.headers().authorization !== 'Bearer fixture-token') return reply({ status: 403 });
-    if (endpoint.pathname === '/rest/v1/jury_works') return reply({ json: works });
+    if (endpoint.pathname === '/rest/v1/jury_works') {
+      return fault.unavailable ? reply({ status: 503 }) : reply({ json: works });
+    }
     if (endpoint.pathname.startsWith('/storage/v1/object/authenticated/')) {
       return reply({ contentType: 'application/pdf', body: fixturePdf });
     }
@@ -107,7 +122,8 @@ try {
     const browser = await profile.engine.launch(profile.options);
     try {
       const context = await browser.newContext(profile.screen);
-      if (!live) await useFixture(context);
+      const fault = { refreshes: 0, unavailable: false, revoked: false };
+      if (!live) await useFixture(context, fault);
       const page = await context.newPage();
       const activate = locator => profile.touch ? locator.tap() : locator.press('Enter');
       const heading = page.locator('main h1');
@@ -146,6 +162,34 @@ try {
         await page.screenshot({ path: path.join(process.env.JURY_QA_SCREENSHOTS, profile.name + '-work.png') });
       }
 
+      await page.reload();
+      await open.waitFor();
+      assert.equal(await heading.textContent(), profile.work.title);
+      if (!live) {
+        const expire = () => page.evaluate(() => {
+          const key = 'jury.session.v1/https://aaaaaaaaaaaaaaaaaaaa.supabase.co';
+          const saved = JSON.parse(sessionStorage.getItem(key));
+          saved.validUntil = 0;
+          sessionStorage.setItem(key, JSON.stringify(saved));
+        });
+        await expire();
+        fault.unavailable = true;
+        await page.reload();
+        await button('Повторить загрузку').waitFor();
+        assert.equal(fault.refreshes, 1);
+        fault.unavailable = false;
+        await activate(button('Повторить загрузку'));
+        await open.waitFor();
+        assert.equal(await heading.textContent(), profile.work.title);
+        await expire();
+        fault.revoked = true;
+        await page.reload();
+        await page.getByRole('alert').waitFor();
+        assert.equal(await page.locator('#open-pdf').count(), 0);
+        fault.revoked = false;
+        await filling(juror.password);
+        await open.waitFor();
+      }
       let opened;
       const opening = new Promise(resolve => { opened = resolve; });
       const watch = tab => {
@@ -177,6 +221,9 @@ try {
       await activate(button('Выйти'));
       await button('Войти').waitFor();
       assert.equal(await page.locator('.work-link').count(), 0);
+      await page.reload();
+      await button('Войти').waitFor();
+      assert.equal(await page.locator('.work-link, #open-pdf').count(), 0);
       console.log(profile.name + ': login, 15 works, ' + variant + ', return and logout.');
     } finally {
       await browser.close();
