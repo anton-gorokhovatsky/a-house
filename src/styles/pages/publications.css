@@ -218,8 +218,11 @@
 @media (min-width: 48em) {
   .partner-client-list { grid-template-columns: repeat(4,minmax(0,1fr)); }
   .press-distribution { grid-template-columns: minmax(0,1.25fr) minmax(0,.75fr); }
-  .press-interview { grid-template-columns: minmax(0,1fr) minmax(0,1.6fr); gap: var(--group); }
-  .press-interview figure { max-inline-size: 23rem; }
+  .press-interview {
+    grid-template-columns: min(23rem, calc((100% - var(--group)) / 2.6)) minmax(0, 1fr);
+    gap: var(--group);
+  }
+  .press-interview figure { max-inline-size: none; }
   .partner-photos { grid-template-columns: repeat(4,minmax(0,1fr)); }
 }
 @media (min-width: 64em) {
