@@ -4,6 +4,7 @@
   const filters = document.getElementById('calendar-filters');
   const months = filters.querySelector('.calendar-months');
   const monthLinks = [...filters.querySelectorAll('[data-calendar-month]')];
+  const monthYears = [...months.querySelectorAll('.calendar-filter-year')];
   const audienceLinks = [...filters.querySelectorAll('[data-calendar-audience]')];
   const events = [...calendar.querySelectorAll('[data-calendar-event]')];
   const upcomingSection = document.getElementById('upcoming');
@@ -44,9 +45,22 @@
     }
   }
 
-  function updateArchive() {
+  function updateArchive(month, kids) {
+    const archiveOnly = months.parentElement === archive;
+    const archiveEvents = [...past.children].filter(event => !kids || event.dataset.audience === 'kids');
+    for (const link of monthLinks) {
+      const key = link.dataset.calendarMonth;
+      const available = !archiveOnly || !key || archiveEvents.some(event => inMonth(event, key));
+      if (key) link.parentElement.hidden = !available;
+      const destination = filterURL(key, kids);
+      if (archiveOnly) destination.hash = 'past';
+      syncLink(link, destination, available && month === key);
+    }
+    for (const year of monthYears) year.hidden = !year.querySelector('li:not([hidden])');
+    months.hidden = archiveOnly && !archiveEvents.length;
+
     const hasResults = Boolean(past.querySelector(':scope > :not([hidden])'));
-    const hasMonthPicker = months.parentElement === archive && past.childElementCount > 0;
+    const hasMonthPicker = archiveOnly && !months.hidden;
     archive.hidden = !hasResults && !hasMonthPicker;
     archiveEmpty.hidden = hasResults || !empty.hidden;
   }
@@ -59,11 +73,12 @@
     const active = months.contains(document.activeElement) ? document.activeElement : null;
     const keyboardFocus = active?.matches(':focus-visible');
     parent.insertBefore(months, sidebar ? filters.querySelector('[data-calendar-count]') : archiveEmpty);
-    updateArchive();
-    if (active && (sidebar || !archive.hidden)) {
-      active.focus({ preventScroll: true });
-      if (keyboardFocus) active.scrollIntoView({ block: 'nearest', behavior: 'instant' });
-    }
+    showSelection();
+    if (!active) return;
+    const selectedAudience = audienceLinks.find(link => link.hasAttribute('aria-current'));
+    const next = [active, monthLinks[0], selectedAudience].find(link => link?.getClientRects().length);
+    next?.focus({ preventScroll: true });
+    if (keyboardFocus) next?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
   }
 
   function showSelection() {
@@ -103,7 +118,6 @@
     }
     order(upcoming, currentEvents.sort(chronological));
     order(past, pastEvents.sort((a, b) => b.dataset.end.localeCompare(a.dataset.end) || chronological(b, a)));
-    for (const link of monthLinks) syncLink(link, filterURL(link.dataset.calendarMonth, kids), month === link.dataset.calendarMonth);
     for (const link of audienceLinks) syncLink(link, filterURL(month, !!link.dataset.calendarAudience), kids === !!link.dataset.calendarAudience);
     const total = visiblePast + visibleCurrent;
     const filtered = !!month || kids;
@@ -119,8 +133,7 @@
     if (!empty.hidden) empty.querySelector('p').textContent = kids
       ? (month ? 'В выбранном месяце нет событий для детей.' : 'В календаре пока нет событий для детей.')
       : 'В выбранном месяце нет событий.';
-    updateArchive();
-    return { visibleCurrent, visiblePast };
+    updateArchive(month, kids);
   }
 
   calendar.addEventListener('click', event => {
@@ -128,13 +141,7 @@
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     event.preventDefault();
     if (link.href !== location.href) history.pushState(null, '', link.href);
-    const { visibleCurrent, visiblePast } = showSelection();
-    if (months.parentElement === archive && link.dataset.calendarMonth && visibleCurrent && !visiblePast) {
-      upcomingSection.focus({ preventScroll: true });
-      const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
-      upcomingSection.scrollIntoView({ block: 'start', behavior });
-      return;
-    }
+    showSelection();
     const results = calendar.querySelector('.calendar-stream');
     if (getComputedStyle(filters).position === 'sticky' && results.getBoundingClientRect().top < 0) {
       results.scrollIntoView({ block: 'start' });

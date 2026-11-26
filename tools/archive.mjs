@@ -86,23 +86,35 @@ export function renderFriendCover(issues) {
   return issue ? `<figure class="home-friend-cover">${printCover(issue, 'friend-cover-image')}<figcaption>${escape(issue.title)}</figcaption></figure>` : '';
 }
 
-function renderFeaturedIssue(issue) {
+function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt, homeLink } = {}) {
   const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
-  const more = issue.announcement
+  const headingId = id ? escape(id) + '-title' : '';
+  const attributes = id ? ` id="${escape(id)}" tabindex="-1" aria-labelledby="${headingId}"` : '';
+  let more = issue.announcement
     ? `<div class="press-page-links"><a href="${escape(issue.announcement)}">О выпуске в Telegram</a></div>`
     : '';
+  if (homeLink) {
+    more = `<div class="home-links"><a href="${escape(homeLink)}">О выпуске ${escape(issue.edition)}</a></div>`;
+  }
   const article = issue.article
     ? `<div class="press-page-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`
     : '';
-  return `<article class="press-featured-issue">
+  return `<article class="press-featured-issue"${attributes}>
     ${issue.cover ? printCover(issue, 'press-featured-cover') : ''}
     <div class="press-featured-copy">
-      <p class="home-kicker">${dateMarkup(issue.published)}</p>
-      <h3>${title}</h3>
+      ${issue.published ? '<p class="home-kicker">' + dateMarkup(issue.published) + '</p>' : ''}
+      <${heading}${headingId ? ' id="' + headingId + '"' : ''}>${title}</${heading}>
       ${issue.description ? '<p>' + escape(issue.description) + '</p>' : ''}
+      ${excerpt ? '<p>' + escape(excerpt) + '</p>' : ''}
       ${more}${article}
     </div>
   </article>`;
+}
+
+export function renderPressFeature(issue, home) {
+  return home
+    ? renderFeaturedIssue(issue, { id: 'home-press-issue', heading: 'h4', homeLink: '@@ROOT@@press/#' + issue.anchor })
+    : renderFeaturedIssue(issue, { id: issue.anchor, heading: 'h2', excerpt: issue.excerpt });
 }
 
 export function renderCurrentPrintIssues(issues) {

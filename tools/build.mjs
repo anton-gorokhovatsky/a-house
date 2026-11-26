@@ -12,7 +12,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { collectArchive, renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
+import { collectArchive, renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderArchiveCatalog, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 import { clubPrograms } from '../src/data/club-programs.mjs';
@@ -171,6 +171,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const directions = JSON.parse(await source('data/projects.json'));
   const projectNavigation = renderProjectNavigation(directions);
   const projects = directions.flatMap(group => group.projects);
+  const pressFeature = projects.find(project => project.href === '@@ROOT@@press/').featuredIssue;
   const houseProjects = projects.filter(project => project.venue);
   const printEditions = JSON.parse(await source('data/print-editions.json'));
   const currentPrintIssues = subscriptionIssues(printEditions);
@@ -317,6 +318,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
+      .replace('<!-- PRESS FEATURE -->', () => renderPressFeature(pressFeature, home))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
       .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
       .replace('<!-- FRIEND FEATURED COVER -->', () => renderFriendCover(currentPrintIssues))

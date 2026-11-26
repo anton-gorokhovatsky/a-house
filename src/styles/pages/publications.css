@@ -73,6 +73,11 @@
 .home-page .press-page :is(.press-friend, #print-archive, .press-distribution) h2 { margin-block-end: .22em; }
 .home-page .press-page :is(.press-friend > p, .print-archive-intro) { max-inline-size: 57ch; text-wrap: pretty; }
 .home-page .press-page .press-friend > .home-action { margin-block-start: .72em; }
+.press-inner > .press-featured-issue { margin-block-start: var(--group); scroll-margin-block-start: 1rem; }
+.home-page .press-inner > .press-featured-issue h2 {
+  margin-block-end: .35em; font-size: var(--type-subsection); text-wrap: pretty;
+}
+.home-page .press-featured-copy > p + p { margin-block-start: .55em; }
 .press-friend-issues {
   display: grid; gap: var(--story-gap) var(--group); align-items: start;
   margin-block-start: var(--group);
@@ -87,6 +92,10 @@
 @container publication-content (min-width: 19em) {
   .press-featured-issue:has(img) { grid-template-columns: minmax(7rem, .35fr) minmax(0, 1fr); max-inline-size: 43rem; }
   .press-featured-issue .press-featured-cover { width: 100%; }
+}
+@container publication-content (max-width: 30em) {
+  .press-inner > .press-featured-issue { grid-template-columns: minmax(0, 1fr); }
+  .press-inner > .press-featured-issue .press-featured-cover { width: min(56%, 11rem); }
 }
 @container publication-content (min-width: 48em) {
   .press-friend-issues { grid-template-columns: minmax(0, 1fr) minmax(0, .56fr); max-inline-size: 70rem; }

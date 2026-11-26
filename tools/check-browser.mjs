@@ -346,20 +346,36 @@ async function checkCalendar(page, mobile) {
   assert.equal(await page.locator('h3 a[href="https://dompred.ru/events/marketing-mastermind"]').count(), 1);
 }
 
-async function checkUpcomingMonthFromArchive(page) {
-  await page.clock.setFixedTime(new Date('2026-11-25T12:00:00+03:00'));
+async function checkArchiveMonths(page) {
+  const december = page.locator('#past [data-calendar-month="2026-12"]');
+  const upcoming = page.locator('#upcoming [data-calendar-event]:visible');
+  const archived = page.locator('#past [data-calendar-event]:visible');
+  await page.clock.setFixedTime(new Date('2026-11-26T12:00:00+03:00'));
   await page.goto(url + 'calendar/#past');
-  await page.locator('#past [data-calendar-month="2026-12"]').tap();
-  await page.waitForURL(url + 'calendar/?month=2026-12');
-  await page.waitForFunction(() => {
-    const results = document.getElementById('upcoming');
-    const top = results.getBoundingClientRect().top;
-    return document.activeElement === results && top >= 0 && top < innerHeight / 2;
-  });
-  assert.ok(await page.locator('#upcoming [data-calendar-event]:visible').count() > 0);
+  assert.equal(await december.isVisible(), false, 'An upcoming-only month is absent from the mobile archive');
+  assert.ok(await page.locator('#upcoming [data-start^="2026-12"]:visible').count() > 0,
+    'Upcoming December events remain in the program');
+  await page.locator('#past [data-calendar-month="2026-11"]').tap();
+  await page.waitForURL(url + 'calendar/?month=2026-11#past');
+  assert.ok(await archived.count() > 0);
+  assert.ok(await archived.evaluateAll(rows => rows.every(row =>
+    row.dataset.end >= '2026-11-01' && row.dataset.end < '2026-11-26'
+  )));
   await page.goBack();
   await page.waitForURL(url + 'calendar/#past');
   assert.equal(await page.locator('#past [data-calendar-month=""]').getAttribute('aria-current'), 'true');
+
+  await page.goto(url + 'calendar/?month=2026-12');
+  await page.waitForURL(url + 'calendar/?month=2026-12');
+  assert.ok(await upcoming.count() > 0, 'Existing upcoming month links still open the program');
+  assert.equal(await archived.count(), 0);
+
+  await page.clock.setFixedTime(new Date('2026-12-02T00:00:00+03:00'));
+  await page.goto(url + 'calendar/#past');
+  await december.tap();
+  await page.waitForURL(url + 'calendar/?month=2026-12#past');
+  assert.ok(await page.locator('#past [data-start="2026-12-01"]:visible').count() > 0);
+  assert.ok(await upcoming.count() > 0);
 }
 
 async function checkVisitorLinks(page, mobile) {
@@ -432,9 +448,23 @@ async function checkVisitorLinks(page, mobile) {
   const cover = pressFeature.locator('.press-featured-cover');
   await cover.scrollIntoViewIfNeeded();
   await cover.evaluate(image => image.decode());
-  const announcement = pressFeature.getByRole('link', {name: 'О выпуске A–Build в Telegram', exact: true});
+  const photo = await cover.getAttribute('src');
+  const issueLink = pressFeature.getByRole('link', {name: 'О выпуске A–Build', exact: true});
+  assert.equal(await issueLink.locator('.external-link-mark').count(), 0);
+  await activate(issueLink);
+  await page.waitForURL(url + 'press/#a-build');
+  const issue = page.getByRole('article', {name: 'A–Build о новом Доме A–House'});
+  await issue.getByRole('heading', {level: 2}).waitFor();
+  assert.equal(await issue.locator('.press-featured-cover').getAttribute('src'), photo);
+  assert.ok(await issue.evaluate(element => Boolean(
+    element.compareDocumentPosition(document.getElementById('current-issues')) & Node.DOCUMENT_POSITION_FOLLOWING
+  )));
+  const announcement = issue.getByRole('link', {name: 'О выпуске в Telegram', exact: true});
   assert.equal(await announcement.getAttribute('href'), 'https://t.me/ahouseproject/10610');
   assert.equal(await announcement.locator('.external-link-mark').getAttribute('aria-hidden'), 'true');
+  await page.goBack();
+  await page.waitForURL(url);
+  await issueLink.waitFor({state:'visible'});
   const archiveLink = editions.getByRole('link', {name:'Архив печатных номеров', exact:true});
   assert.equal(await archiveLink.evaluate(link => link.href), url + 'press/#print-archive');
   const editorialTitles = await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts();
@@ -508,6 +538,9 @@ async function checkVisitorLinks(page, mobile) {
   assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
   assert.equal(await page.locator('main .press-book').count(), 0);
   const current = page.locator('#current-issues');
+  assert.ok(await current.locator('.home-action').evaluate(action => Boolean(
+    action.previousElementSibling?.matches('.press-friend-issues')
+  )));
   const latestIssues = printCatalog.filter(series => series.latest)
     .sort((a, b) => b.latest.published.localeCompare(a.latest.published));
   const featured = latestIssues.find(series => series.latest.cover);
@@ -1277,7 +1310,7 @@ async function checkWebKit() {
   await checkMobileExhibition(phone);
   await phone.goto(url + '#visit');
   await checkSkipLink(phone, 'visit', nextTab);
-  await checkUpcomingMonthFromArchive(phone);
+  await checkArchiveMonths(phone);
   await checkFeaturePages(phone, url, {mobile: true, nextTab});
   await phone.close();
   console.log('WebKit iPhone 13: exhibition, skip link, calendar and project pages.');
@@ -1336,7 +1369,7 @@ async function checkChrome() {
       assert.ok(![...requested].some(src => /\.gif(?:\?|$)/i.test(src)), 'An animated GIF loaded in reduced motion');
       const futurePage = await browserPage({ ...pageOptions, reducedMotion: 'reduce' });
       await checkExpiredProgram(futurePage);
-      await checkUpcomingMonthFromArchive(futurePage);
+      await checkArchiveMonths(futurePage);
       await futurePage.close();
     }
     await checkArchiveReading(page);
