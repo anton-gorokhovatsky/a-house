@@ -6,11 +6,13 @@
   margin-inline-start: var(--external-link-gap, .23em);
   vertical-align: .04em;
 }
-.external-link-mark > path { stroke-width: var(--external-link-stroke, 1.2px); }
+.external-link-mark > .external-link-outline { display: var(--external-link-outline-display, inline); }
+.external-link-mark > .external-link-serif { display: var(--external-link-serif-display, none); }
 
-/* Match the thinner strokes and closer spacing of the serif display headings. */
+/* The tapered arrow matches the contrast of the serif display headings. */
 :where(.home-editorial :is(h1, h2, h3), .home-project-feature h4) .external-link-mark {
   --external-link-size: .64em;
   --external-link-gap: .19em;
-  --external-link-stroke: .92px;
+  --external-link-outline-display: none;
+  --external-link-serif-display: inline;
 }
