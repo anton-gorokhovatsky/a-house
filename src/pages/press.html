@@ -11,27 +11,29 @@
       <h2 id="current-issues-title">Свежие номера в A–Friend</h2>
       <p>Подписчики A–Friend могут читать полные выпуски в приложении A–House. В подписку также входят путеводители, подборки и приглашения на выставки.</p>
       <!-- CURRENT PRINT ISSUES -->
-      <a class="home-action" href="@@ROOT@@#a-friend">{{friendAction}}</a>
+      <a class="home-action" href="@@ROOT@@a-friend/">{{friendAction}}</a>
     </section>
     <section id="periodicals" tabindex="-1" aria-labelledby="periodicals-title">
       <h2 id="periodicals-title">Газеты и журналы</h2>
       <!-- FEATURED PRINT PROJECT -->
       <div class="home-editions"><!-- PROJECTS editions --></div>
       <aside class="press-partner-edition" id="a-focus" aria-labelledby="a-focus-heading">
-        <picture>
-          <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/focus-cf4cfaa096c3.webp">
-          <img src="@@ROOT@@media/focus-cf4cfaa096c3.gif" width="1155" height="1155" alt="Выпуски партнёрской газеты A–Focus" loading="lazy" decoding="async">
-        </picture>
+        <div class="press-motion" data-press-motion="@@ROOT@@media/focus-cf4cfaa096c3.gif">
+          <img id="press-focus-animation" src="@@ROOT@@media/stills/focus-cf4cfaa096c3.webp" width="1155" height="1155" alt="Выпуски партнёрской газеты A–Focus" loading="lazy" decoding="async">
+          <button type="button" aria-controls="press-focus-animation" hidden><span>Смотреть анимацию</span><span class="screen-reader-only"> обложек A–Focus</span></button>
+          <p class="press-motion-status" role="status"></p>
+        </div>
         <div>
           <h3 id="a-focus-heading">Выпустить газету A–Focus</h3>
           <p>Редакция готовит отдельную газету для партнёра. Вместе выбирают тему и формат выпуска, редакция отвечает за материалы и оформление.</p>
           <div class="press-page-links"><a href="https://disk.360.yandex.ru/d/owUTpo00J2bXrQ/A-Press%20price.pdf">Условия и стоимость выпуска на Яндекс Диске</a></div>
         </div>
       </aside>
-      <div id="rec2308376911" class="press-opening-image"><picture>
-          <source media="(prefers-reduced-motion: reduce)" srcset="@@ROOT@@media/stills/gen2-05cd05f38630.webp">
-          <img src="@@ROOT@@media/gen2-05cd05f38630.gif" width="1680" height="900" alt="Обложки и развороты печатных изданий A–House" loading="lazy" decoding="async">
-        </picture></div>
+      <div id="rec2308376911" class="press-opening-image press-motion" data-press-motion="@@ROOT@@media/gen2-05cd05f38630.gif">
+        <img id="press-editions-animation" src="@@ROOT@@media/stills/gen2-05cd05f38630.webp" width="1680" height="900" alt="Обложки и развороты печатных изданий A–House" loading="lazy" decoding="async">
+        <button type="button" aria-controls="press-editions-animation" hidden><span>Смотреть анимацию</span><span class="screen-reader-only"> разворотов A–Press</span></button>
+        <p class="press-motion-status" role="status"></p>
+      </div>
       <div class="press-page-links"><!-- PRESS MEDIA KIT --></div>
     </section>
     <section id="distribution" class="press-distribution" tabindex="-1" aria-labelledby="distribution-title">
@@ -45,7 +47,7 @@
     <section id="print-archive" tabindex="-1" aria-labelledby="print-archive-title">
       <h2 id="print-archive-title">Архив печатных номеров</h2>
       <p class="print-archive-intro">Здесь можно прочитать предыдущие выпуски. Свежие номера доступны в приложении A–House по подписке.</p>
-      <div class="press-page-links"><a href="@@ROOT@@#a-friend">{{friendAction}}</a></div>
+      <div class="press-page-links"><a href="@@ROOT@@a-friend/">{{friendAction}}</a></div>
       <!-- PRINT ISSUES -->
       <nav class="print-stories" aria-labelledby="print-stories-title">
         <h3 id="print-stories-title">Из выпусков A–Focus</h3>

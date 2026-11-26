@@ -7,7 +7,12 @@
       "anchor": "friend-a-news",
       "number": 8,
       "topic": "«Бумага»",
-      "published": "2026-09-03"
+      "published": "2026-09-03",
+      "description": "Художник Игорь Самолет рассказывает о блокнотах, работе с бумагой и любви к советскому модернизму.",
+      "article": {
+        "href": "https://news.ahouseproject.com/a-interview-igor-samolet/",
+        "title": "Читать интервью с Игорем Самолетом"
+      }
     },
     "issues": [
       {
@@ -246,7 +251,12 @@
       "anchor": "friend-a-sport",
       "number": 4,
       "topic": "«Глубина»",
-      "published": "2026-09-05"
+      "published": "2026-09-05",
+      "description": "Чемпион по фридайвингу Алексей Молчанов вспоминает, как начал нырять, и рассказывает о тренировках на глубине.",
+      "article": {
+        "href": "https://news.ahouseproject.com/a-interview-aleksej-molchanov/",
+        "title": "Читать интервью с Алексеем Молчановым"
+      }
     },
     "issues": [
       {
@@ -300,7 +310,9 @@
       "anchor": "friend-a-state",
       "number": 3,
       "topic": "«Северный Кавказ»",
-      "published": "2026-04-25"
+      "published": "2026-04-25",
+      "description": "Как подготовиться к походу по Мамисонскому ущелью и что увидеть по дороге.",
+      "announcement": "https://t.me/ahouseproject/7123"
     },
     "issues": [
       {

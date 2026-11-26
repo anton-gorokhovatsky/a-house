@@ -228,9 +228,9 @@ async function checkReadingReturn(page, mobile) {
   for (const [path, section] of origins) {
     const origin = url + path;
     await page.goto(origin);
-    const subscription = page.locator(section + ' a[href$="#a-friend"]');
+    const subscription = page.locator(section + ' a[href$="/a-friend/"]');
     assert.equal((await subscription.innerText()).replace(/\s+/g, ' '), friendLabel);
-    assert.equal(await subscription.evaluate(link => link.href), url + '#a-friend');
+    assert.equal(await subscription.evaluate(link => link.href), url + 'a-friend/');
     const activationMarker = 'Subscription link position ';
     await subscription.evaluate(async (link, marker) => {
       await document.fonts.ready;
@@ -243,32 +243,37 @@ async function checkReadingReturn(page, mobile) {
     ]);
     const top = Number(activation.text().slice(activationMarker.length));
     assert.ok(Number.isFinite(top));
-    await page.waitForURL(url + '#a-friend');
+    await page.waitForURL(url + 'a-friend/');
     await form.waitFor();
     assert.equal(await page.locator('dialog[open]').count(), 0);
     assert.equal(await form.locator('input[name="product"]').getAttribute('value'), 'A-Friend');
-    assert.equal(await page.locator('#a-friend').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
+    assert.equal(await page.locator('main').getByRole('link', { name: /app store|ahouseproject\.com|демоверси/i }).count(), 0);
     await page.goBack();
     await page.waitForURL(origin);
     await page.waitForFunction(({link, top}) => link === document.activeElement &&
       Math.abs(link.getBoundingClientRect().top - top) < 4, { link: await subscription.elementHandle(), top });
   }
   await page.goForward();
-  await page.waitForURL(url + '#a-friend');
+  await page.waitForURL(url + 'a-friend/');
   await form.waitFor();
-  await page.goto(url + '#friend');
-  assert.ok(await form.isVisible(), 'The former subscription bookmark reaches the same terms and order');
+  for (const fragment of ['#friend', '#a-friend']) {
+    await page.goto(url + fragment);
+    await page.waitForURL(url + 'a-friend/');
+    assert.ok(await form.isVisible(), 'The former subscription bookmark reaches the same terms and order');
+  }
   await page.goto(url + '?bookmark=friend#services-checkout');
-  await page.waitForURL(url + '?bookmark=friend#a-friend');
+  await page.waitForURL(url + 'a-friend/?bookmark=friend');
   assert.ok(await form.isVisible(), 'Published checkout bookmarks open the subscription at its current address');
+  assert.equal(await page.getByRole('heading', {level: 1, name: 'A–Friend'}).count(), 1);
+  assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'A–Friend — подписка A–House');
 
-  const freshIssues = page.locator('#a-friend').getByRole('link', { name: 'Свежие выпуски', exact: true });
+  const freshIssues = page.locator('main').getByRole('link', { name: 'Свежие выпуски', exact: true });
   if (mobile) await freshIssues.tap();
   else await freshIssues.press('Enter');
   await page.waitForURL(url + 'press/#current-issues');
   assert.ok(await page.locator('#current-issues-title').isVisible());
   await page.goBack();
-  await page.waitForURL(url + '?bookmark=friend#a-friend');
+  await page.waitForURL(url + 'a-friend/?bookmark=friend');
   assert.ok(await form.isVisible());
 }
 
@@ -381,6 +386,14 @@ async function checkArchiveMonths(page) {
   await page.waitForURL(url + 'calendar/?month=2026-12');
   assert.ok(await upcoming.count() > 0, 'Existing upcoming month links still open the program');
   assert.equal(await archived.count(), 0);
+  assert.equal(await page.locator('[data-selected-month]').innerText(), 'Декабрь 2026');
+  await page.getByRole('link', {name: 'Сбросить фильтр месяца'}).tap();
+  await page.waitForURL(url + 'calendar/');
+  assert.ok(await page.locator('#upcoming [data-start^="2026-11"]:visible').count() > 0);
+  assert.equal(await page.locator('[data-month-selection]').isVisible(), false);
+  await page.goBack();
+  await page.waitForURL(url + 'calendar/?month=2026-12');
+  assert.ok(await page.locator('[data-month-selection]').isVisible());
 
   await page.clock.setFixedTime(new Date('2026-12-02T00:00:00+03:00'));
   await page.goto(url + 'calendar/#past');
@@ -471,7 +484,7 @@ async function checkVisitorLinks(page, mobile) {
   assert.ok(await issue.evaluate(element => Boolean(
     element.compareDocumentPosition(document.getElementById('current-issues')) & Node.DOCUMENT_POSITION_FOLLOWING
   )));
-  const announcement = issue.getByRole('link', {name: 'О выпуске в Telegram', exact: true});
+  const announcement = issue.getByRole('link', {name: /О выпуске A–Build в Telegram/});
   assert.equal(await announcement.getAttribute('href'), 'https://t.me/ahouseproject/10610');
   assert.equal(await announcement.locator('.external-link-mark').getAttribute('aria-hidden'), 'true');
   await page.goBack();
@@ -564,6 +577,18 @@ async function checkVisitorLinks(page, mobile) {
     issueOrder.map(({latest}) => latest.published));
   if (featured) assert.equal(await current.locator('.press-featured-cover').evaluate(image => image.src), new URL(featured.latest.cover.src, url).href);
   const periodicals = page.locator('#periodicals');
+  for (const media of await periodicals.locator('[data-press-motion]').all()) {
+    const image = media.locator('img');
+    const start = media.getByRole('button', {name: /^Смотреть анимацию/});
+    const stop = media.getByRole('button', {name: /^Остановить анимацию/});
+    const still = await image.getAttribute('src');
+    const motion = await media.getAttribute('data-press-motion');
+    assert.ok(still.includes('/stills/'));
+    await activate(start);
+    assert.equal(await image.getAttribute('src'), motion);
+    await activate(stop);
+    assert.equal(await image.getAttribute('src'), still);
+  }
   assert.deepEqual((await periodicals.locator('.home-edition-brief h3').allTextContents()).map(plainText),
     periodicalProjects.map(project => project.name));
   for (const series of printCatalog) {
@@ -587,6 +612,7 @@ async function checkVisitorLinks(page, mobile) {
   await activate(booksTab);
   await page.waitForURL(url + 'press/books/');
   await page.getByRole('heading', {name:'Книги A–Press', level:1}).waitFor();
+  assert.equal(await page.locator('.press-book h2').count(), bookCatalog.length);
   assert.equal(await publisherContents.locator('[aria-current="page"]').innerText(), 'Книги A–Press');
   assert.equal(await archiveTab.evaluate(link => link.href), url + 'press/#print-archive');
   assert.equal(await page.locator('main .print-issue, main #a-focus').count(), 0);
@@ -1088,7 +1114,7 @@ async function checkClubApplication(page) {
   assert.equal(new URL(page.url()).hash, '#programs');
   await page.waitForFunction(({ href, top }) => document.activeElement?.href === href &&
     Math.abs(document.activeElement.getBoundingClientRect().top - top) <= 2 && history.scrollRestoration === 'auto', position);
-  await page.goto(url + '#a-friend');
+  await page.goto(url + 'a-friend/');
   assert.equal(await page.locator('#friend-availability').count(), 0);
   assert.equal(await page.locator('#friend-form-heading').innerText(), 'Оформление подписки');
   await checkMembershipForm(page, 'friend');
@@ -1170,13 +1196,10 @@ async function checkHomeRoutes(page, mobile) {
     const {fontFamily, fontSize, fontWeight, lineHeight} = getComputedStyle(element);
     return {fontFamily, fontSize, fontWeight, lineHeight};
   });
-  let visitHeadingStyle;
-  for (const [anchor, title] of [['visit', 'Дома и адреса'], ['a-friend', 'A–Friend']]) {
-    await page.goto(url + '#' + anchor);
-    assert.equal(await page.title(), title + ' — A–House');
-    if (anchor === 'visit') visitHeadingStyle = await headingStyle('#visit-heading');
-    await checkSkipLink(page, anchor);
-  }
+  await page.goto(url + '#visit');
+  assert.equal(await page.title(), 'Дома и адреса — A–House');
+  const visitHeadingStyle = await headingStyle('#visit-heading');
+  await checkSkipLink(page, 'visit');
   await checkReadingReturn(page, mobile);
   await checkEditorialGrouping(page);
   await page.goto(url);
@@ -1290,9 +1313,9 @@ async function checkHomeRoutes(page, mobile) {
   assert.equal(await friendLink.evaluate(link => link.closest('li').previousElementSibling?.querySelector('a')?.href), url + 'club/');
   if (mobile) await friendLink.tap();
   else await friendLink.press('Enter');
-  await page.waitForURL(url + '#a-friend');
+  await page.waitForURL(url + 'a-friend/');
   await page.locator('#friend-form').waitFor();
-  assert.equal(await friendLink.getAttribute('aria-current'), 'true');
+  assert.equal(await friendLink.getAttribute('aria-current'), 'page');
   assert.equal(await page.locator('dialog[open]').count(), 0);
   await page.goto(url + '#visit');
   await section('visit').waitFor({ state: 'visible' });

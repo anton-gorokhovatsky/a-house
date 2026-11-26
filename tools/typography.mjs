@@ -98,7 +98,10 @@ function cleanLinkUnderlines(tokens) {
 // then put its characters back in the original text nodes. This keeps both
 // sides of a link and its complete opening tag exactly where the author put them.
 export function typesetText(html) {
-  const tokens = html.match(htmlTokens) ?? [];
+  // Compact navigation and archive labels underline their words, leaving spaces between them.
+  const labels = html.replace(/(<a\b[^>]*\bclass="word-underlined-link"[^>]*>)([^<]+)(<\/a>)/gi,
+    (_, start, label, end) => start + label.replace(/[^\s]+/gu, word => '<span class="link-word">' + word + '</span>') + end);
+  const tokens = labels.match(htmlTokens) ?? [];
   const run = [];
   let excludedDepth = 0;
   let heading = false;

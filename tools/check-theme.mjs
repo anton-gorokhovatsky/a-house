@@ -90,7 +90,7 @@ export async function checkTheme(browser, url) {
     assert.ok(await choice(page, 'Светлая').isChecked());
     assert.equal(await canvas(page), light);
     await group(page).getByText('Тёмная', { exact: true }).tap();
-    await page.goto(url + '#a-friend');
+    await page.goto(url + 'a-friend/');
     await page.locator('#friend-name').fill('Анна');
     await page.evaluate(() => document.fonts.ready);
     const reading = () => page.locator('#friend-name').evaluate(field => ({
@@ -118,7 +118,7 @@ export async function checkTheme(browser, url) {
     assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
     assert.ok(await toggle.evaluate(button => document.activeElement === button));
     assert.deepEqual(await reading(), beforeMenu);
-    assert.equal(await page.locator('#overview').getAttribute('data-view'), 'a-friend');
+    assert.equal(await page.locator('body').getAttribute('data-page'), 'a-friend');
     assert.equal(await page.locator('#friend-name').inputValue(), 'Анна');
     for (const path of ['calendar/', 'calendar/light-of-time/', 'club/', 'member/', 'agreement/', 'archive/', '404.html']) {
       await page.goto(url + path);

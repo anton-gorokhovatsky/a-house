@@ -10,11 +10,17 @@
   function followSectionBookmark() {
     const clubLink = '#club .home-links > a';
     const shortcuts = { '#program': '.home-calendar-link', '#club': clubLink, '#rec2309637911': clubLink };
-    const selector = shortcuts[location.hash];
+    const fragment = location.hash;
+    const friendIssue = fragment.startsWith('#friend-a-');
+    const friendAnchor = friendIssue || fragment === '#form634408909' || fragment === '#order:A-Friend=12000';
+    const friendEntry = friendAnchor || ['#a-friend', '#services-checkout', '#friend',
+      '#rec634408909', '#rec3091941801', '#rec3796030101'].includes(fragment);
+    const selector = friendEntry ? '#site-navigation a[href$="/a-friend/"]' : shortcuts[fragment];
     const link = selector && document.querySelector(selector);
     if (!link) return false;
     const destination = new URL(link.href);
     destination.search = location.search;
+    if (friendAnchor) destination.hash = fragment;
     location.replace(destination.href);
     return true;
   }
@@ -55,10 +61,6 @@
 
   function hashTarget() {
     const id = location.hash.slice(1);
-    if (id === 'services-checkout') {
-      history.replaceState(history.state, '', '#a-friend');
-      return document.getElementById('a-friend');
-    }
     const target = document.getElementById(id);
     if (!target && id.startsWith('job-')) {
       history.replaceState(history.state, '', '#jobs');

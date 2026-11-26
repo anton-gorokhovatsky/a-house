@@ -161,7 +161,6 @@ body { background-color: var(--ah-paper); color: var(--ah-ink); }
 
 .archive-index { color: var(--ah-ink); }
 .archive-index small { color: var(--ah-quiet); }
-.archive-index li { border-color: light-dark(#bbb, #646461); }
 .missing-page { background-color: light-dark(#000, #101112); color: light-dark(#fff, #f2f0eb); }
 .archive-article.t-feed__post-popup,
 .archive-article :is(.t-feed__post-popup__container, .t-feed__post-popup__close-wrapper) {

@@ -207,7 +207,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const friendExtras = 'В подписку также входят путеводители, подборки фильмов, ресторанов и спектаклей, дайджесты событий, трансляции с международных площадок и приглашения на выставки A–House.';
   const friendAction = friend ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
   const priceLabel = new Intl.NumberFormat('ru-RU').format(friendPrice) + ' ₽';
-  const period = env.A_FRIEND_PERIOD?.trim();
+  const period = env.A_FRIEND_PERIOD?.trim() || 'за год';
   const orderForm = renderMembership('friend', friendTemplate, agreements, friend)
     .replace('{{friendUnitPrice}}', String(friendPrice)).replace('{{friendTotal}}', priceLabel);
   const programOptions = Object.entries(clubPrograms).map(([id, name]) =>
@@ -239,8 +239,9 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
   function scriptsFor(page) {
     if (page.layout === 'project') return ['js/site.js', ...(page.slug === 'a_pass' ? ['js/services.js'] : ['js/project-stories.js'])];
-    if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/membership.js'];
-    if (page.slug === 'member') return [...scripts, 'js/membership.js'];
+    if (page.slug === 'home') return [...scripts, 'js/home.js'];
+    if (page.slug === 'member' || page.slug === 'a-friend') return [...scripts, 'js/membership.js'];
+    if (page.slug === 'press') return [...scripts, 'js/press.js'];
     if (page.slug === 'calendar') return [...scripts, 'js/calendar.js'];
     if (page.event) return [...scripts, 'js/event.js'];
     return scripts;
@@ -302,6 +303,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
         .replace('{{housesCurrent}}', housePages.has(page.slug) ? ' aria-current="location"' : '')
         .replace('{{pressCurrent}}', pressPages.has(page.slug) ? ' aria-current="' + (page.slug === 'press' ? 'page' : 'location') + '"' : '')
         .replace('{{clubCurrent}}', clubPages.has(page.slug) ? ' aria-current="location"' : '')
+        .replace('{{friendCurrent}}', page.slug === 'a-friend' ? ' aria-current="page"' : '')
         .replace('{{partnershipCurrent}}', page.slug === 'partnership' ? ' aria-current="page"'
           : page.slug === 'special_projects' ? ' aria-current="location"' : ''))
       .replace('<!-- MENU THEME CONTROL -->', () => menuTheme)
@@ -340,7 +342,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('{{comfortTitle}}', () => escape(comfort.title))
       .replaceAll('{{friendEditions}}', friendEditions)
       .replaceAll('{{friendExtras}}', friendExtras)
-      .replace('{{friendPrice}}', () => period ? priceLabel + ' ' + escape(period) : priceLabel)
+      .replace('{{friendPrice}}', () => priceLabel + ' ' + escape(period))
       .replace('<!-- FOOTER -->', () => homeFooterTemplate)
       .replace(/\{\{footer\.(\w+)\}\}/g, (_, name) => {
         if (!footerContent.has(name)) throw new Error('Missing shared footer content: ' + name);
@@ -364,16 +366,25 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const pageScripts = contentBody.includes(' data-load-on-approach')
       ? '<script src="' + urls.get(nearbyImages) + '"></script>\n' + scriptTags
       : scriptTags;
+    let share = '';
+    if (page.shareImage) {
+      const publicBase = new URL(base, env.SITE_ORIGIN || 'https://anton-gorokhovatsky.github.io');
+      const pageURL = new URL(page.slug + '/', publicBase).href;
+      const metadata = { type: 'website', title: page.title, description: page.description, url: pageURL,
+        image: new URL(page.shareImage, publicBase).href };
+      share = '<link rel="canonical" href="' + escape(pageURL) + '">\n  ' +
+        Object.entries(metadata).map(([key, value]) => '<meta property="og:' + key + '" content="' + escape(value) + '">').join('\n  ');
+    }
     const values = {
-      TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug), THEME_SCRIPT:urls.get('js/theme.js'),
+      SHARE:share, TITLE:escape(page.title), DESCRIPTION:escape(page.description), SLUG:escape(page.slug), THEME_SCRIPT:urls.get('js/theme.js'),
       REFERRER_POLICY:page.slug === 'member' && member ? 'strict-origin' : 'no-referrer',
       CONNECT_SOURCE:escape((page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
-      FORM_ACTION:escape((home ? friend : page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
+      FORM_ACTION:escape((page.slug === 'a-friend' ? friend : page.slug === 'member' ? member : null)?.action.origin ?? "'none'"),
       STYLE:cssFor(page).map(name=>'<link rel="stylesheet" href="'+urls.get(name)+'">').join('\n'), SCRIPTS:pageScripts,
       FAVICON:page.icon?'<link rel="icon" href="'+base+escape(page.icon)+'">':'', BODY:contentBody
     };
     const content = markExternalLinks(
-      shell.replace(/\{\{(TITLE|DESCRIPTION|SLUG|STYLE|SCRIPTS|FAVICON|BODY|REFERRER_POLICY|CONNECT_SOURCE|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base),
+      shell.replace(/\{\{(TITLE|DESCRIPTION|SHARE|SLUG|STYLE|SCRIPTS|FAVICON|BODY|REFERRER_POLICY|CONNECT_SOURCE|FORM_ACTION|THEME_SCRIPT)\}\}/g,(_,key)=>values[key]).replaceAll('@@ROOT@@',base),
       base
     );
     await writeFile(path.join(location,page.slug==='404'?'404.html':'index.html'),content);

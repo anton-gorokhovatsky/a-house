@@ -35,6 +35,12 @@
 }
 .home-editorial:not(.editorial-document) :is(p, li, dd) :is(b, strong) { font-weight: 700; }
 
+.home-page .home-editorial a.word-underlined-link { text-decoration-line: none !important; }
+.home-page .home-editorial a.word-underlined-link .link-word {
+  text-decoration: underline var(--link-press-thickness, 1px) var(--link-underline-color);
+  text-underline-offset: var(--link-underline-offset);
+}
+.home-page .home-editorial a.word-underlined-link .link-word .project-name { display: inline; }
 .project-name { white-space: nowrap; word-break: normal; overflow-wrap: normal; hyphens: none; }
 .wrap-group { display: inline-block; inline-size: max-content; max-inline-size: 100%; hyphens: manual; overflow-wrap: break-word; }
 a > .wrap-group, a > .wrap-group > span { text-decoration: inherit; text-underline-offset: inherit; }

@@ -73,7 +73,7 @@ export async function renderPrintArchive(editions, getFileSize) {
 
 export function subscriptionIssues(editions) {
   return editions.filter(edition => edition.latest)
-    .map(({ edition, latest }) => ({ ...latest, title: `${edition} № ${latest.number} ${latest.topic}` }))
+    .map(({ edition, latest }) => ({ ...latest, edition, title: `${edition} № ${latest.number} ${latest.topic}` }))
     .sort((a, b) => b.published.localeCompare(a.published));
 }
 
@@ -86,19 +86,24 @@ export function renderFriendCover(issues) {
   return issue ? `<figure class="home-friend-cover">${printCover(issue, 'friend-cover-image')}<figcaption>${escape(issue.title)}</figcaption></figure>` : '';
 }
 
+function renderIssueLinks(issue, homeLink) {
+  const links = [];
+  if (homeLink) {
+    links.push(`<a href="${escape(homeLink)}">О выпуске ${escape(issue.edition)}</a>`);
+  } else if (issue.announcement) {
+    const name = issue.number ? `${issue.edition} № ${issue.number}` : issue.edition || issue.title;
+    links.push(`<a href="${escape(issue.announcement)}">О выпуске ${escape(name)} в Telegram</a>`);
+  }
+  if (issue.article) {
+    links.push(`<a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a>`);
+  }
+  return links.length ? `<div class="${homeLink ? 'home-links' : 'press-page-links'}">${links.join('')}</div>` : '';
+}
+
 function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt, homeLink } = {}) {
   const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
   const headingId = id ? escape(id) + '-title' : '';
   const attributes = id ? ` id="${escape(id)}" tabindex="-1" aria-labelledby="${headingId}"` : '';
-  let more = issue.announcement
-    ? `<div class="press-page-links"><a href="${escape(issue.announcement)}">О выпуске в Telegram</a></div>`
-    : '';
-  if (homeLink) {
-    more = `<div class="home-links"><a href="${escape(homeLink)}">О выпуске ${escape(issue.edition)}</a></div>`;
-  }
-  const article = issue.article
-    ? `<div class="press-page-links"><a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a></div>`
-    : '';
   return `<article class="press-featured-issue"${attributes}>
     ${issue.cover ? printCover(issue, 'press-featured-cover') : ''}
     <div class="press-featured-copy">
@@ -106,7 +111,7 @@ function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt, homeLink } = 
       <${heading}${headingId ? ' id="' + headingId + '"' : ''}>${title}</${heading}>
       ${issue.description ? '<p>' + escape(issue.description) + '</p>' : ''}
       ${excerpt ? '<p>' + escape(excerpt) + '</p>' : ''}
-      ${more}${article}
+      ${renderIssueLinks(issue, homeLink)}
     </div>
   </article>`;
 }
@@ -120,7 +125,9 @@ export function renderPressFeature(issue, home) {
 export function renderCurrentPrintIssues(issues) {
   const featured = issues.find(issue => issue.cover);
   const other = issues.filter(issue => issue !== featured).map(issue =>
-    `<li><p>${escape(issue.title)}</p><p class="home-kicker">${dateMarkup(issue.published)}</p></li>`
+    `<li><p>${escape(issue.title)}</p><p class="home-kicker">${dateMarkup(issue.published)}</p>
+      ${issue.description ? '<p class="press-issue-summary">' + escape(issue.description) + '</p>' : ''}
+      ${renderIssueLinks(issue)}</li>`
   ).join('');
   return `<div class="press-friend-issues">${featured ? renderFeaturedIssue(featured) : ''}${other ? '<ul>' + other + '</ul>' : ''}</div>`;
 }
@@ -141,7 +148,7 @@ export function renderSubscriptionEntries(issues) {
 export function renderPressBooks(books) {
   return books.map(({title, subtitle, description, cover, href, linkLabel, metadata}) => `<article class="press-book">
     <img src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy" decoding="async">
-    <div><h3 class="press-book-title">${escape(title)}</h3>
+    <div><h2 class="press-book-title">${escape(title)}</h2>
       ${subtitle ? '<p class="book-subtitle">' + escape(subtitle) + '</p>' : ''}
       <p>${escape(description)}</p>
       <div class="book-preview">${metadata ? renderPrintFileLink(href, linkLabel, metadata, title)
@@ -366,8 +373,9 @@ function renderArchiveEntries(archive, topic, base) {
     const date = dateMarkup(page.published);
     const keys = topics.map(topicKey).join(' ');
     const labels = topics.map(item => item.title).join(', ');
-    return '<li data-archive-topics="' + escape(keys) + '">' + date + '<div><a href="' + escape(base + slug + '/') + '">' +
-      escape(page.title) + '</a>' + (labels ? '<small>' + escape(labels) + '</small>' : '') + '</div></li>';
+    const meta = date + (labels && !topic ? '<small>' + escape(labels) + '</small>' : '');
+    return '<li data-archive-topics="' + escape(keys) + '"><div class="publication-meta">' + meta +
+      '</div><a class="word-underlined-link" href="' + escape(base + slug + '/') + '">' + escape(page.title) + '</a></li>';
   }).join('\n');
 }
 

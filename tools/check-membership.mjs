@@ -90,7 +90,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
     for (const kind of ['friend', 'member']) {
       const friend = kind === 'friend';
       const endpoint = friend ? '/order' : '/application';
-      const entry = site + base + (friend ? '#a-friend' : 'member/?offer=patron');
+      const entry = site + base + (friend ? 'a-friend/' : 'member/?offer=patron');
       await page.goto(site + base + (friend ? 'press/#print-archive' : 'club/#programs'));
       const destination = friend
         ? page.locator('#print-archive').getByRole('link', { name: 'Оформить подписку A–Friend' })
@@ -126,7 +126,7 @@ export async function checkMembershipTransport(browser, contextOptions = {}) {
         assert.equal(await areas.inputValue(), '');
         await areas.selectOption({ label: 'Урбанистика' });
         await form.locator('textarea[name="comment"]').fill('Сертификат для получателя');
-        const offer = await page.locator('#a-friend').innerText();
+        const offer = await page.locator('main').innerText();
         assert.match(offer, /12\s000\s₽/);
         assert.match(offer, /за\s+3\s+месяца/);
       } else {

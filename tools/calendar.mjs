@@ -188,6 +188,10 @@ export function renderCalendar(events, base, now = new Date()) {
       <div data-calendar-empty hidden><p data-empty-message></p><a href="${calendar}" data-calendar-reset>Сбросить фильтры</a></div>
       <section id="upcoming" aria-labelledby="calendar-upcoming-heading" tabindex="-1">
         <h2 id="calendar-upcoming-heading">Сейчас и скоро</h2>
+        <div class="calendar-selection" data-month-selection hidden>
+          <span data-selected-month></span>
+          <a href="${calendar}" data-calendar-clear-month>Сбросить фильтр месяца</a>
+        </div>
         <p data-no-upcoming${current.length ? ' hidden' : ''}>Новые даты пока не объявлены.</p>
         <div class="calendar-list" data-upcoming-list>${entries(current)}</div>
       </section>

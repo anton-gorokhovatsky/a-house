@@ -284,7 +284,7 @@ html:has(.site-header) { scroll-padding-top: var(--site-header-height); }
 .site-wordmark { align-self: flex-start; text-decoration: none; }
 .archive-index { max-width: 1050px; margin: 0 auto; }
 .archive-index ol { list-style: none; margin: 2em 0; padding: 0; }
-.archive-index li { display: grid; grid-template-columns: 6.1em 1fr; gap: .5em; border-top: 1px solid #bbb; padding: .65em 0; }
+.archive-index li { display: grid; grid-template-columns: 6.1em 1fr; gap: .5em; padding: .65em 0; }
 .archive-index small { display: block; margin-top: .4em; color:#555; font: 14px/1.3 var(--text); }
 .t-feed__post-popup.archive-article { position: relative !important; inset: auto; height: auto; min-height: 100vh; overflow: visible; }
 .archive-gallery { width: 100%; color: #222; }

@@ -165,7 +165,7 @@ export const institutionPages = {
   partnership: {
     title: 'Сотрудничество',
     lead: 'Вместе с партнёрами A–House выпускает издания, проводит события и работает с городскими пространствами. В Доме A–House можно стать резидентом.',
-    links: [link('Предложить партнёрский проект', partners)],
+    links: [link('Написать о партнёрстве', partners)],
     sections: [
       {
         id: 'formats', title: 'Форматы партнёрства',

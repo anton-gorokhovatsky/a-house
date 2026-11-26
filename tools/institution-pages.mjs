@@ -5,7 +5,8 @@ const link = ({ label, href }) => `<a href="${escape(href)}">${escape(label)}</a
 
 function links(items) {
   return items?.length ? '<ul class="institution-links" role="list">' +
-    items.map(item => '<li>' + link(item) + '</li>').join('') + '</ul>' : '';
+    items.map(({ href, label }) => '<li><a class="word-underlined-link" href="' + escape(href) + '">' +
+      escape(label) + '</a></li>').join('') + '</ul>' : '';
 }
 
 function image(photo, first = false) {
@@ -63,7 +64,7 @@ export function renderInstitutionPage(slug) {
     </section>`).join('\n');
   return `<div id="allrecords" class="t-records home-page">
     <!-- EDITORIAL HEADER -->
-    <main id="site-content" tabindex="-1" class="home-editorial institution-page">
+    <main id="site-content" tabindex="-1" class="home-editorial institution-page" data-restore-fragment>
       <header class="institution-opening${page.photo ? ' institution-opening-photo editorial-pair' : ''}">
         <div class="institution-intro">
           <h1 class="editorial-pair-title${isMainSection ? ' section-title' : ''}">${title}</h1>

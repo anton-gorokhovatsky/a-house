@@ -13,6 +13,9 @@
   const archive = document.getElementById('past');
   const archiveEmpty = archive.querySelector('[data-archive-empty]');
   const empty = calendar.querySelector('[data-calendar-empty]');
+  const monthSelection = calendar.querySelector('[data-month-selection]');
+  const monthLabel = monthSelection.querySelector('[data-selected-month]');
+  const clearMonth = monthSelection.querySelector('[data-calendar-clear-month]');
   const moscowDate = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
   });
@@ -134,10 +137,14 @@
       ? (month ? 'В выбранном месяце нет событий для детей.' : 'В календаре пока нет событий для детей.')
       : 'В выбранном месяце нет событий.';
     updateArchive(month, kids);
+    const selectedMonth = monthLinks.find(link => link.dataset.calendarMonth === month);
+    monthSelection.hidden = !month || !visibleCurrent || months.parentElement !== archive;
+    monthLabel.textContent = selectedMonth?.getAttribute('aria-label') || month;
+    clearMonth.href = filterURL('', kids).href;
   }
 
   calendar.addEventListener('click', event => {
-    const link = event.target.closest('[data-calendar-month], [data-calendar-audience], [data-calendar-reset]');
+    const link = event.target.closest('[data-calendar-month], [data-calendar-audience], [data-calendar-reset], [data-calendar-clear-month]');
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     event.preventDefault();
     if (link.href !== location.href) history.pushState(null, '', link.href);
@@ -147,6 +154,10 @@
       results.scrollIntoView({ block: 'start' });
     }
     if (months.parentElement === archive && months.contains(link)) link.scrollIntoView({ block: 'nearest' });
+    if (link === clearMonth) {
+      upcomingSection.focus({ preventScroll: true });
+      upcomingSection.scrollIntoView({ block: 'start' });
+    }
     if (link.hasAttribute('data-calendar-reset')) audienceLinks[0].focus();
   });
 

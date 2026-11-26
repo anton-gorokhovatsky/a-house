@@ -7,8 +7,7 @@
     "styles": [
       "styles/source/grid-3.0.css",
       "styles/chrome.css",
-      "styles/pages/home.css",
-      "styles/pages/membership.css"
+      "styles/pages/home.css"
     ]
   },
   {
@@ -31,6 +30,14 @@
       "styles/pages/membership.css"
     ],
     "layout": "project"
+  },
+  {
+    "slug": "a-friend",
+    "title": "A–Friend — подписка A–House",
+    "description": "Полные выпуски A–News, A–Kids, A–Sport и A–State, путеводители, подборки и приглашения на выставки в подписке A–House.",
+    "shareImage": "media/press/a-kids-07-cover.jpg",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "styles": ["styles/source/grid-3.0.css", "styles/chrome.css", "styles/pages/home.css", "styles/pages/membership.css"]
   },
   {
     "slug": "about",

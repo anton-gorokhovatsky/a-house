@@ -7,7 +7,7 @@
   container: event-calendar / inline-size;
 }
 .calendar-opening h1 { margin: 0; }
-.home-page .calendar-page :is(.calendar-entry-links a, #calendar-filters a, .calendar-months a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset]) {
+.home-page .calendar-page :is(.calendar-entry-links a, #calendar-filters a, .calendar-months a, .calendar-event-links a, .calendar-archive-tools a, .calendar-family-source, [data-calendar-reset], [data-calendar-clear-month]) {
   color: inherit;
   text-decoration: underline;
   text-decoration-thickness: var(--link-press-thickness, 1px);
@@ -15,7 +15,7 @@
   text-decoration-color: var(--link-underline-color);
 }
 .calendar-entry-links a, .calendar-months a, .calendar-audience a,
-.calendar-family-source, .calendar-event-links a, .calendar-archive-tools a, [data-calendar-reset] {
+.calendar-family-source, .calendar-event-links a, .calendar-archive-tools a, [data-calendar-reset], [data-calendar-clear-month] {
   display: inline-block;
   min-height: 44px;
   align-content: center;
@@ -60,6 +60,7 @@
 .calendar-stream > section { scroll-margin-block-start: 1.1rem; }
 .calendar-stream > section + section { margin-top: var(--chapter); }
 .calendar-stream > section[hidden] + section { margin-top: 0; }
+.calendar-selection { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1.2em; }
 .calendar-list { display: grid; gap: clamp(2.35rem, 4.5vw, 4.5rem); margin-top: var(--group); }
 .calendar-past-heading { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; align-items: baseline; }
 .calendar-stream .calendar-months, .home-page .calendar-stream .calendar-archive-empty { margin-block-start: .75rem; }

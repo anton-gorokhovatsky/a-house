@@ -35,6 +35,7 @@
 .home-page .club-page h2 { font-size: var(--type-subsection); }
 .home-page .club-programs h2 { text-align: start; }
 .club-programs header { margin-block-end: var(--group); }
+.home-page .club-programs header p { margin-block-start: .55em; }
 .club-programs article + article { margin-block-start: clamp(2.8rem, 7vw, 6.5rem); }
 .home-page .club-programs h3 {
   margin: 0 0 .5em;
@@ -44,7 +45,7 @@
 .home-page .club-programs p { max-width: 34em; }
 .home-page .club-programs p + p { margin-block-start: .65em; }
 
-.home-page .club-opening p a {
+.home-page :is(.club-opening, .club-programs header) p a {
   text-decoration: underline; text-decoration-thickness: 1px;
   text-decoration-color: var(--link-underline-color); text-underline-offset: var(--link-underline-offset);
 }

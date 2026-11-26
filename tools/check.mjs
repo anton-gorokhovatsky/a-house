@@ -119,7 +119,8 @@ for (const file of htmlFiles) {
   }
   const topic = archive.topicRoutes.find(page => page.slug + '/index.html' === file)?.archiveTopic;
   if (topic || file === 'archive/index.html') {
-    const articles = [...source.matchAll(/<li data-archive-topics="[^"]*">\s*(?:<time\b[^>]*>[\s\S]*?<\/time>\s*)?<div><a href="([^"]+)"/g)].map(([, url]) => url);
+    const articles = [...source.matchAll(/<li data-archive-topics="[^"]*">([\s\S]*?)<\/li>/g)]
+      .map(([, row]) => row.match(/<a\b[^>]*?\shref="([^"]+)"/)?.[1]);
     const expected = (topic ? topic.articles : [...archive.articles.keys()]).map(slug => base + slug + '/');
     if (JSON.stringify(articles) !== JSON.stringify(expected)) errors.push(file + ' has an incorrect selection of publications');
   }
@@ -163,7 +164,7 @@ for (const file of htmlFiles) {
     const element=tag[1].toLowerCase();
     const attribute=element==='a' || element==='link' ? 'href' : 'src';
     const value=tag[0].match(new RegExp('\\s'+attribute+'\\s*=\\s*["\\x27]([^"\\x27]*)','i'))?.[1];
-    const canonical = standalone && element === 'link' && /\brel="canonical"/.test(tag[0]);
+    const canonical = element === 'link' && /\brel="canonical"/.test(tag[0]);
     if (value!==undefined) validateURL(file,value,element!=='a' && !canonical);
     if (standalone && value?.startsWith(base) && element === 'link' && /\brel="stylesheet"/.test(tag[0])) {
       const stylesheet = value.slice(base.length).split('?')[0];
