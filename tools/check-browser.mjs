@@ -231,6 +231,40 @@ async function checkMembershipLayout(page) {
   assert.deepEqual(layouts[0], layouts[1], 'A–Friend and the club application share the same column edges and widths');
 }
 
+async function checkSharedPageLayout(page) {
+  const columns = async (route, selectors) => {
+    await page.goto(url + route);
+    return page.evaluate(async selectors => {
+      await document.fonts.ready;
+      return selectors.map(selector => {
+        const { left, width } = document.querySelector(selector).getBoundingClientRect();
+        return [left, width];
+      });
+    }, selectors);
+  };
+  const [[brand], [title], [form]] = await columns('a_pass/', [
+    '.site-header-brand', '.project-opening h1', '.project-form-column'
+  ]);
+  assert.equal(title, brand, 'The A–Pass title starts at the common page edge');
+  assert.equal(form, title, 'The A–Pass form starts below the title');
+
+  const featuredIssue = selector => ['.press-featured-cover', '.press-featured-copy'].map(child => selector + ' ' + child);
+  assert.deepEqual(
+    await columns('', featuredIssue('.home-press-teaser > .press-featured-issue')),
+    await columns('press/', featuredIssue('.press-inner > .press-featured-issue')),
+    'The same featured issue has matching cover and copy columns'
+  );
+
+  const documentText = ['.document-inner h1', '.document-copy'];
+  assert.deepEqual(await columns('agreement/', documentText), await columns('mts_docs/', documentText),
+    'A wide legal table must keep the common document text column');
+
+  const [[articleTitle], [cover]] = await columns('tpost/5ynda974b1-kino-o-dizaine/', [
+    '.publication-heading', '.publication-cover'
+  ]);
+  assert.equal(cover, articleTitle, 'A narrow publication cover starts at the reading column edge');
+}
+
 async function checkReadingReturn(page, mobile) {
   const friendLabel = membershipSettings('friend') ? 'Оформить подписку A–Friend' : 'Условия подписки A–Friend';
   const form = page.locator('#friend-form');
@@ -1380,6 +1414,7 @@ async function checkChrome() {
       requested.add(request.url());
     });
     await checkMembershipLayout(page);
+    await checkSharedPageLayout(page);
     await checkHomeRoutes(page, mobile);
     const link = page.getByRole('main').getByRole('heading', { name: /^Дом\s+A[–‑-]House$/i, level: 1 });
     const [gap] = await renderedWordGaps(link);

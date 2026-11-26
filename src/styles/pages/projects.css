@@ -1,8 +1,9 @@
 .project-story { padding: var(--page-entry) var(--edge) var(--chapter); }
 .project-inner {
-  max-inline-size: 76rem; margin-inline: auto; container: project-content / inline-size;
+  margin-inline: auto; container: project-content / inline-size;
   --column-title-size: min(var(--lead-size), max(var(--type-title), 11cqi));
 }
+.project-story > .project-inner { max-inline-size: 76rem; }
 .project-story :is(p,ul,ol,dl), .project-panel > p { max-inline-size: 68ch; }
 .home-page .project-opening h1 {
   margin-block: .12em .34em; max-inline-size: 23ch;

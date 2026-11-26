@@ -34,7 +34,7 @@
 .document-table thead tr { border-color: currentColor; }
 .document-cell-label { display: none; }
 .editorial-document .document-inner:has(table:not([data-columns="2"])) { max-width: 68rem; }
-.editorial-document :is(.document-inner > header,.document-copy) { max-inline-size: 76ch; }
+.editorial-document :is(.document-inner > header,.document-copy) { max-inline-size: 76ch; margin-inline: auto; }
 @container legal-table (max-width: 38em) {
   .document-table table, .document-table tbody, .document-table tr, .document-table td { display: block; }
   .document-table thead { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
@@ -101,12 +101,10 @@
   text-underline-offset: var(--link-underline-offset);
 }
 @container publication-content (min-width: 19em) {
-  .press-featured-issue:has(img) { grid-template-columns: minmax(7rem, .35fr) minmax(0, 1fr); max-inline-size: 43rem; }
-  .press-featured-issue .press-featured-cover { width: 100%; }
-}
-@container publication-content (max-width: 30em) {
-  .press-inner > .press-featured-issue { grid-template-columns: minmax(0, 1fr); }
-  .press-inner > .press-featured-issue .press-featured-cover { width: min(56%, 11rem); }
+  .press-friend-issues > .press-featured-issue:has(img) {
+    grid-template-columns: minmax(7rem, .35fr) minmax(0, 1fr); max-inline-size: 43rem;
+  }
+  .press-friend-issues > .press-featured-issue .press-featured-cover { width: 100%; }
 }
 @container publication-content (min-width: 48em) {
   .press-friend-issues { grid-template-columns: minmax(0, 1fr) minmax(0, .56fr); max-inline-size: 70rem; }

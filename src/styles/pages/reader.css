@@ -52,7 +52,6 @@
 }
 .publication-reader :is(.publication-cover, .publication-body, .publication-issue) {
   max-inline-size: 65ch;
-  margin-inline: auto;
 }
 .publication-cover { margin-block-end: var(--group); }
 .publication-cover > img, .publication-body figure img {
@@ -134,4 +133,4 @@
 .publication-reader .publication-body > :is(p, figure, blockquote) { margin: 0; }
 .home-page .publication-reader .publication-body > * + * { margin-block-start: 1em; }
 .publication-body blockquote { padding-inline-start: 1em; border-inline-start: 2px solid var(--ah-rule); }
-.home-page .publication-reader .publication-issue { margin: 1.25rem auto 0; }
+.home-page .publication-reader .publication-issue { margin-block-start: 1.25rem; }
