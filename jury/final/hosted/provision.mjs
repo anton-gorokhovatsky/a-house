@@ -84,7 +84,13 @@ assert.equal(jurors.length, 15);
 const email = juror => juror.login + '@jury.example.com';
 const membersResponse = await admin('/auth/v1/admin/users?per_page=100', {}, 'List jury accounts');
 const { users } = await membersResponse.json();
-assert.ok(users.every(user => jurors.some(juror => email(juror) === user.email)),
+const juryEmails = new Set(jurors.map(email));
+const testMembers = new Set();
+if (users.some(user => !juryEmails.has(user.email))) {
+  const testVoters = await admin('/rest/v1/jury_final_voters?select=user_id&is_test=eq.true', {}, 'Read registered test voters');
+  for (const row of await testVoters.json()) testMembers.add(row.user_id);
+}
+assert.ok(users.every(user => juryEmails.has(user.email) || testMembers.has(user.id)),
   'The dedicated project contains unrelated accounts.');
 for (const juror of jurors) {
   let user = users.find(user => user.email === email(juror));
@@ -196,7 +202,7 @@ if (!approved.length) {
   assert.ok(!deniedPdf.ok, 'An unlisted account must be denied the PDF.');
   await deniedPdf.body?.cancel();
 }
-assert.ok(approved.every(row => jurors.some(juror => juror.userId === row.user_id)));
+assert.ok(approved.every(row => testMembers.has(row.user_id) || jurors.some(juror => juror.userId === row.user_id)));
 await (await admin('/rest/v1/jury_members', {
   method: 'POST', headers: { prefer: 'resolution=merge-duplicates,return=minimal' },
   body: jurors.map(juror => ({ user_id: juror.userId }))
