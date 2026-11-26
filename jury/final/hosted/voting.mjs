@@ -23,7 +23,7 @@ function disclosure(title, content, className = '') {
 const paragraphs = lines => lines.map(line => '<p>' + escape(line) + '</p>').join('');
 const conceptGuide = disclosure('Что учитывать при оценке концепции', paragraphs([conceptHeading, conceptIntro]) +
   '<ul class="guide-list">' + conceptQuestions.map(text => '<li>' + escape(text) + '</li>').join('') + '</ul>' +
-  '<p>' + escape(approachesIntro) + '<br><a href="' + approachRules + '" target="_blank" rel="noopener noreferrer">Пункт 6.1 правил конкурса</a></p>');
+  '<p>' + escape(approachesIntro) + ' <a href="' + approachRules + '" target="_blank" rel="noopener noreferrer">Пункт&nbsp;6.1 правил конкурса</a></p>');
 const nominationsGuide = disclosure(nominationsTitle,
   nominations.map(item => '<section><h3>' + escape(item.name) + '</h3>' + paragraphs(item.paragraphs) + '</section>').join('') +
   '<section><h4>' + escape(distinctionHeading) + '</h4>' + paragraphs([distinction]) + '</section>', 'nominations');
