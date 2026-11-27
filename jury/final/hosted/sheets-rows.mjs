@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { nominations } from './criteria.mjs';
 
 const moscow = new Intl.DateTimeFormat('sv-SE', {
   timeZone: 'Europe/Moscow', dateStyle: 'short', timeStyle: 'medium', hourCycle: 'h23',
@@ -15,8 +16,8 @@ export const tabs = [
     widths: [159, 115, 77, 139, 132, 160], note: 'Шкала 0–5. Для рабочего балла нужны минимум 4 голоса и техоценка. Вес каждой части — 50 %. Для архитектурного эксперимента реализуемость необязательна.',
   },
   {
-    name: 'Оценки жюри', columns: ['Работа', 'Член жюри', 'Комментарий', 'Концепция', 'Техоценка МТС', 'Тип записи', 'Изменено (МСК)'],
-    widths: [169, 210, 353, 95, 128, 100, 169], note: 'Шкала 0–5. Одна строка — последняя сохранённая оценка члена жюри за работу. Тестовые записи исключены из сводки.',
+    name: 'Оценки жюри', columns: ['Работа', 'Член жюри', 'Комментарий', 'Концепция', 'Техоценка МТС', 'Тип записи', 'Изменено (МСК)', 'Рекомендации по номинациям'],
+    widths: [169, 210, 353, 95, 128, 100, 169, 320], note: 'Шкала 0–5. Одна строка — последняя сохранённая оценка члена жюри за работу. Тестовые записи исключены из сводки.',
   },
 ];
 
@@ -49,8 +50,10 @@ export function reportRows(report, jurorNames) {
     assert.ok(!saved.has(pair), 'Duplicate ballot');
     saved.add(pair);
     const name = b.is_test ? (b.test_name || 'Тестовый член жюри') : (jurorNames.get(b.login) || 'Имя не указано');
+    const labels = nominations.filter(({ key }) => b.nomination_keys?.includes(key))
+      .map(({ name }) => name.replace(/^\d+\.\s*/, ''));
     return [b.title, name, b.comment || null, b.concept, b.technical_score,
-      b.is_test ? 'Тестовая' : 'Жюри', sheetDate(b.updated_at)];
+      b.is_test ? 'Тестовая' : 'Жюри', sheetDate(b.updated_at), labels.join('\n') || null];
   });
   return {
     time: sheetDate(report.as_of),
@@ -85,6 +88,15 @@ export function makeSheetUpdates(report, sheets, jurorNames) {
     if (index === 1) headerRows.push({ values: [cell(tab.columns[1])] });
     updates.push({ updateCells: { start: { sheetId, rowIndex: 0, columnIndex: 1 },
       rows: headerRows, fields: 'userEnteredValue' } });
+    if (index === 1) {
+      const columnIndex = tab.columns.length - 1;
+      updates.push({ updateCells: { start: { sheetId, rowIndex: 1, columnIndex },
+        rows: [{ values: [cell(tab.columns[columnIndex])] }], fields: 'userEnteredValue' } });
+      updates.push({ repeatCell: {
+        range: { sheetId, startRowIndex: 1, endRowIndex: rowCount, startColumnIndex: columnIndex, endColumnIndex: columnIndex + 1 },
+        cell: { userEnteredFormat: { wrapStrategy: 'WRAP' } }, fields: 'userEnteredFormat.wrapStrategy',
+      } });
+    }
     updates.push({ updateCells: { range: { sheetId, startRowIndex: 2, endRowIndex: rowCount,
       startColumnIndex: 0, endColumnIndex: tab.columns.length },
       rows: bodies[index].map(row => ({ values: row.map(cell) })), fields: 'userEnteredValue' } });

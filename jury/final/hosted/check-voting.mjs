@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
 import { chromium, devices, webkit } from 'playwright-core';
+import { reportRows } from './sheets-rows.mjs';
 import { cabinetAssets } from '../assets.mjs';
 
 const [site, postgresModule = '@electric-sql/pglite'] = process.argv.slice(2);
@@ -50,8 +51,12 @@ await db.exec(await readFile(new URL('voting-50-50.sql', import.meta.url), 'utf8
 await db.exec(await readFile(new URL('organizer-comments.sql', import.meta.url), 'utf8'));
 const currentRubric = 'final_50_50';
 const sheet = async login => (await queryAs(login, 'select public.jury_final_rubric_sheet(null) as data'))[0].data;
-const save = async (login, work, answers, comment, revision, rubric = currentRubric) => (await queryAs(login,
-  'select public.jury_save_rubric_ballot($1,$2,$3,$4,$5) as data', [rubric, work, JSON.stringify(answers), comment, revision]))[0].data;
+const save = async (login, work, answers, comment, revision, rubric = currentRubric, nominations) => {
+  const params = [rubric, work, JSON.stringify(answers), comment, revision];
+  const nominationParameter = nominations === undefined ? '' : ',$6::text[]';
+  if (nominations !== undefined) params.push(nominations);
+  return (await queryAs(login, 'select public.jury_save_rubric_ballot($1,$2,$3,$4,$5' + nominationParameter + ') as data', params))[0].data;
+};
 const activate = rubric => db.query('update public.jury_final_control set active_rubric=$1 where singleton', [rubric]);
 const stats = async () => (await db.query('select * from public.jury_final_work_summary where work_id=$1', [probe])).rows[0];
 assert.equal((await sheet('jury-02')).rubric, 'original');
@@ -83,6 +88,7 @@ const archivedTechnical = await raw('jury-03');
 const archivedTest = await raw(technicalTest);
 
 await db.exec(installRoleSplit);
+await db.exec(await readFile(new URL('voting-nominations.sql', import.meta.url), 'utf8'));
 assert.equal((await sheet('jury-02')).accepting,true);
 assert.equal((await sheet('jury-08')).role, 'observer');
 assert.deepEqual((await sheet('jury-08')).criteria, []);
@@ -143,6 +149,7 @@ assert.deepEqual((await sheet(technicalTest)).ballots.find(b => b.work_id === wo
 assert.equal((await report()).ballots.find(b => b.login === 'jury-03' && b.work_id === probe).concept, 2);
 assert.deepEqual(await raw('jury-03'), beforeRoleRollback);
 await db.exec(installRoleSplit);
+await db.exec(await readFile(new URL('voting-nominations.sql', import.meta.url), 'utf8'));
 assert.deepEqual((await sheet('jury-03')).ballots[0].answers, {technical_review:3});
 assert.deepEqual(await raw('jury-03'), beforeRoleRollback);
 await db.exec(await readFile(new URL('rollback-50-50.sql', import.meta.url), 'utf8'));
@@ -164,6 +171,34 @@ assert.equal(Number((await stats()).ballot_count),5);
 await db.exec('update public.jury_final_control set accepting=false');
 await assert.rejects(save('jury-01', works[4].id, regular, '', 0), { code: 'PT403' });
 await db.exec('update public.jury_final_control set accepting=true');
+
+const recommendationWork = works[12].id;
+const recommend = (login, keys, revision, comment = '') => save(login, recommendationWork, regular, comment, revision,
+  currentRubric, keys);
+assert.equal((await sheet('jury-07')).nomination_recommendations, true);
+assert.equal((await sheet('jury-03')).nomination_recommendations, false);
+assert.equal((await sheet('jury-08')).nomination_recommendations, false);
+await assert.rejects(recommend('jury-08', ['context'], 0), { code:'42501' });
+await assert.rejects(recommend('jury-03', ['context'], 0), { code:'42501' });
+await assert.rejects(recommend('jury-07', ['not-a-nomination'], 0), { code:'22023' });
+await assert.rejects(recommend('jury-07', ['context','context'], 0), { code:'22023' });
+const firstRecommendation = await recommend('jury-07', ['experiment','context'], 0);
+assert.equal(firstRecommendation.revision, 1);
+assert.deepEqual(firstRecommendation.nomination_keys, ['context','experiment']);
+assert.deepEqual(await recommend('jury-07', ['context','experiment'], 0), firstRecommendation);
+const legacyEdit = await save('jury-07', recommendationWork, regular, 'Правка со старого клиента', 1);
+assert.equal(legacyEdit.revision, 2);
+const savedRecommendation = async () => (await sheet('jury-07')).ballots.find(b => b.work_id === recommendationWork);
+assert.deepEqual((await savedRecommendation()).nomination_keys, ['context','experiment']);
+await assert.rejects(recommend('jury-07', ['scale'], 1, 'Правка со старого клиента'), { code:'PT409' });
+const nominationsOnly = await recommend('jury-07', ['statement'], 2, 'Правка со старого клиента');
+assert.equal(nominationsOnly.revision, 3);
+assert.deepEqual(nominationsOnly.nomination_keys, ['statement']);
+const exportedRecommendations = reportRows(await report(), new Map([['jury-07','Тест экспорта']])).bodies[1];
+assert.equal(exportedRecommendations.find(row => row[1] === 'Тест экспорта')[7], 'Лучшее архитектурное высказывание');
+assert.equal((await recommend('jury-07', [], 3, 'Правка со старого клиента')).revision, 4);
+assert.deepEqual((await savedRecommendation()).nomination_keys, []);
+console.log('PGlite: optional nominations, role restrictions, old-client edits, revision checks and report passed.');
 
 console.log('PGlite: role-specific ballots, historical scores, retries, 50/50, export, test exclusions and both rollbacks passed.');
 if (process.env.JURY_QA_DB_ONLY) {
@@ -207,7 +242,7 @@ async function intercept(context, fault) {
     if (endpoint.endsWith('/jury_final_rubric_sheet')) return reply(200, await sheet(login));
     if (endpoint.endsWith('/jury_save_rubric_ballot')) {
       try {
-        const record = await save(login, body.p_work_id, body.p_answers, body.p_comment, body.p_revision, body.p_rubric);
+        const record = await save(login, body.p_work_id, body.p_answers, body.p_comment, body.p_revision, body.p_rubric, body.p_nomination_keys);
         if (fault.lost) { fault.lost = false; return route.abort('failed'); }
         return reply(200, record);
       } catch (e) { return reply(e.code.startsWith('PT') ? Number(e.code.slice(2)) : 403, { message:e.message }); }
@@ -245,6 +280,8 @@ try {
       assert.equal(await page.locator('input[name=concept]').count(), mobile ? 6 : 0);
       assert.equal(await page.getByText('Шкала оценки концепции', { exact:true }).count(), mobile ? 1 : 0);
       assert.equal(await page.getByText('Шкала реализуемости', { exact:true }).count(), mobile ? 0 : 1);
+      const recommendations = page.locator('input[name=nomination_keys]');
+      assert.equal(await recommendations.count(), mobile ? 4 : 0);
       const strip = page.locator('.sheet-strip');
       const dialog = page.locator('dialog[open]');
       const second = strip.locator('[data-page="2"]');
@@ -301,6 +338,8 @@ try {
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
       if (mobile) {
         await page.locator(onlyCriterion + '[value="0"]').locator('..').tap();
+        await recommendations.nth(0).locator('..').tap();
+        await recommendations.nth(3).locator('..').tap();
         await page.locator('textarea').fill('Мой комментарий');
       } else {
         await page.evaluate(({ user, work }) => {
@@ -342,8 +381,11 @@ try {
       await page.getByText(/Сервер\s+не\s+подтвердил\s+сохранение/).waitFor();
       await act(submit);
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
-      assert.equal((await sheet(login)).ballots.find(b => b.work_id === id).revision, 1);
+      const savedBallot = (await sheet(login)).ballots.find(b => b.work_id === id);
+      assert.equal(savedBallot.revision, 1);
+      assert.deepEqual(savedBallot.nomination_keys, mobile ? ['context','experiment'] : []);
       if (process.env.JURY_QA_SCREENSHOTS) {
+        if (mobile) await page.locator('.recommendations').screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS, 'recommendations-phone.png') });
         await page.screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'mobile' : 'desktop') + '-ballot.png'),fullPage:true });
       }
       await act(page.getByRole('button',{ name:'Выйти' }));
@@ -351,6 +393,8 @@ try {
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
       assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
+      assert.deepEqual(await page.locator('input[name=nomination_keys]').evaluateAll(fields => fields
+        .filter(field => field.checked).map(field => field.value)), mobile ? ['context','experiment'] : []);
       await save(login, id, answers, 'Из другой вкладки', 1);
       await page.locator('textarea').fill('Моя правка');
       await act(submit);

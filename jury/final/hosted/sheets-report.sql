@@ -5,6 +5,7 @@ with active_ballots as (
     end as test_name,
     (visible.answers ->> 'concept')::numeric as concept,
     (visible.answers ->> 'technical_review')::numeric as technical_score,
+    case when b.rubric = 'final_50_50' and not v.technical then b.nomination_keys else '{}'::text[] end as nomination_keys,
     b.comment, v.is_test, b.updated_at
   from public.jury_final_ballots b
   join public.jury_final_control c on c.active_rubric = b.rubric
