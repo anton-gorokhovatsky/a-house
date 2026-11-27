@@ -18,8 +18,8 @@ export function rankingContent(works, sheet, selectedKey) {
     const { criteria } = sheet.data;
     const criterion = criteria.find(c => c.key === selectedKey) || criteria.find(c => c.key === 'concept') || criteria[0];
     content += criteria.length > 1
-      ? '<label class="ranking-order">Упорядочить по критерию<select id="ranking-order">' +
-        criteria.map(c => '<option value="' + escape(c.key) + '"' + (c === criterion ? ' selected' : '') + '>' + escape(columnTitle(c)) + '</option>').join('') + '</select></label>'
+      ? '<label class="ranking-order">Упорядочить по критерию<span class="ranking-select"><span class="ranking-select-label" aria-hidden="true">' + escape(columnTitle(criterion)) + '</span><select id="ranking-order">' +
+        criteria.map(c => '<option value="' + escape(c.key) + '"' + (c === criterion ? ' selected' : '') + '>' + escape(columnTitle(c)) + '</option>').join('') + '</select></span></label>'
       : '<p class="ranking-description">Работы расположены по вашей оценке концепции, от большей к меньшей.</p>';
     const suffix = selectedKey === criterion.key ? '?by=' + encodeURIComponent(criterion.key) : '';
     const rows = works.filter(work => sheet.saved.has(work.id)).map(work => ({
