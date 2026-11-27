@@ -165,6 +165,8 @@ try {
       await page.goto(url + '#work/' + id);
       await signIn(login);
       await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
+      assert.equal(await page.getByText('Критерии оценки', { exact: true }).count(), 0);
+      assert.equal(await page.locator('input[name=technical_review]').count(), mobile ? 0 : 6);
       const strip = page.locator('.sheet-strip');
       const dialog = page.locator('dialog[open]');
       const second = strip.locator('[data-page="2"]');
@@ -268,7 +270,13 @@ try {
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       await act(page.getByRole('link',{ name:'К списку работ' }));
       await page.getByRole('link', { name: 'Регламент жюри' }).waitFor();
-      assert.equal((await page.locator('.jury-welcome').innerText()).includes('требованиям'), !mobile);
+      assert.equal(await page.getByRole('heading', { name: 'Рады видеть вас в составе жюри конкурса!' }).count(), 1);
+      const steps = page.locator('.intro .step');
+      assert.match(await steps.nth(0).innerText(), /^01/);
+      assert.equal(await steps.nth(0).locator('[data-regulations]').count(), 1);
+      assert.match((await steps.nth(1).innerText()).replace(/\s+/g, ' '), /^02 У вас есть доступ.+До 9 декабря.+14 декабря/);
+      assert.equal(await steps.nth(1).getByRole('button', { name: 'Бриф для участников 3-го этапа' }).count(), 1);
+      assert.deepEqual(await page.locator('.work-number').allTextContents(), works.map((_, i) => String(i + 1).padStart(2, '0')));
       const regulations = page.getByRole('link', { name: 'Регламент жюри' });
       assert.match(await regulations.getAttribute('href'), /^blob:/);
       const marked = page.locator('a[id="' + id + '"]');

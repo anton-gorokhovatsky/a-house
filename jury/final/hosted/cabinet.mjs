@@ -237,6 +237,8 @@ async function loadRegulations(source) {
   }
 }
 
+const finalistBrief = {"id":"brief-final-1c7ed76d7623","bytes":6324656};
+
 function showCatalogue() {
   cancelDownload();
   closeGallery?.();
@@ -277,6 +279,8 @@ function showCatalogue() {
   focus.focus();
   const retry = cabinet.querySelector('[data-retry]');
   if (retry) retry.onclick = openCabinet;
+  const brief = cabinet.querySelector('[data-brief]');
+  if (brief) brief.onclick = event => openPdf(finalistBrief, event.currentTarget);
   const order = cabinet.querySelector('#ranking-order');
   if (order) order.onchange = () => {
     history.replaceState(null, '', '#rating?by=' + encodeURIComponent(order.value));
@@ -323,6 +327,7 @@ async function openPdf(work, button) {
   }
   const download = { preview, abort: new AbortController() };
   pendingPdf = download;
+  const label = button.textContent;
   button.disabled = true;
   button.textContent = 'Загружаем PDF…';
   let notice = cabinet.querySelector('#pdf-notice');
@@ -366,7 +371,7 @@ async function openPdf(work, button) {
     if (pendingPdf === download) {
       pendingPdf = null;
       button.disabled = false;
-      button.textContent = 'Открыть PDF';
+      button.textContent = label;
       if (!notice.textContent) notice.remove();
     }
   }
