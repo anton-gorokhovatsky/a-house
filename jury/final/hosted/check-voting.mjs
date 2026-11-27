@@ -299,17 +299,33 @@ try {
       const answers = mobile ? regular : tech;
       await page.goto(url + '#work/' + id);
       await signIn(login);
-      await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
+      await page.getByRole('heading', { name:'Оценка работы' }).waitFor();
       assert.equal(await page.getByText('Критерии оценки', { exact: true }).count(), 0);
       assert.equal(await page.locator('input[name=technical_review]').count(), mobile ? 0 : 6);
       assert.equal(await page.locator('input[name=concept]').count(), mobile ? 6 : 0);
-      assert.equal(await page.getByText('Шкала оценки концепции', { exact:true }).count(), mobile ? 1 : 0);
-      assert.equal(await page.getByText('Шкала реализуемости', { exact:true }).count(), mobile ? 0 : 1);
+      const criterion = page.locator('.criterion-final');
+      const scale = criterion.getByRole('list', {
+        name:mobile ? 'Шкала оценки концепции' : 'Шкала реализуемости', exact:true
+      });
+      assert.deepEqual(await scale.locator('.scale-number').allTextContents(), ['0','1','2','3','4','5']);
+      assert.equal(await scale.locator('li:visible').count(), 6);
+      assert.equal(await criterion.locator('.criterion-number').innerText(), mobile ? '01' : '02');
+      assert.match(await criterion.locator('.criterion-weight').innerText(), /Вес критерия\s+50\s+%/u);
+      assert.equal(await criterion.locator('details[open]').count(), 0);
+      const grid = await criterion.evaluate(el => {
+        const score = el.querySelector('.score-choices').getBoundingClientRect();
+        const number = el.querySelector('.criterion-number').getBoundingClientRect();
+        const caption = el.querySelector('.score-scale').getBoundingClientRect();
+        const circle = getComputedStyle(el.querySelector('.score-choice span')).borderRadius;
+        return [score.left > number.left, caption.top > score.bottom, circle];
+      });
+      assert.deepEqual(grid, [true,true,'50%']);
       const recommendations = page.locator('input[name=nomination_keys]');
       assert.equal(await recommendations.count(), 4);
       const fileAction = page.getByRole('button', { name:'Открыть PDF', exact:true });
       assert.match(await fileAction.getAttribute('aria-describedby'), /^work-pdf-size$/);
-      assert.match(await fileAction.locator('small').innerText(), /МБ$/);
+      assert.equal(await fileAction.locator('small').count(), 0);
+      assert.match(await page.locator('#work-pdf-size').innerText(), /МБ$/);
       await page.evaluate(() => document.fonts.ready);
       const layout = await page.evaluate(() => {
         const size = sel => document.querySelector(sel).getBoundingClientRect();
@@ -320,11 +336,11 @@ try {
         return {
           sectionGap: size('.ballot h2').top - size('.work-return').bottom,
           aligned: [label, fileSize].every(rect => Math.abs(middle(rect) - middle(button)) < 1),
-          sizeInButton: label.bottom < fileSize.top && fileSize.bottom <= button.bottom
+          sizeUnderButton: button.bottom < fileSize.top && fileSize.top - button.bottom < 12
         };
       });
       assert.ok(layout.sectionGap >= 24 && layout.sectionGap <= 66);
-      assert.ok(layout.aligned && layout.sizeInButton);
+      assert.ok(layout.aligned && layout.sizeUnderButton);
       const strip = page.locator('.sheet-strip');
       const dialog = page.locator('dialog[open]');
       const second = strip.locator('[data-page="2"]');
@@ -358,20 +374,21 @@ try {
       await page.waitForFunction(() => document.activeElement?.dataset.page === '2');
       await page.getByRole('link', { name:'Положение о работе жюри' }).waitFor();
       assert.equal(await page.getByRole('link', { name:'Критерии третьего этапа' }).count(), 0);
-      const guide = page.getByText('Что учитывать при оценке концепции', { exact:true });
+      const guide = criterion.getByText('Подробнее о критерии', { exact:true });
+      await act(guide);
+      assert.equal(await criterion.locator('details[open]').count(), 1);
+      await page.waitForFunction(text => document.querySelector('.criterion-final details[open] .scale-body')?.innerText.includes(text),
+        mobile ? 'тревожность, радиофобию' : 'менее 4');
       if (mobile) {
-        await act(guide);
-        await page.waitForFunction(() =>
-          document.querySelector('.guide-list li:last-child')?.innerText.includes('тревожность, радиофобию'));
         assert.equal(await page.locator('.guide-list li:visible').count(), 6);
-        await act(guide);
+        assert.match(await page.locator('.guide-list li:last-child').innerText(), /тревожность, радиофобию/);
       } else {
-        assert.equal(await guide.count(), 0);
-        const scale = page.getByText('Шкала реализуемости', { exact:true });
-        await act(scale);
-        assert.equal(await page.locator('.scale-values li:visible').count(), 6);
-        await act(scale);
+        assert.equal(await criterion.locator('details .scale-values li:visible').count(), 6);
+        assert.match(await criterion.locator('details p').innerText(), /менее 4/);
       }
+      await act(guide);
+      assert.equal(await criterion.locator('details[open]').count(), 0);
+      assert.equal(await scale.locator('li:visible').count(), 6);
       const nominations = page.getByText('Критерии номинаций',{exact:true});
       await act(nominations);
       assert.equal(await page.locator('.nominations h3:visible').count(),4);
@@ -434,6 +451,9 @@ try {
       if (process.env.JURY_QA_SCREENSHOTS) {
         const screenshot = suffix => path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'phone' : 'computer') + suffix);
         await page.locator('.recommendations').screenshot({ path:screenshot('-recommendations.png') });
+        await page.locator('.ballot h2').evaluate(el => el.scrollIntoView({block:'start'}));
+        await page.screenshot({ path:screenshot('-score-layout.png') });
+        await criterion.screenshot({ path:screenshot('-criterion.png') });
         await page.locator('.work-return').evaluate(el => el.scrollIntoView({block:'center'}));
         await page.screenshot({ path:screenshot('-pdf-to-ballot.png') });
         await page.screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'mobile' : 'desktop') + '-ballot.png'),fullPage:true });
@@ -500,10 +520,28 @@ try {
           (mobile ? 'phone' : 'computer') + '-steps.png') });
         await page.evaluate(() => scrollTo(0, 0));
       }
-      await act(page.getByRole('link', { name: 'Работы', exact:true }));
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      const projectsLink = page.getByRole('link', { name: 'Работы', exact:true });
+      const motion = page.waitForFunction(() =>
+        scrollY > 10 && document.querySelector('#projects').getBoundingClientRect().top > 10);
+      await act(projectsLink);
+      await motion;
+      await atProjects();
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'projects');
+      await page.goBack();
+      assert.equal(new URL(page.url()).hash, '');
+      await page.waitForFunction(() => scrollY === 0);
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.evaluate(() => {
+        document.addEventListener('click', () => {
+          document.body.dataset.projectsPosition = String(document.querySelector('#projects').getBoundingClientRect().top);
+        }, { once:true });
+      });
+      await act(projectsLink);
+      assert.ok(Math.abs(Number(await page.locator('body').getAttribute('data-projects-position'))) < 2);
       await atProjects();
       await page.evaluate(() => scrollTo(0, 0));
-      await act(page.getByRole('link', { name: 'Работы', exact:true }));
+      await act(projectsLink);
       await atProjects();
       await page.goto(url + '#works');
       await atProjects();
