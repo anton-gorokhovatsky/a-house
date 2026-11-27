@@ -24,6 +24,17 @@ revoke all on function public.jury_final_criterion_applies(text, boolean, boolea
 grant execute on function public.jury_final_criterion_applies(text, boolean, boolean),
   public.jury_final_visible_answers(text, jsonb, boolean) to service_role;
 
+-- The organizer's read-only export already has access to the ballot table.
+do $$
+begin
+  if to_regrole('supabase_read_only_user') is not null and
+     has_table_privilege(to_regrole('supabase_read_only_user'), 'public.jury_final_ballots', 'select') then
+    grant execute on function public.jury_final_criterion_applies(text, boolean, boolean),
+      public.jury_final_visible_answers(text, jsonb, boolean) to supabase_read_only_user;
+  end if;
+end
+$$;
+
 create or replace function public.jury_final_rubric_sheet(p_rubric text) returns jsonb
 language sql stable security definer set search_path = '' as $$
   select jsonb_build_object(

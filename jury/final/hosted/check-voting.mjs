@@ -17,7 +17,7 @@ const pdf = await readFile(new URL('./test/sheets.pdf', import.meta.url));
 const works = [...fixtures].map((_, i) => ({ id: (i + 1).toString(16).padStart(24, '0'), title: 'Работа ' + (i + 1), bytes: pdf.length }));
 const technicalTest = 'jury-test-technical';
 fixtures.set(technicalTest, '00000000-0000-4000-8000-000000000016');
-await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
+await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create role supabase_read_only_user bypassrls;
   create schema auth; create schema storage; create table storage.objects(bucket_id text);
   create table auth.users(id uuid primary key, email text, raw_user_meta_data jsonb default '{}'::jsonb);
   create function auth.uid() returns uuid language sql stable as
@@ -74,6 +74,7 @@ const raw = async login => (await db.query(
   [fixtures.get(login), probe, currentRubric])).rows[0];
 const reportSql = await readFile(new URL('sheets-report.sql', import.meta.url), 'utf8');
 const report = async () => (await db.query(reportSql)).rows[0].report;
+await db.exec('grant usage on schema auth to supabase_read_only_user; grant select on all tables in schema public, auth to supabase_read_only_user');
 const installRoleSplit = await readFile(new URL('voting-role-split.sql', import.meta.url), 'utf8');
 const rollbackRoleSplit = await readFile(new URL('rollback-role-split.sql', import.meta.url), 'utf8');
 
@@ -118,6 +119,12 @@ const asService = await db.transaction(async tx => {
 });
 assert.equal(Number(asService.working_score), 3.625);
 const exported = await report();
+const readOnlyExport = await db.transaction(async tx => {
+  await tx.exec('set local role supabase_read_only_user');
+  return (await tx.query(reportSql)).rows[0].report;
+});
+assert.deepEqual(readOnlyExport.works, exported.works);
+assert.deepEqual(readOnlyExport.ballots, exported.ballots);
 const exportedWork = exported.works.find(w => w.work_id === probe);
 assert.equal(exportedWork.mean_concept, 3.25);
 assert.equal(exportedWork.mean_feasibility, 4);
