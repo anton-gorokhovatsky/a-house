@@ -52,7 +52,7 @@ node jury/final/hosted/provision.mjs /private/contest/setup /private/contest/fin
 
 ## Сборка и проверка
 
-Для сборки нужны Node.js 24 с npm, Git и tar. Возьмите созданный при настройке кабинета `public-config.json` с URL проекта и публичным ключом `sb_publishable_…`. Укажите новый каталог для результата.
+Для сборки нужны Node.js 24 с npm и Git. Возьмите созданный при настройке кабинета `public-config.json` с URL проекта и публичным ключом `sb_publishable_…`. Укажите новый каталог для результата.
 
 ```sh
 node jury/final/hosted/release.mjs /private/contest/setup/public-config.json /tmp/a-house-jury-site

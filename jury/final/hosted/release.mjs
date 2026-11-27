@@ -83,12 +83,12 @@ async function publish(work) {
 
 const work = await mkdtemp(path.join(tmpdir(), 'a-house-jury-release-'));
 try {
-  const tarball = path.join(work, 'source.tar');
   const archived = path.join(work, 'source');
-  run('git', ['archive', '--format=tar', '--output=' + tarball, source,
-    'jury/final', 'tools/typography.mjs', 'media/fonts'], root);
   await mkdir(archived);
-  run('tar', ['-xf', tarball, '-C', archived], root);
+  // A separate index copies the committed cabinet without reading unrelated blobs in a partial clone.
+  run('git', ['-c', 'core.sparseCheckout=false', '-c', 'core.hooksPath=/dev/null',
+    '--work-tree=' + archived, 'checkout', source, '--', 'jury/final', 'tools/typography.mjs', 'media/fonts'],
+  root, { ...process.env, GIT_INDEX_FILE: path.join(work, 'source.index') });
   const hosted = path.join(archived, 'jury/final/hosted');
   run('npm', ['ci', '--omit=optional', '--ignore-scripts', '--no-audit', '--no-fund'], hosted);
   run(process.execPath, ['node_modules/playwright-core/cli.js', 'install', 'chromium', 'webkit'], hosted);
