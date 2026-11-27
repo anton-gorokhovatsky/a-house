@@ -9,14 +9,14 @@ language sql stable security definer set search_path = '' as $$
   select jsonb_build_object(
     'rubric', r.id, 'criteria_url', r.criteria_url, 'regulations_url', ctl.regulations_url,
     'role', case when v.user_id is null then 'observer' when v.technical then 'technical' else 'juror' end,
-    'nomination_recommendations', r.id = 'final_50_50' and v.user_id is not null and not v.technical,
+    'nomination_recommendations', r.id = 'final_50_50' and v.user_id is not null,
     'accepting', ctl.accepting and r.id = ctl.active_rubric,
     'criteria', coalesce((select jsonb_agg(to_jsonb(c) order by c.position)
       from public.jury_final_criteria c where c.rubric = r.id
       and v.user_id is not null and public.jury_final_criterion_applies(c.rubric, c.technical, v.technical)), '[]'::jsonb),
     'ballots', coalesce((select jsonb_agg(jsonb_build_object('work_id', b.work_id, 'answers', visible.answers,
       'comment', b.comment, 'revision', b.revision,
-      'nomination_keys', case when r.id = 'final_50_50' and not v.technical then b.nomination_keys else '{}'::text[] end))
+      'nomination_keys', case when r.id = 'final_50_50' then b.nomination_keys else '{}'::text[] end))
       from public.jury_final_ballots b
       cross join lateral (select public.jury_final_visible_answers(b.rubric, b.answers, v.technical) as answers) visible
       where b.user_id = m.user_id and b.rubric = r.id and visible.answers <> '{}'::jsonb), '[]'::jsonb)
@@ -32,16 +32,15 @@ create or replace function public.jury_save_rubric_ballot(
 ) returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
   juror uuid := auth.uid();
-  is_technical boolean;
   previous public.jury_final_ballots%rowtype;
   chosen text[];
   saved jsonb;
   revision_after integer;
 begin
   -- The score and recommendations share the existing per-juror lock and transaction.
-  select technical into is_technical from public.jury_final_voters where user_id = juror for update;
-  if not found or is_technical or p_rubric is distinct from 'final_50_50' then
-    raise sqlstate '42501' using message = 'Nomination recommendations require a final concept ballot';
+  perform 1 from public.jury_final_voters where user_id = juror for update;
+  if not found or p_rubric is distinct from 'final_50_50' then
+    raise sqlstate '42501' using message = 'Nomination recommendations require a final ballot';
   end if;
   select array(select key from unnest(array['context','statement','scale','experiment']::text[])
     with ordinality as allowed(key, position) where key = any(p_nomination_keys) order by position) into chosen;

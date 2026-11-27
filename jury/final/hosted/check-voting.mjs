@@ -183,10 +183,28 @@ const recommendationWork = works[12].id;
 const recommend = (login, keys, revision, comment = '') => save(login, recommendationWork, regular, comment, revision,
   currentRubric, keys);
 assert.equal((await sheet('jury-07')).nomination_recommendations, true);
-assert.equal((await sheet('jury-03')).nomination_recommendations, false);
+assert.equal((await sheet('jury-03')).nomination_recommendations, true);
+assert.equal((await sheet(technicalTest)).nomination_recommendations, true);
 assert.equal((await sheet('jury-08')).nomination_recommendations, false);
 await assert.rejects(recommend('jury-08', ['context'], 0), { code:'42501' });
-await assert.rejects(recommend('jury-03', ['context'], 0), { code:'42501' });
+const officialBeforeRecommendations = (await report()).works;
+for (const [login, work, score, revision] of [['jury-03', probe, 3, 2], [technicalTest, recommendationWork, 0, 1]]) {
+  const previous = (await sheet(login)).ballots.find(b => b.work_id === work);
+  const updated = await save(login, work, {technical_review:score}, previous.comment, revision,
+    currentRubric, ['experiment','context']);
+  assert.deepEqual(updated.answers, {technical_review:score});
+  assert.equal(updated.revision, revision + 1);
+  assert.deepEqual(updated.nomination_keys, ['context','experiment']);
+  const reloaded = (await sheet(login)).ballots.find(b => b.work_id === work);
+  assert.deepEqual(reloaded.nomination_keys, updated.nomination_keys);
+  assert.equal(reloaded.comment, previous.comment);
+  const exported = (await report()).ballots.find(b => b.login === login && b.work_id === work);
+  assert.deepEqual(exported.nomination_keys, updated.nomination_keys);
+  assert.equal(exported.technical_score, score);
+  assert.equal(exported.concept, null);
+  assert.equal(exported.is_test, login === technicalTest);
+}
+assert.deepEqual((await report()).works, officialBeforeRecommendations);
 await assert.rejects(recommend('jury-07', ['not-a-nomination'], 0), { code:'22023' });
 await assert.rejects(recommend('jury-07', ['context','context'], 0), { code:'22023' });
 const firstRecommendation = await recommend('jury-07', ['experiment','context'], 0);
@@ -288,7 +306,25 @@ try {
       assert.equal(await page.getByText('Шкала оценки концепции', { exact:true }).count(), mobile ? 1 : 0);
       assert.equal(await page.getByText('Шкала реализуемости', { exact:true }).count(), mobile ? 0 : 1);
       const recommendations = page.locator('input[name=nomination_keys]');
-      assert.equal(await recommendations.count(), mobile ? 4 : 0);
+      assert.equal(await recommendations.count(), 4);
+      const fileAction = page.getByRole('button', { name:'Открыть PDF', exact:true });
+      assert.match(await fileAction.getAttribute('aria-describedby'), /^work-pdf-size$/);
+      assert.match(await fileAction.locator('small').innerText(), /МБ$/);
+      await page.evaluate(() => document.fonts.ready);
+      const layout = await page.evaluate(() => {
+        const size = sel => document.querySelector(sel).getBoundingClientRect();
+        const button = size('#open-pdf');
+        const label = size('#work-pdf-label');
+        const fileSize = size('#work-pdf-size');
+        const middle = rect => rect.left + rect.width / 2;
+        return {
+          sectionGap: size('.ballot h2').top - size('.work-return').bottom,
+          aligned: [label, fileSize].every(rect => Math.abs(middle(rect) - middle(button)) < 1),
+          sizeInButton: label.bottom < fileSize.top && fileSize.bottom <= button.bottom
+        };
+      });
+      assert.ok(layout.sectionGap >= 24 && layout.sectionGap <= 66);
+      assert.ok(layout.aligned && layout.sizeInButton);
       const strip = page.locator('.sheet-strip');
       const dialog = page.locator('dialog[open]');
       const second = strip.locator('[data-page="2"]');
@@ -345,8 +381,6 @@ try {
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
       if (mobile) {
         await page.locator(onlyCriterion + '[value="0"]').locator('..').tap();
-        await recommendations.nth(0).locator('..').tap();
-        await recommendations.nth(3).locator('..').tap();
         await page.locator('textarea').fill('Мой комментарий');
       } else {
         await page.evaluate(({ user, work }) => {
@@ -359,7 +393,13 @@ try {
         assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
         assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), '4');
       }
+      for (const index of [0, 3]) {
+        const option = recommendations.nth(index);
+        if (mobile) await option.locator('..').tap();
+        else await option.press('Space');
+      }
       await act(page.getByRole('link',{name:'К списку работ'}));
+      await page.waitForFunction(id => document.activeElement?.id === id, id);
       await act(page.locator('a[id="' + id + '"]'));
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
       await page.reload();
@@ -390,9 +430,12 @@ try {
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       const savedBallot = (await sheet(login)).ballots.find(b => b.work_id === id);
       assert.equal(savedBallot.revision, 1);
-      assert.deepEqual(savedBallot.nomination_keys, mobile ? ['context','experiment'] : []);
+      assert.deepEqual(savedBallot.nomination_keys, ['context','experiment']);
       if (process.env.JURY_QA_SCREENSHOTS) {
-        if (mobile) await page.locator('.recommendations').screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS, 'recommendations-phone.png') });
+        const screenshot = suffix => path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'phone' : 'computer') + suffix);
+        await page.locator('.recommendations').screenshot({ path:screenshot('-recommendations.png') });
+        await page.locator('.work-return').evaluate(el => el.scrollIntoView({block:'center'}));
+        await page.screenshot({ path:screenshot('-pdf-to-ballot.png') });
         await page.screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'mobile' : 'desktop') + '-ballot.png'),fullPage:true });
       }
       await act(page.getByRole('button',{ name:'Выйти' }));
@@ -401,7 +444,7 @@ try {
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
       assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
       assert.deepEqual(await page.locator('input[name=nomination_keys]').evaluateAll(fields => fields
-        .filter(field => field.checked).map(field => field.value)), mobile ? ['context','experiment'] : []);
+        .filter(field => field.checked).map(field => field.value)), ['context','experiment']);
       await save(login, id, answers, 'Из другой вкладки', 1);
       await page.locator('textarea').fill('Моя правка');
       await act(submit);
@@ -419,7 +462,7 @@ try {
       assert.match(await steps.nth(0).innerText(), /^01/);
       assert.equal(await steps.nth(0).locator('[data-regulations]').count(), 1);
       assert.match((await steps.nth(1).locator(':scope > p').allTextContents()).join(' ').replace(/\s+/g, ' '), /^У вас есть доступ.+До 9 декабря.+14 декабря/);
-      assert.equal(await steps.nth(1).getByRole('button', { name: 'Бриф для участников 3‑го этапа' }).count(), 1);
+      assert.equal(await steps.nth(1).getByRole('button', { name: 'Бриф 3‑го этапа' }).count(), 1);
       assert.deepEqual(await page.locator('.work-number').allTextContents(), works.map((_, i) => String(i + 1).padStart(2, '0')));
       const regulations = page.getByRole('link', { name: 'Регламент жюри' });
       assert.match(await regulations.getAttribute('href'), /^blob:/);
@@ -438,8 +481,32 @@ try {
       await act(page.getByRole('link', { name: 'К моему рейтингу' }));
       await page.waitForFunction(id => document.activeElement?.id === 'rank-' + id, id);
       assert.equal(await page.locator('#ranking-order').count(), 0);
+      const atProjects = () => page.waitForFunction(() => {
+        const section = document.querySelector('#projects');
+        const heading = document.querySelector('#projects-heading');
+        if (!section || !heading) return false;
+        const origin = section.getBoundingClientRect().top;
+        return Math.abs(origin) < 2 && heading.getBoundingClientRect().bottom < innerHeight;
+      });
       await act(page.getByRole('link', { name: 'К списку работ' }));
+      await atProjects();
+      assert.equal(new URL(page.url()).hash, '#projects');
       assert.equal(await page.locator('.sheet-progress').innerText().then(t => t.replace(/\s+/g, ' ')), 'Оценено 2 из 15');
+      await page.goto(url);
+      await page.locator('.welcome h1').waitFor();
+      assert.equal(await page.evaluate(() => scrollY), 0);
+      if (process.env.JURY_QA_SCREENSHOTS) {
+        await page.locator('.intro').screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS,
+          (mobile ? 'phone' : 'computer') + '-steps.png') });
+        await page.evaluate(() => scrollTo(0, 0));
+      }
+      await act(page.getByRole('link', { name: 'Работы', exact:true }));
+      await atProjects();
+      await page.evaluate(() => scrollTo(0, 0));
+      await act(page.getByRole('link', { name: 'Работы', exact:true }));
+      await atProjects();
+      await page.goto(url + '#works');
+      await atProjects();
       await act(page.getByRole('button',{ name:'Выйти' }));
       await signIn('jury-07');
       await act(page.locator('a[id="' + id + '"]'));
