@@ -1,5 +1,8 @@
 with active_ballots as (
   select w.position, w.id as work_id, w.title, split_part(u.email, '@', 1) as login,
+    case when v.is_test then coalesce(nullif(trim(u.raw_user_meta_data ->> 'full_name'), ''),
+      case when v.technical then 'Тест технического жюри' else 'Тестовый член жюри' end)
+    end as test_name,
     (b.answers ->> 'concept')::numeric as concept,
     (b.answers ->> 'technical_review')::numeric as technical_score,
     b.comment, v.is_test, b.updated_at

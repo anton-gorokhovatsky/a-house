@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { makeSheetUpdates, tabs } from './sheets-rows.mjs';
+import { jurorNamesFromRoster, makeSheetUpdates, tabs } from './sheets-rows.mjs';
 
 const source = dirname(fileURLToPath(import.meta.url));
 const setup = resolve(source, '../../../.work/jury-final-hosted');
@@ -32,7 +32,8 @@ if (command === 'target') {
   const db = JSON.parse(raw);
   assert.equal(db.rows?.length, 1, 'Incomplete Supabase report');
   const report = db.rows[0].report;
-  const requests = makeSheetUpdates(report, props);
+  const names = jurorNamesFromRoster(await readFile(join(setup, 'jury-final-access.tsv'), 'utf8'));
+  const requests = makeSheetUpdates(report, props, names);
   const payload = JSON.stringify(requests);
   const run = randomUUID();
   const dir = join(privateDir, 'pending');
