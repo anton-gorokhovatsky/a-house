@@ -611,9 +611,9 @@ async function checkVisitorLinks(page, mobile) {
   assert.match(await page.getByRole('heading', {level: 1}).innerText(), /A–Press/);
   assert.equal(await page.locator('main .press-book').count(), 0);
   const current = page.locator('#current-issues');
-  assert.ok(await current.locator('.home-action').evaluate(action => Boolean(
-    action.previousElementSibling?.matches('.press-friend-issues')
-  )));
+  assert.ok(await current.locator('.home-action').evaluate(action =>
+    action.previousElementSibling?.matches('p') && action.nextElementSibling?.matches('.press-friend-issues')
+  ), 'A–Friend subscription conditions follow the subscription description, above the issue examples');
   const latestIssues = printCatalog.filter(series => series.latest)
     .sort((a, b) => b.latest.published.localeCompare(a.latest.published));
   const featured = latestIssues.find(series => series.latest.cover);
