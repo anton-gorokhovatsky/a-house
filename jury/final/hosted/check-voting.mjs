@@ -658,8 +658,8 @@ try {
         const rect = element => element.getBoundingClientRect();
         const anchors = [...nav.querySelectorAll('a')];
         const links = anchors.map(rect);
-        const labels = anchors.map(a => rect(a.querySelector('span')));
-        const arrows = anchors.map(a => rect(a.querySelector('svg')));
+        const labels = anchors.map(a => rect(a.querySelector('.work-neighbor-label')));
+        const arrows = anchors.map(a => rect(a.querySelector('.work-neighbor-arrow')));
         const references = rect(document.querySelector('.ballot-references'));
         const gallery = rect(document.querySelector('.work-gallery .sheets'));
         const sameLine = Math.abs(links[0].top - links[1].top) < 1;
@@ -674,17 +674,18 @@ try {
           separate: sameLine ? links[0].right < links[1].left : links[0].bottom < links[1].top
         };
       });
-      assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsBesideLabels:true, sameLine:!mobile, touchTargets:true, fits:true, separate:true });
-      assert.deepEqual(await neighbors.locator('.work-neighbor-arrow').evaluateAll(arrows => arrows.map(arrow => ({
-        width: arrow.getBoundingClientRect().width,
-        height: arrow.getBoundingClientRect().height,
-        stroke: getComputedStyle(arrow.querySelector('path')).strokeWidth,
-        paths: arrow.querySelectorAll('path').length,
-        mirrored: getComputedStyle(arrow).transform !== 'none'
-      }))), [
-        { width:50, height:32, stroke:'2px', paths:1, mirrored:true },
-        { width:50, height:32, stroke:'2px', paths:1, mirrored:false }
-      ]);
+      const neighborRow = { underReferences:true, onGalleryEdges:true, arrowsBesideLabels:true, sameLine:true, touchTargets:true, fits:true, separate:true };
+      assert.deepEqual(await neighborLayout(), neighborRow);
+      const [previousArrow, nextArrow] = await neighbors.locator('.work-neighbor-arrow').evaluateAll(arrows => arrows.map(arrow => {
+        const {backgroundImage, transform} = getComputedStyle(arrow);
+        return {backgroundImage, transform};
+      }));
+      assert.notEqual(nextArrow.backgroundImage, 'none');
+      assert.equal(previousArrow.backgroundImage, nextArrow.backgroundImage);
+      assert.equal(previousArrow.transform, 'matrix(-1, 0, 0, 1, 0, 0)');
+      assert.equal(nextArrow.transform, 'none');
+      assert.deepEqual(await neighbors.locator('.work-neighbor-label').allInnerTexts(), mobile
+        ? ['Предыдущая','Следующая'] : ['Предыдущая работа','Следующая работа']);
       if (process.env.JURY_QA_SCREENSHOTS) {
         await page.evaluate(() => document.fonts.ready.then(() => {
           window.scrollTo({ top:document.documentElement.scrollHeight, behavior:'instant' });
@@ -698,8 +699,9 @@ try {
       if (mobile) {
         const viewport = page.viewportSize();
         await page.setViewportSize({ width:320, height:viewport.height });
+        assert.deepEqual(await neighborLayout(), neighborRow);
         const style = await page.addStyleTag({url:'/text-200.css'});
-        assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsBesideLabels:true, sameLine:false, touchTargets:true, fits:true, separate:true });
+        assert.deepEqual(await neighborLayout(), {...neighborRow,sameLine:false});
         await style.evaluate(node => node.remove());
         await page.setViewportSize(viewport);
       }
@@ -903,6 +905,7 @@ try {
       await page.locator('.ranking').waitFor();
       assert.equal(await page.locator('.ranking tbody tr').count(), 2);
       assert.equal(await page.locator('#ranking-order').count(), 0);
+      assert.equal(await page.locator('.ranking-arrow').evaluate(arrow => getComputedStyle(arrow).backgroundImage), nextArrow.backgroundImage);
       const ownRank = page.locator('#rank-' + id).locator('../..');
       assert.equal(await ownRank.locator('td').last().innerText(), String(answers[criterionKey]));
       const rankedHrefs = await page.locator('.ranking tbody a').evaluateAll(links => links.map(a => a.hash));
