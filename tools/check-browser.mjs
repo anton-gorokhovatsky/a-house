@@ -629,18 +629,26 @@ async function checkVisitorLinks(page, mobile) {
       'Fresh issues share a row in pairs on wide screens');
   }
   const periodicals = page.locator('#periodicals');
+  const motionWasReduced = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
+  await page.emulateMedia({reducedMotion: 'no-preference'});
   for (const media of await periodicals.locator('[data-press-motion]').all()) {
     const image = media.locator('img');
     const start = media.getByRole('button', {name: /^Смотреть анимацию/});
     const stop = media.getByRole('button', {name: /^Остановить анимацию/});
-    const still = await image.getAttribute('src');
     const motion = await media.getAttribute('data-press-motion');
+    await media.evaluate(element => element.scrollIntoView({block: 'center', behavior: 'instant'}));
+    await stop.waitFor();
+    assert.equal(await image.getAttribute('src'), motion);
+    assert.equal((await stop.innerText()).trim(), '');
+    await activate(stop);
+    const still = await image.getAttribute('src');
     assert.ok(still.includes('/stills/'));
     await activate(start);
     assert.equal(await image.getAttribute('src'), motion);
     await activate(stop);
     assert.equal(await image.getAttribute('src'), still);
   }
+  await page.emulateMedia({reducedMotion: motionWasReduced ? 'reduce' : 'no-preference'});
   const aBuild = periodicals.locator('.home-edition-brief').filter({has: page.getByRole('heading', {name: 'Газета A–Build', exact: true})});
   assert.equal(await aBuild.getByRole('link', {name: 'О новом Доме A–House', exact: true}).evaluate(link => link.href), url + 'press/a-build/');
   assert.equal(await aBuild.getByRole('img').count(), 0);

@@ -351,7 +351,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks))
       .replaceAll('{{friendAction}}', friendAction)
       .replace('<!-- PRESS MEDIA KIT -->', () => renderPrintFileLink('@@ROOT@@' + mediaKitPath, 'Медиакит A–Press', pdfMetadata(mediaKit.size)))
-      .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@' + pressInterviewPath, 'Читать интервью', pdfMetadata(pressInterview.size) + ' · с. 24–25'))
+      .replace('<!-- PRESS INTERVIEW PDF -->', () => renderPrintFileLink('@@ROOT@@' + pressInterviewPath, 'Интервью в A–News № 1 «Дом»', pdfMetadata(pressInterview.size) + ' · с. 24–25'))
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- PRINT ISSUES -->', () => printArchive)
       .replace('<!-- FRIEND EDITIONS -->', () => renderSubscriptionEntries(printEditions))

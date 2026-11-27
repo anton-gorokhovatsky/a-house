@@ -1,33 +1,56 @@
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
 for (const gallery of document.querySelectorAll('[data-press-motion]')) {
   const image = gallery.querySelector('img');
   const button = gallery.querySelector('button');
-  const label = button.querySelector('span');
   const status = gallery.querySelector('[role="status"]');
   const still = image.getAttribute('src');
   const animation = gallery.dataset.pressMotion;
+  const subject = gallery.dataset.motionSubject;
+  let inView = false;
+  let playOnEntry = true;
 
   function showMotion(playing) {
-    image.src = playing ? animation : still;
-    label.textContent = playing ? 'Остановить анимацию' : 'Смотреть анимацию';
+    const source = playing ? animation : still;
+    if (image.getAttribute('src') !== source) image.src = source;
+    button.toggleAttribute('data-playing', playing);
+    const action = playing ? 'Остановить' : 'Смотреть';
+    button.setAttribute('aria-label', `${action} анимацию ${subject}`);
   }
 
+  function autoplay() {
+    if (inView && playOnEntry && !reducedMotion.matches) showMotion(true);
+  }
+
+  const observer = new IntersectionObserver(([entry]) => {
+    inView = entry.intersectionRatio >= .5;
+    if (!entry.isIntersecting) showMotion(false);
+    else autoplay();
+  }, { threshold: [0, .5] });
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches) showMotion(false);
+    else autoplay();
+  });
   button.addEventListener('click', () => {
     status.textContent = '';
-    showMotion(image.getAttribute('src') === still);
+    playOnEntry = !button.hasAttribute('data-playing');
+    showMotion(playOnEntry);
   });
   image.addEventListener('error', () => {
     if (image.getAttribute('src') !== animation) return;
+    playOnEntry = false;
     showMotion(false);
     status.textContent = 'Не удалось загрузить анимацию.';
   });
+  showMotion(false);
   button.hidden = false;
+  observer.observe(image);
 }
 
 for (const player of document.querySelectorAll('[data-press-release-player]')) {
   const video = player.querySelector('video');
   const button = player.querySelector('button');
   const status = player.querySelector('[role="status"]');
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let playOnEntry = true;
   const observer = new IntersectionObserver(([entry]) => {
     if (!entry.isIntersecting && !video.paused) {

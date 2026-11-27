@@ -62,11 +62,30 @@
   .home-page .press-page section h2 { font-size: var(--story-size); }
 }
 .press-opening-image { margin-block-start: var(--group); max-width: 50rem; }
-.press-motion button {
-  min-block-size: 44px; padding: .35em 0; border: 0; background: none; color: inherit;
-  font: inherit; text-align: start; cursor: pointer;
-  text-decoration: underline; text-decoration-color: var(--link-underline-color);
-  text-underline-offset: var(--link-underline-offset);
+.press-motion { display: grid; grid-template-columns: minmax(0, 1fr); }
+.press-motion > :is(img, button) { grid-area: 1 / 1; }
+.press-motion-toggle {
+  display: grid; place-items: center; align-self: end; justify-self: start;
+  inline-size: 44px; block-size: 44px; margin: 4px; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: #fff; cursor: pointer;
+}
+.press-motion-toggle > span {
+  display: grid; place-items: center; inline-size: 30px; aspect-ratio: 1;
+  border-radius: 50%; background: rgb(0 0 0 / .68);
+}
+.press-motion-toggle > span::before {
+  content: ""; border-block: 5px solid transparent; border-inline-start: 8px solid currentColor;
+  margin-inline-start: 2px;
+}
+.press-motion-toggle[data-playing] > span::before {
+  inline-size: 9px; block-size: 10px; border-block: 0;
+  border-inline: 2px solid currentColor; margin-inline-start: 0;
+}
+.press-motion-toggle:focus-visible {
+  outline: 2px solid #fff; outline-offset: -4px; background: #161616;
+}
+@media (hover: hover) and (pointer: fine) {
+  .press-motion-toggle:hover > span { background: #161616; }
 }
 .home-page .press-motion-status { color: var(--quiet); font-size: var(--note-size); }
 
@@ -186,7 +205,7 @@
 .press-interview { display: grid; grid-template-columns: minmax(0,1fr); align-items: start; gap: 1.25rem; }
 .press-interview figure { margin: 0; max-inline-size: 18.5rem; }
 .press-interview figcaption { margin-block-start: .5em; color: var(--quiet); font-size: var(--note-size); }
-.home-page .press-page .press-interview h3 { max-inline-size: 23ch; margin: .3em 0 .45em; font-size: var(--story-size); text-wrap: balance; }
+.home-page .press-page .press-interview h3 { max-inline-size: 31ch; margin: .3em 0 .45em; font-size: var(--story-size); text-wrap: balance; }
 .press-interview p { max-inline-size: 50ch; }
 .home-page .partnership-inner #partner-stories { margin-block-start: var(--group); }
 .partner-cases { display: grid; align-items: start; gap: var(--chapter) var(--group); }

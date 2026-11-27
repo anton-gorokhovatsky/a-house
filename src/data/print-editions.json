@@ -290,6 +290,13 @@
       "number": 4,
       "topic": "«Глубина»",
       "published": "2026-09-05",
+      "showCoverOnHome": false,
+      "cover": {
+        "src": "media/press/a-sport-04-cover.jpg",
+        "width": 170,
+        "height": 340,
+        "alt": "Пловец между дорожками бассейна на обложке A–Sport № 4 «Глубина»"
+      },
       "description": "Чемпион по фридайвингу Алексей Молчанов вспоминает, как начал нырять, и рассказывает о тренировках на глубине.",
       "article": {
         "href": "https://news.ahouseproject.com/a-interview-aleksej-molchanov/",

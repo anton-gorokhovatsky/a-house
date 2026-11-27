@@ -77,7 +77,7 @@ function printCover({ cover }, className) {
 }
 
 export function renderFriendCovers(issues) {
-  const covers = issues.filter(issue => issue.cover).slice(0, 3);
+  const covers = issues.filter(issue => issue.cover && issue.showCoverOnHome !== false).slice(0, 3);
   if (!covers.length) return '';
   return `<ul class="home-friend-covers" role="list" aria-label="Выпуски в приложении A–House">
     ${covers.map(issue => `<li><figure class="home-friend-cover">${printCover(issue, 'friend-cover-image')}
