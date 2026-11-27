@@ -2,21 +2,14 @@
 <form id="friend-form" class="membership-form" data-membership-form="friend" aria-labelledby="friend-form-heading" {{formAttributes}} accept-charset="UTF-8">
   <input type="hidden" name="product" value="A-Friend">
   <div class="friend-basket" data-unit-price="{{friendUnitPrice}}">
-    <div data-order-line>
+    <div>
       <label for="friend-quantity">Количество подписок</label>
-      <div class="friend-quantity">
-        <div class="friend-stepper">
-          <button type="button" data-order-action="less" aria-label="Уменьшить количество" hidden><span aria-hidden="true"></span></button>
-          <input type="number" inputmode="numeric" id="friend-quantity" name="quantity" min="1" step="1" value="1" required readonly aria-describedby="friend-quantity-error">
-          <button type="button" data-order-action="more" aria-label="Увеличить количество" hidden><span aria-hidden="true"></span></button>
-        </div>
-        <button type="button" data-order-action="remove" hidden>Удалить</button>
+      <div class="friend-stepper">
+        <button type="button" data-order-action="less" aria-label="Уменьшить количество" hidden><span aria-hidden="true"></span></button>
+        <input type="number" inputmode="numeric" id="friend-quantity" name="quantity" min="1" step="1" value="1" required readonly aria-describedby="friend-quantity-error">
+        <button type="button" data-order-action="more" aria-label="Увеличить количество" hidden><span aria-hidden="true"></span></button>
       </div>
       <p id="friend-quantity-error" class="membership-error" data-field-error="quantity" hidden></p>
-    </div>
-    <div data-order-empty hidden>
-      <p>В заказе нет подписок.</p>
-      <button type="button" data-order-action="restore">Вернуть в заказ</button>
     </div>
     <p class="friend-total" aria-live="polite" aria-atomic="true">
       <span class="friend-total-label">Итого</span> <span data-order-total>{{friendTotal}}</span>
