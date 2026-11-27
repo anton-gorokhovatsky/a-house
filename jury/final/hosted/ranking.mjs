@@ -6,6 +6,17 @@ function columnTitle(criterion) {
   return criterion.label;
 }
 
+export function rankingRows(works, sheet, selectedKey) {
+  const criteria = sheet.data?.criteria ?? [];
+  const criterion = criteria.find(c => c.key === selectedKey) || criteria.find(c => c.key === 'concept') || criteria[0];
+  if (!criterion) return { criterion, rows: [] };
+  const rows = works.map((work, index) => ({ work, number: workNumber(index), ballot: sheet.saved.get(work.id) }))
+    .filter(({ ballot }) => ballot && (sheet.data.rubric !== 'final_50_50' || Number.isInteger(ballot.answers[criterion.key])))
+    .map(({ work, number, ballot }) => ({ work, number, score: ballot.answers[criterion.key] }))
+    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  return { criterion, rows };
+}
+
 export function rankingContent(works, sheet, selectedKey) {
   let content = '';
   let note = '';
@@ -21,7 +32,7 @@ export function rankingContent(works, sheet, selectedKey) {
     content += '<p class="status">Здесь появятся работы, которым вы поставили и сохранили оценку.</p>';
   } else {
     const { criteria } = sheet.data;
-    const criterion = criteria.find(c => c.key === selectedKey) || criteria.find(c => c.key === 'concept') || criteria[0];
+    const { criterion, rows } = rankingRows(works, sheet, selectedKey);
     note = criteria.length > 1
       ? '<label class="ranking-order">Упорядочить по критерию<span class="ranking-select"><span class="ranking-select-label" aria-hidden="true">' + escape(columnTitle(criterion)) + '</span><select id="ranking-order">' +
         criteria.map(c => '<option value="' + escape(c.key) + '"' + (c === criterion ? ' selected' : '') + '>' + escape(columnTitle(c)) + '</option>').join('') + '</select></span></label>'
@@ -29,10 +40,6 @@ export function rankingContent(works, sheet, selectedKey) {
         ? 'Работы расположены по вашей технической оценке, от большей к меньшей.'
         : 'Работы расположены по вашей оценке концепции, от большей к меньшей.') + '</p>';
     const suffix = selectedKey === criterion.key ? '?by=' + encodeURIComponent(criterion.key) : '';
-    const rows = works.map((work, index) => ({ work, number: workNumber(index), ballot: sheet.saved.get(work.id) }))
-      .filter(({ ballot }) => ballot && (sheet.data.rubric !== 'final_50_50' || Number.isInteger(ballot.answers[criterion.key])))
-      .map(({ work, number, ballot }) => ({ work, number, score: ballot.answers[criterion.key] }))
-      .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
     let place = 0;
     let previous;
     content += '<table class="ranking"><caption class="sr-only">Сохранённые личные оценки</caption>' +

@@ -177,10 +177,18 @@ export function catalogueContent(works, href = id => '/works/' + id, scored = nu
     '</div><ul class="works project-list">' + links + '</ul></div></section></main>');
 }
 
+export function workNavigation({ previousHref, nextHref }) {
+  const arrow = '<span class="work-neighbor-arrow" aria-hidden="true"></span>';
+  const previous = previousHref ? '<a rel="prev" href="' + escape(previousHref) + '">' + arrow + '<span>Предыдущая работа</span></a>' : '';
+  const next = nextHref ? '<a rel="next" href="' + escape(nextHref) + '"><span>Следующая работа</span>' + arrow + '</a>' : '';
+  return previous || next
+    ? cabinetMarkup('<nav class="work-neighbors" aria-label="Соседние работы">' + previous + next + '</nav>') : '';
+}
+
 export function workContent(work, {
   catalogueHref = '/works#' + work.id,
   returnLabel = 'К списку работ', galleryContent = '',
-  hostedPdf = false,
+  navigationContent = '', hostedPdf = false,
   votingContent = '<p class="status">Оценивание пока недоступно.</p>'
 } = {}) {
   const megabytes = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(work.bytes / 1_000_000);
@@ -199,7 +207,7 @@ export function workContent(work, {
   <a class="return work-return" href="` + catalogueHref + `">` + escape(returnLabel) + `</a>
 </div></div>
 <div class="work-ballot"><div class="wrap content">
-  ` + votingContent + `
+  ` + votingContent + navigationContent + `
 </div></div></main>`);
 }
 
