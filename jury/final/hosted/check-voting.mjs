@@ -310,7 +310,7 @@ try {
       assert.deepEqual(await scale.locator('.scale-number').allTextContents(), ['0','1','2','3','4','5']);
       assert.equal(await scale.locator('li:visible').count(), 6);
       assert.equal(await criterion.locator('.criterion-number').innerText(), mobile ? '01' : '02');
-      assert.match(await criterion.locator('.criterion-weight').innerText(), /Вес критерия\s+50\u202f%/u);
+      assert.match(await criterion.locator('.criterion-weight').innerText(), /^Вес\s+50\u202f%$/u);
       assert.equal(await criterion.locator('details[open]').count(), 0);
       const grid = await criterion.evaluate(el => {
         const score = el.querySelector('.score-choices').getBoundingClientRect();
@@ -320,6 +320,33 @@ try {
         return [score.left > number.left, caption.top > score.bottom, circle];
       });
       assert.deepEqual(grid, [true,true,'50%']);
+      const formRhythm = await page.evaluate(() => {
+        const element = selector => document.querySelector(selector);
+        const rect = selector => element(selector).getBoundingClientRect();
+        const style = selector => getComputedStyle(element(selector));
+        const groupGap = Math.round(rect('.score-choices').top - rect('.criterion-final summary').bottom);
+        const checkGap = Math.round(rect('.save-ballot').top - rect('.nomination-option:last-child').bottom);
+        return {
+          sizes: ['.score-scale', '.comment-label', '.ballot textarea', '.recommendations legend',
+            '.nomination-option', '.save-ballot', '.ballot-references summary', '.ballot-references .ballot-rules']
+            .map(sel => style(sel).fontSize),
+          groupGap, checkGap,
+          afterSave: Math.round(rect('.ballot-references').top - rect('.save-ballot').bottom),
+          upperDivider: style('.score-choices').borderBlockStartWidth,
+          disclosureStyles: ['.criterion-final summary', '.ballot-references summary'].map(sel => {
+            const s = style(sel);
+            return [s.textDecorationLine, s.textUnderlineOffset, getComputedStyle(element(sel),'::before').display];
+          }),
+          separate: element('#voting form').nextElementSibling === element('.ballot-references')
+        };
+      });
+      assert.deepEqual(new Set(formRhythm.sizes), new Set([mobile ? '16px' : '24px']));
+      assert.equal(formRhythm.groupGap, mobile ? 18 : 28);
+      assert.equal(formRhythm.checkGap, formRhythm.groupGap);
+      assert.equal(formRhythm.afterSave, mobile ? 28 : 56);
+      assert.equal(formRhythm.upperDivider, '0px');
+      assert.deepEqual(formRhythm.disclosureStyles[0], formRhythm.disclosureStyles[1]);
+      assert.equal(formRhythm.separate, true);
       const recommendations = page.locator('input[name=nomination_keys]');
       assert.equal(await recommendations.count(), 4);
       const fileAction = page.getByRole('button', { name:'Открыть PDF', exact:true });
@@ -395,7 +422,13 @@ try {
       assert.equal(await criterion.locator('details[open]').count(), 0);
       assert.equal(await scale.locator('li:visible').count(), 6);
       const nominations = page.getByText('Критерии номинаций',{exact:true});
+      const submitOffset = () => page.locator('.save-ballot').evaluate(el =>
+        el.getBoundingClientRect().top - el.form.querySelector('.ballot-follow-up').getBoundingClientRect().top);
+      const buttonOffset = await submitOffset();
+      const reference = page.getByRole('complementary', {name:'Справочные материалы'});
+      assert.equal(await reference.getByRole('link', {name:'Положение о работе жюри',exact:true}).count(),1);
       await act(nominations);
+      assert.ok(Math.abs(await submitOffset() - buttonOffset) < 1);
       assert.equal(await page.locator('.nominations h3:visible').count(),4);
       const guideLayout = await page.locator('.nominations').evaluate(el => {
         const summary = el.querySelector('summary').getBoundingClientRect();
