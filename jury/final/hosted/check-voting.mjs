@@ -665,16 +665,16 @@ try {
         const sameLine = Math.abs(links[0].top - links[1].top) < 1;
         return {
           underReferences: bounds.top > references.bottom,
-          onGalleryEdges: [labels, arrows].every(([left, right]) =>
-            Math.abs(left.left - gallery.left) < 1 && Math.abs(right.right - gallery.right) < 1),
-          arrowsAboveLabels: arrows.every((box, i) => box.bottom < labels[i].top),
+          onGalleryEdges: Math.abs(arrows[0].left - gallery.left) < 1 && Math.abs(arrows[1].right - gallery.right) < 1,
+          arrowsBesideLabels: arrows[0].right < labels[0].left && labels[1].right < arrows[1].left &&
+            arrows.every((box, i) => Math.abs((box.top + box.bottom - labels[i].top - labels[i].bottom) / 2) < 1),
           sameLine,
           touchTargets: links.every(box => box.height >= 44 && box.width >= 44),
           fits: links.every(box => box.left >= 0 && box.right <= innerWidth + 1),
           separate: sameLine ? links[0].right < links[1].left : links[0].bottom < links[1].top
         };
       });
-      assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsAboveLabels:true, sameLine:true, touchTargets:true, fits:true, separate:true });
+      assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsBesideLabels:true, sameLine:!mobile, touchTargets:true, fits:true, separate:true });
       assert.deepEqual(await neighbors.locator('.work-neighbor-arrow').evaluateAll(arrows => arrows.map(arrow => ({
         width: arrow.getBoundingClientRect().width,
         height: arrow.getBoundingClientRect().height,
@@ -699,7 +699,7 @@ try {
         const viewport = page.viewportSize();
         await page.setViewportSize({ width:320, height:viewport.height });
         const style = await page.addStyleTag({url:'/text-200.css'});
-        assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsAboveLabels:true, sameLine:false, touchTargets:true, fits:true, separate:true });
+        assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsBesideLabels:true, sameLine:false, touchTargets:true, fits:true, separate:true });
         await style.evaluate(node => node.remove());
         await page.setViewportSize(viewport);
       }
@@ -838,10 +838,40 @@ try {
         assert.equal(rules.lines, 1);
         assert.deepEqual(brief, rules);
       };
+      const mastheadGeometry = () => page.locator('.masthead-inner').evaluate(async header => {
+        await document.fonts.ready;
+        const logo = header.querySelector('img').getBoundingClientRect();
+        const controls = [...header.querySelectorAll('nav a, button')].map(el => el.getBoundingClientRect());
+        const separated = (a, b) => a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+        return {
+          height:header.getBoundingClientRect().height,
+          sameRow:controls.every(box => Math.abs(box.top + box.bottom - controls[0].top - controls[0].bottom) < 2),
+          usable:controls.length === 3 && controls.every((box, i) => box.width >= 44 && box.height >= 44 &&
+            box.top >= logo.bottom && box.left >= 0 && box.right <= innerWidth + 1 &&
+            controls.slice(i + 1).every(other => separated(box, other)))
+        };
+      });
+      const checkMastheadRow = async () => {
+        const { height, sameRow, usable } = await mastheadGeometry();
+        assert.ok(height < 120 && sameRow && usable, JSON.stringify({height,sameRow,usable}));
+      };
+      const menuUnderlines = await page.locator('.masthead nav a').evaluateAll(links => links.map(link => {
+        const {textDecorationColor, textDecorationThickness, textUnderlineOffset} = getComputedStyle(link);
+        return {textDecorationColor, textDecorationThickness, textUnderlineOffset};
+      }));
+      assert.equal(menuUnderlines.length, 2);
+      assert.deepEqual(menuUnderlines[0],menuUnderlines[1]);
       await checkStepButtons();
+      if (mobile) await checkMastheadRow();
       const catalogueViewport = page.viewportSize();
       await page.setViewportSize({ width:mobile ? 320 : 740, height:catalogueViewport.height });
       await checkStepButtons();
+      if (mobile) {
+        await checkMastheadRow();
+        const zoom = await page.addStyleTag({url:'/text-200.css'});
+        assert.ok((await mastheadGeometry()).usable);
+        await zoom.evaluate(node => node.remove());
+      }
       await page.setViewportSize(catalogueViewport);
       const introduction = page.locator('.jury-introduction');
       assert.equal(await introduction.getByText('На третьем (текущем) этапе', { exact:true }).count(), 1);
