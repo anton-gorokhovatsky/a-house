@@ -555,10 +555,38 @@ try {
       await loaded(3);
       await act(next);
       await loaded(1);
+      const viewerViewport = page.viewportSize();
+      let enlargedViewerText;
+      const checkZoomLayout = async () => {
+        assert.ok(await dialog.locator('.sheet-dialog-top').evaluate(toolbar => {
+          const value = toolbar.querySelector('.zoom-value');
+          const line = document.createRange();
+          line.selectNodeContents(value);
+          const text = line.getBoundingClientRect();
+          const scale = value.getBoundingClientRect();
+          const buttons = [...toolbar.querySelectorAll('button')].map(button => button.getBoundingClientRect());
+          const bounds = toolbar.getBoundingClientRect();
+          const separated = (a, b) => a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+          return text.left >= scale.left - 1 && text.right <= scale.right + 1 &&
+            buttons.every((box, index) => box.width >= 44 && box.height >= 44 &&
+              box.left >= bounds.left - 1 && box.right <= bounds.right + 1 && separated(box, text) &&
+              buttons.slice(index + 1).every(other => separated(box, other)));
+        }), 'The enlarged zoom value overlaps a button or a button overflows the toolbar.');
+      };
+      if (mobile) {
+        await page.setViewportSize({width:320,height:viewerViewport.height});
+        enlargedViewerText = await page.addStyleTag({url:'/text-200.css'});
+        await checkZoomLayout();
+      }
       await act(dialog.getByRole('button', { name: 'Увеличить' }));
       assert.equal(await dialog.locator('.zoom-value').innerText(), '130 %');
+      if (mobile) await checkZoomLayout();
       await act(dialog.getByRole('button', { name: 'Сбросить' }));
       assert.equal(await dialog.locator('.zoom-value').innerText(), '100 %');
+      if (enlargedViewerText) {
+        await enlargedViewerText.evaluate(node => node.remove());
+        await page.setViewportSize(viewerViewport);
+      }
       if (mobile) await act(dialog.getByRole('button', { name: 'Закрыть' }));
       else await page.keyboard.press('Escape');
       await page.locator('dialog').waitFor({ state: 'hidden' });

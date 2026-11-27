@@ -523,8 +523,10 @@ body:has(.sheet-dialog[open]) { overflow: hidden; }
 .sheets + .materials { margin-block-start: clamp(1.25rem, 2.5vw, 2rem); }
 
 @container sheet-viewer (max-width: 18em) {
-  .sheet-dialog-top { display: grid; grid-template-columns: 44px minmax(0, 1fr) repeat(3, 44px); gap: .1em; }
-  .sheet-zoom { display: contents; }
+  .sheet-dialog-top, .sheet-zoom { gap: .25rem .1em; }
+  .sheet-zoom { max-inline-size: 100%; }
+  .sheet-dialog-top :is(.sheet-arrow, .sheet-tool) { flex: none; inline-size: 44px; }
+  .sheet-dialog-top [data-close] { margin-inline-start: auto; }
   .sheet-dialog-top .sheet-label { display: none; }
   .sheet-dialog-top .sheet-symbol {
     display: inline;
@@ -535,6 +537,7 @@ body:has(.sheet-dialog[open]) { overflow: hidden; }
   .sheet-arrow, .sheet-tool { min-block-size: max(44px, 1.4em); padding: 0; }
   .sheet-arrow { inline-size: 44px; font-size: 1em; }
   .zoom-value, .sheet-number { min-inline-size: 0; white-space: nowrap; }
+  .zoom-value { flex: none; }
   .sheet-controls { flex-wrap: nowrap; column-gap: .35em; }
 }
 
