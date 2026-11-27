@@ -61,19 +61,21 @@ export async function checkTheme(browser, url) {
     const light = await canvas(page);
     const lightContacts = await contacts(page);
     assert.ok(luminance(lightContacts) < .15, 'Contacts keep their dark background on a light page');
-    const cover = page.locator('.home-friend-cover img');
-    assert.equal(await cover.count(), 1, 'The subscription teaser shows an issue cover');
-    await cover.scrollIntoViewIfNeeded();
-    await cover.evaluate(img => img.decode());
-    const image = () => cover.evaluate(img => [img.currentSrc, getComputedStyle(img).filter]);
-    const original = await image();
+    const covers = page.locator('.home-friend-cover img');
+    assert.ok(await covers.count() >= 2, 'The subscription teaser shows a selection of issues');
+    for (const cover of await covers.all()) {
+      await cover.scrollIntoViewIfNeeded();
+      await cover.evaluate(img => img.decode());
+    }
+    const images = () => covers.evaluateAll(items => items.map(img => [img.currentSrc, getComputedStyle(img).filter]));
+    const originals = await images();
     await page.emulateMedia({ colorScheme: 'dark' });
     await systemChoice.getByText('В системе тёмная', { exact: true }).waitFor();
     assert.deepEqual(await footerLayout(page), initialLayout, 'Changing the device theme keeps the footer in place');
     const dark = await canvas(page);
     assert.ok(luminance(light) > .75 && luminance(dark) < .15, 'A first visit follows the device');
     assert.equal(await contacts(page), dark, 'In system dark mode the page continues through contacts');
-    assert.deepEqual(await image(), original, 'The printed issue keeps its artwork');
+    assert.deepEqual(await images(), originals, 'The covers keep their artwork in both themes');
     await checkReadable(page.locator('.home-introduction p').first());
     await checkReadable(page.locator('.home-footer-contacts a').first());
     await checkReadable(group(page).locator('legend'));

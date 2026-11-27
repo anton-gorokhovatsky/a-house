@@ -12,7 +12,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPrintRelease, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
+import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCovers, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPrintRelease, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 import { clubPrograms } from '../src/data/club-programs.mjs';
@@ -250,7 +250,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   }));
   function scriptsFor(page) {
     if (page.layout === 'project') return ['js/site.js', ...(page.slug === 'a_pass' ? ['js/services.js'] : ['js/project-stories.js'])];
-    if (page.slug === 'home') return [...scripts, 'js/home.js'];
+    if (page.slug === 'home') return [...scripts, 'js/home.js', 'js/press.js'];
     if (page.slug === 'member' || page.slug === 'a-friend') return [...scripts, 'js/membership.js'];
     if (page.slug === 'press') return [...scripts, 'js/press.js'];
     if (page.slug === 'calendar') return [...scripts, 'js/calendar.js'];
@@ -337,7 +337,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
       .replace('<!-- HOME PRINT RELEASE -->', () => homePrintRelease?.homeLink ?? '')
       .replace('<!-- HOME PRESS PREVIEW -->', () => homePrintRelease?.homePreview ?? '')
-      .replace('<!-- FRIEND FEATURED COVER -->', () => renderFriendCover(currentPrintIssues))
+      .replace('<!-- FRIEND FEATURED COVERS -->', () => renderFriendCovers(currentPrintIssues))
       .replace('<!-- PRESS CONTENTS -->', () => renderPressNavigation(page.slug))
       .replace('<!-- PRESS BOOKMARKS -->', () => renderPressBookmarks(projects.find(project => project.overview === 'news').href))
       .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks))

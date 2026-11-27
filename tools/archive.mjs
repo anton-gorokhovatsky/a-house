@@ -76,9 +76,13 @@ function printCover({ cover }, className) {
   return `<img class="${className}" src="@@ROOT@@${escape(cover.src)}" width="${cover.width}" height="${cover.height}" alt="${escape(cover.alt)}" loading="lazy" decoding="async">`;
 }
 
-export function renderFriendCover(issues) {
-  const issue = issues.find(issue => issue.cover);
-  return issue ? `<figure class="home-friend-cover">${printCover(issue, 'friend-cover-image')}<figcaption>${escape(issue.title)}</figcaption></figure>` : '';
+export function renderFriendCovers(issues) {
+  const covers = issues.filter(issue => issue.cover).slice(0, 3);
+  if (!covers.length) return '';
+  return `<ul class="home-friend-covers" role="list" aria-label="Выпуски в приложении A–House">
+    ${covers.map(issue => `<li><figure class="home-friend-cover">${printCover(issue, 'friend-cover-image')}
+      <figcaption><span>${escape(issue.edition)} № ${issue.number}</span> ${escape(issue.topic)}</figcaption></figure></li>`).join('')}
+  </ul>`;
 }
 
 function renderIssueLinks(issue, homeLink) {
@@ -117,12 +121,22 @@ export function renderPressFeature(issue, home) {
     : renderFeaturedIssue(issue, { id: issue.anchor, heading: 'h2', excerpt: issue.excerpt });
 }
 
+function renderPrintVideo(video, id, title) {
+  return `<figure class="press-release-media" data-press-release-player>
+    <div class="press-release-player">
+      <video id="${id}-video" src="@@ROOT@@${escape(video.src)}" poster="@@ROOT@@${escape(video.poster)}" width="${video.width}" height="${video.height}" controls muted loop playsinline preload="none" aria-label="Ролик о выпуске ${title}" aria-describedby="${id}-video-description"></video>
+      <button class="press-release-play" type="button" hidden aria-controls="${id}-video" aria-label="Смотреть ролик о выпуске ${title}"><span aria-hidden="true"></span></button>
+    </div>
+    <p class="press-release-video-status" role="status"></p>
+    <figcaption class="screen-reader-only" id="${id}-video-description">${escape(video.description)}</figcaption>
+  </figure>`;
+}
+
 export function renderPrintRelease({ edition, latest, printRelease }) {
   const { anchor, number, topic, description, highlights, availableFrom, outlets, source, video } = printRelease;
   const id = escape(anchor);
   const title = escape(`${edition} № ${number} ${topic}`);
   const href = `@@ROOT@@press/#${id}`;
-  const poster = `@@ROOT@@${escape(video.poster)}`;
   const outletList = outlets.map(name => `<li>${escape(name)}</li>`).join('');
   return {
     press: `<section class="press-release print-release-layout" id="${id}" tabindex="-1" aria-labelledby="${id}-title">
@@ -130,20 +144,13 @@ export function renderPrintRelease({ edition, latest, printRelease }) {
         <p class="home-kicker">Печатный выпуск</p>
         <h2 id="${id}-title">${title}</h2>
       </div>
-      <figure class="press-release-media" data-press-release-player>
-        <div class="press-release-player">
-          <video id="${id}-video" src="@@ROOT@@${escape(video.src)}" poster="${poster}" width="${video.width}" height="${video.height}" controls muted playsinline preload="none" aria-label="Ролик о выпуске ${title}" aria-describedby="${id}-video-description"></video>
-          <button class="press-release-play" type="button" hidden aria-controls="${id}-video" aria-label="Смотреть ролик о выпуске ${title}"><span aria-hidden="true"></span></button>
-        </div>
-        <p class="press-release-video-status" role="status"></p>
-        <figcaption class="screen-reader-only" id="${id}-video-description">${escape(video.description)}</figcaption>
-      </figure>
+      ${renderPrintVideo(video, id, title)}
       <div class="press-release-copy">
         <p>${escape(description)}</p>
         <p>${escape(highlights)}</p>
         <details class="press-release-distribution">
-          <summary><span aria-hidden="true"></span>Где найти печатный номер</summary>
-          <p>С ${dateMarkup(availableFrom)} в партнёрских точках</p>
+          <summary>Где найти печатный номер<span aria-hidden="true"></span></summary>
+          <p class="home-meta">С ${dateMarkup(availableFrom)}</p>
           <ul role="list">${outletList}</ul>
         </details>
         <div class="press-page-links">
@@ -152,17 +159,17 @@ export function renderPrintRelease({ edition, latest, printRelease }) {
         </div>
       </div>
     </section>`,
-    homeLink: `<a class="home-introduction-issue" href="${href}">Вышел ${title}</a>`,
-    homePreview: `<article class="home-press-release print-release-layout" aria-labelledby="home-print-release-title">
+    homeLink: `<a class="home-introduction-issue" href="#home-${id}">Вышел ${title}</a>`,
+    homePreview: `<article class="home-press-release print-release-layout" id="home-${id}" tabindex="-1" aria-labelledby="home-${id}-title">
       <div>
         <p class="home-kicker">Печатный выпуск</p>
-        <h4 id="home-print-release-title">${title}</h4>
-        <p>${escape(highlights)}</p>
+        <h4 id="home-${id}-title">${title}</h4>
       </div>
-      <a class="home-press-release-media" href="${href}" aria-labelledby="home-print-release-title home-print-release-action">
-        <img src="${poster}" width="${video.width}" height="${video.height}" alt="" loading="lazy" decoding="async">
-        <span id="home-print-release-action">Видео и точки распространения</span>
-      </a>
+      ${renderPrintVideo(video, 'home-' + id, title)}
+      <div>
+        <p>${escape(highlights)}</p>
+        <div class="home-links"><a href="${href}">О выпуске и где его найти</a></div>
+      </div>
     </article>`
   };
 }

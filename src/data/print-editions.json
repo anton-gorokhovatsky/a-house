@@ -8,6 +8,12 @@
       "number": 8,
       "topic": "«Бумага»",
       "published": "2026-09-03",
+      "cover": {
+        "src": "media/press/a-news-08-cover.jpg",
+        "width": 414,
+        "height": 588,
+        "alt": "Художник в мастерской рядом со стопой бумаги на обложке A–News"
+      },
       "description": "Художник Игорь Самолет рассказывает о блокнотах, работе с бумагой и любви к советскому модернизму.",
       "article": {
         "href": "https://news.ahouseproject.com/a-interview-igor-samolet/",
@@ -343,6 +349,12 @@
       "number": 3,
       "topic": "«Северный Кавказ»",
       "published": "2026-04-25",
+      "cover": {
+        "src": "media/press/a-state-03-cover.jpg",
+        "width": 398,
+        "height": 566,
+        "alt": "Деревья над бирюзовой водой на обложке A–State"
+      },
       "description": "Как подготовиться к походу по Мамисонскому ущелью и что увидеть по дороге.",
       "announcement": "https://t.me/ahouseproject/7123"
     },

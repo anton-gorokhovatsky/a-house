@@ -28,12 +28,17 @@ for (const player of document.querySelectorAll('[data-press-release-player]')) {
   const button = player.querySelector('button');
   const status = player.querySelector('[role="status"]');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let playOnEntry = true;
   const observer = new IntersectionObserver(([entry]) => {
-    if (entry.intersectionRatio >= .5 && !reducedMotion.matches) start(false);
-  }, { threshold: .5 });
+    if (!entry.isIntersecting && !video.paused) {
+      playOnEntry = video.muted;
+      video.pause();
+    }
+    if (entry.intersectionRatio >= .5 && playOnEntry && !reducedMotion.matches) start(false);
+  }, { threshold: [0, .5] });
 
   function start(requested) {
-    observer.disconnect();
+    playOnEntry = false;
     status.textContent = '';
     if (video.error) video.load();
     video.play().then(() => {
@@ -50,5 +55,5 @@ for (const player of document.querySelectorAll('[data-press-release-player]')) {
   video.controls = false;
   button.hidden = false;
   button.addEventListener('click', () => start(true));
-  if (!reducedMotion.matches) observer.observe(video);
+  observer.observe(video);
 }
