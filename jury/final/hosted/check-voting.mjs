@@ -4,6 +4,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { chromium, devices, webkit } from 'playwright-core';
 import { reportRows } from './sheets-rows.mjs';
+import { criterionTitles } from './criteria.mjs';
 import { cabinetAssets } from '../assets.mjs';
 
 const [site, postgresModule = '@electric-sql/pglite'] = process.argv.slice(2);
@@ -157,6 +158,7 @@ assert.equal((await report()).ballots.find(b => b.login === 'jury-03' && b.work_
 assert.deepEqual(await raw('jury-03'), beforeRoleRollback);
 await db.exec(installRoleSplit);
 await db.exec(await readFile(new URL('voting-nominations.sql', import.meta.url), 'utf8'));
+await db.exec(await readFile(new URL('voting-nomination-limit.sql', import.meta.url), 'utf8'));
 assert.deepEqual((await sheet('jury-03')).ballots[0].answers, {technical_review:3});
 assert.deepEqual(await raw('jury-03'), beforeRoleRollback);
 await db.exec(await readFile(new URL('rollback-50-50.sql', import.meta.url), 'utf8'));
@@ -223,7 +225,20 @@ const exportedRecommendations = reportRows(await report(), new Map([['jury-07','
 assert.equal(exportedRecommendations.find(row => row[1] === 'Тест экспорта')[7], 'Лучшее архитектурное высказывание');
 assert.equal((await recommend('jury-07', [], 3, 'Правка со старого клиента')).revision, 4);
 assert.deepEqual((await savedRecommendation()).nomination_keys, []);
-console.log('PGlite: optional nominations, role restrictions, old-client edits, revision checks and report passed.');
+const contested = [works[10].id, works[11].id];
+const compareChoices = result => result.status === 'fulfilled';
+const simultaneous = await Promise.allSettled(contested.map(work =>
+  save('jury-06', work, regular, 'Проверка общего ограничения', 0, currentRubric, ['context'])));
+assert.equal(simultaneous.filter(compareChoices).length, 1);
+assert.equal(simultaneous.find(result => !compareChoices(result)).reason.code, 'PT422');
+const selectedWork = simultaneous.find(compareChoices).value;
+const rejectedWork = contested.find(work => work !== selectedWork.work_id);
+assert.equal((await sheet('jury-06')).ballots.some(ballot => ballot.work_id === rejectedWork), false);
+assert.deepEqual((await save('jury-04', rejectedWork, regular, '', 0, currentRubric, ['context'])).nomination_keys, ['context']);
+await save('jury-06', selectedWork.work_id, regular, '', selectedWork.revision, currentRubric, []);
+assert.deepEqual((await save('jury-06', rejectedWork, regular, '', 0, currentRubric, ['context','experiment'])).nomination_keys,
+  ['context','experiment']);
+console.log('PGlite: one recommendation per juror and nomination, atomic rejection, transfer, roles and revision checks passed.');
 
 console.log('PGlite: role-specific ballots, historical scores, retries, 50/50, export, test exclusions and both rollbacks passed.');
 if (process.env.JURY_QA_DB_ONLY) {
@@ -267,6 +282,7 @@ async function intercept(context, fault) {
     if (endpoint === '/rest/v1/jury_works') return reply(200, works);
     if (endpoint.endsWith('/jury_final_rubric_sheet')) return reply(200, await sheet(login));
     if (endpoint.endsWith('/jury_save_rubric_ballot')) {
+      await fault.beforeSave?.();
       if (fault.saveUnavailable) { fault.saveUnavailable = false; return reply(503); }
       try {
         const record = await save(login, body.p_work_id, body.p_answers, body.p_comment, body.p_revision, body.p_rubric, body.p_nomination_keys);
@@ -283,6 +299,59 @@ async function intercept(context, fault) {
     if (endpoint.startsWith('/storage/v1/object/authenticated/')) return route.fulfill({ status:200, headers:cors, contentType:'application/pdf', body:pdf });
     return reply(404);
   });
+}
+
+async function checkNominationRace(browser, options, act, mobile) {
+  const context = await browser.newContext(options);
+  const gate = Promise.withResolvers();
+  let arrivals = 0;
+  try {
+    await intercept(context, { beforeSave() {
+      if (++arrivals === 2) gate.resolve();
+      return gate.promise;
+    } });
+    const login = mobile ? 'jury-05' : technicalTest;
+    const criterion = mobile ? 'concept' : 'technical_review';
+    const targets = [works[8].id, works[9].id];
+    const pages = await Promise.all(targets.map(async id => {
+      const page = await context.newPage();
+      await page.goto(url + '#work/' + id);
+      await page.getByLabel('Логин', { exact:true }).fill(login);
+      await page.getByLabel('Пароль').fill('test');
+      await act(page.getByRole('button', { name:'Войти', exact:true }));
+      const score = page.locator('input[name="' + criterion + '"][value="2"]');
+      const nomination = page.locator('input[name="nomination_keys"][value="scale"]');
+      if (mobile) await score.locator('..').tap();
+      else await score.press('Space');
+      await page.locator('textarea').fill('Черновик из одной из вкладок');
+      if (mobile) await nomination.locator('..').tap();
+      else await nomination.press('Space');
+      return page;
+    }));
+    const response = pages.map(page => page.waitForResponse(res => new URL(res.url()).pathname.endsWith('/jury_save_rubric_ballot')));
+    await Promise.all(pages.map(page => act(page.locator('.save-ballot'))));
+    const statuses = (await Promise.all(response)).map(res => res.status());
+    assert.deepEqual([...statuses].sort(), [200,422]);
+    const winner = pages[statuses.indexOf(200)];
+    const loser = pages[statuses.indexOf(422)];
+    await loser.getByText(/В\s+одной\s+из\s+выбранных\s+номинаций\s+уже\s+рекомендована/).waitFor();
+    assert.equal(await loser.locator('textarea').inputValue(), 'Черновик из одной из вкладок');
+    assert.ok(await loser.locator('input[name="nomination_keys"][value="scale"]').isChecked());
+    await winner.getByText('Оценка сохранена.', { exact:true }).waitFor();
+    const savedChoice = winner.locator('input[name="nomination_keys"][value="scale"]');
+    if (mobile) await savedChoice.locator('..').tap();
+    else await savedChoice.press('Space');
+    await act(winner.locator('.save-ballot'));
+    await winner.getByText('Оценка сохранена.', { exact:true }).waitFor();
+    await loser.reload();
+    await act(loser.locator('.save-ballot'));
+    await loser.getByText('Оценка сохранена.', { exact:true }).waitFor();
+    const assigned = (await sheet(login)).ballots.filter(ballot => ballot.nomination_keys.includes('scale'));
+    assert.deepEqual(assigned.map(ballot => ballot.work_id), [targets[statuses.indexOf(422)]]);
+  } finally {
+    gate.resolve();
+    await context.close();
+  }
 }
 
 async function observeRegulationsPreview(page) {
@@ -308,7 +377,7 @@ async function checkRoleLayout(browser, options, act, role) {
     await page.getByRole('heading', { name:'Оценка работы' }).waitFor();
     assert.deepEqual(await page.locator('.criterion-number').allTextContents(), ['01', '02']);
     assert.deepEqual(await page.locator('.criterion input[type=radio]').evaluateAll(fields => [...new Set(fields.map(field => field.name))]), [role.criterion]);
-    assert.equal(await page.getByRole('group', { name:'Рекомендовать на номинации по желанию', exact:true }).getByRole('checkbox').count(), 4);
+    assert.equal(await page.getByRole('group', { name:'Рекомендовать на номинацию', exact:true }).getByRole('checkbox').count(), 4);
 
     assert.equal(fault.regulationsRequests, undefined);
     const regulations = page.getByRole('link', { name:'Положение о работе жюри' });
@@ -371,6 +440,11 @@ try {
       assert.deepEqual(await scale.locator('.scale-number').allTextContents(), ['0','1','2','3','4','5']);
       assert.equal(await scale.locator('li:visible').count(), 6);
       assert.equal(await criterion.locator('.criterion-number').innerText(), '01');
+      if (mobile) {
+        const normalizeTitle = text => text.replace(/[\u00ad\u200b]/g, '').replace(/\s+/gu, ' ').trim();
+        assert.equal(normalizeTitle(await criterion.locator('h3').textContent()), criterionTitles.concept);
+        assert.ok(!normalizeTitle(await criterion.locator('.scale-body').textContent()).includes(criterionTitles.concept));
+      }
       const weightNote = criterion.getByText(/^Вес критерия в\s+итоговой оценке\s+—\s+50\s+%\.$/u);
       assert.equal(await weightNote.count(), 1);
       assert.ok(await weightNote.isHidden());
@@ -388,12 +462,13 @@ try {
         const rect = selector => element(selector).getBoundingClientRect();
         const style = selector => getComputedStyle(element(selector));
         const groupGap = Math.round(rect('.score-choices').top - rect('.criterion-final summary').bottom);
-        const checkGap = Math.round(rect('.save-ballot').top - rect('.nomination-option:last-child').bottom);
+        const guideGap = Math.round(rect('.nomination-reference').top - rect('.nomination-choice:last-child').bottom);
+        const checkGap = Math.round(rect('.save-ballot').top - rect('.nomination-reference').bottom);
         return {
           sizes: ['.score-scale', '.comment-label', '.ballot textarea',
             '.nomination-option', '.save-ballot', '.ballot-reference-toggle', '.ballot-references .ballot-rules']
             .map(sel => style(sel).fontSize),
-          groupGap, checkGap,
+          groupGap, guideGap, checkGap,
           afterSave: Math.round(rect('.ballot-references').top - rect('.save-ballot').bottom),
           upperDivider: style('.score-choices').borderBlockStartWidth,
           headingStyle: ['.criterion-main h3', '.recommendation-step h3'].map(sel => {
@@ -410,6 +485,7 @@ try {
       });
       assert.deepEqual(new Set(formRhythm.sizes), new Set([mobile ? '16px' : '24px']));
       assert.equal(formRhythm.groupGap, mobile ? 18 : 28);
+      assert.equal(formRhythm.guideGap, formRhythm.groupGap);
       assert.equal(formRhythm.checkGap, formRhythm.groupGap);
       assert.equal(formRhythm.afterSave, mobile ? 28 : 56);
       assert.equal(formRhythm.upperDivider, '0px');
@@ -418,8 +494,15 @@ try {
       assert.equal(formRhythm.separate, true);
       const recommendations = page.locator('input[name=nomination_keys]');
       assert.equal(await recommendations.count(), 4);
+      assert.equal(await page.locator('#nomination-instruction').innerText().then(text => text.replace(/\s+/gu, ' ')),
+        'Предпочтение в каждой номинации можно отдать только одному участнику.');
+      if (!mobile) {
+        assert.ok(await recommendations.nth(0).isDisabled());
+        const assigned = page.locator('.nomination-choice').first().getByRole('link', { name:'Открыть рекомендованную работу' });
+        assert.equal(await assigned.getAttribute('href'), '#work/' + probe);
+      }
       assert.equal(await page.locator('.recommendation-step .criterion-number').textContent(), '02');
-      assert.equal(await page.getByRole('group', {name:'Рекомендовать на номинации по желанию',exact:true})
+      assert.equal(await page.getByRole('group', {name:'Рекомендовать на номинацию',exact:true})
         .getByRole('checkbox').count(), 4);
       const fileAction = page.getByRole('button', { name:'Открыть PDF', exact:true });
       assert.match(await fileAction.getAttribute('aria-describedby'), /^work-pdf-size$/);
@@ -506,18 +589,18 @@ try {
       const reference = page.getByRole('complementary', {name:'Справочные материалы'});
       const juryRules = reference.getByRole('link', {name:'Положение о работе жюри',exact:true});
       assert.equal(await juryRules.count(), 1);
-      const helpLayout = () => reference.evaluate(el => {
-        const button = el.querySelector('button').getBoundingClientRect();
-        const rules = el.querySelector('.ballot-rules').getBoundingClientRect();
-        return [rules.left - button.left, rules.top - button.top];
+      const helpLayout = () => nominations.evaluate(button => {
+        const rules = document.querySelector('.ballot-references .ballot-rules').getBoundingClientRect();
+        const submit = button.form.querySelector('.save-ballot').getBoundingClientRect();
+        const toggle = button.getBoundingClientRect();
+        return [Math.abs(rules.left - toggle.left) < 1, toggle.bottom < submit.top, submit.bottom < rules.top];
       });
-      const closedLayout = await helpLayout();
-      assert.ok(mobile ? closedLayout[1] > 0 : Math.abs(closedLayout[1]) < 1 && closedLayout[0] > 0);
+      assert.deepEqual(await helpLayout(), [true,true,true]);
       assert.equal(await nominations.getAttribute('aria-expanded'), 'false');
       await act(nominations);
       assert.equal(await nominations.getAttribute('aria-expanded'), 'true');
-      assert.deepEqual(await helpLayout(), closedLayout);
-      assert.ok(Math.abs(await submitOffset() - buttonOffset) < 1);
+      assert.deepEqual(await helpLayout(), [true,true,true]);
+      assert.ok((await submitOffset()) > buttonOffset);
       assert.equal(await page.locator('.nominations h3:visible').count(),4);
       const guideLayout = await page.locator('.nominations').evaluate(el => {
         const links = el.previousElementSibling.getBoundingClientRect();
@@ -530,6 +613,7 @@ try {
       await act(nominations);
       assert.equal(await nominations.getAttribute('aria-expanded'), 'false');
       assert.equal(await page.locator('.nominations h3:visible').count(), 0);
+      assert.ok(Math.abs(await submitOffset() - buttonOffset) < 1);
       assert.equal(await page.locator('.criterion').count(), 1);
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
       if (mobile) {
@@ -546,76 +630,11 @@ try {
         assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
         assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), '4');
       }
-      for (const index of [0, 3]) {
+      for (const index of [1, 2]) {
         const option = recommendations.nth(index);
         if (mobile) await option.locator('..').tap();
         else await option.press('Space');
       }
-      const workNavigation = () => page.getByRole('navigation', { name:'Соседние работы' });
-      const neighbors = workNavigation();
-      const previousWork = neighbors.getByRole('link', { name:'Предыдущая работа' });
-      const nextWork = neighbors.getByRole('link', { name:'Следующая работа' });
-      const firstWorkHeading = page.getByRole('heading', { name:works[0].title, exact:true });
-      const secondWorkHeading = page.getByRole('heading', { name:works[1].title, exact:true });
-      const lastWorkHeading = page.getByRole('heading', { name:works.at(-1).title, exact:true });
-      const workHash = work => '#work/' + work.id;
-
-      assert.equal(await previousWork.count(), 0);
-      assert.equal(await nextWork.getAttribute('href'), workHash(works[1]));
-      await act(nextWork);
-      await secondWorkHeading.waitFor();
-      assert.ok(await secondWorkHeading.evaluate(el => document.activeElement === el));
-      assert.equal(new URL(page.url()).hash, workHash(works[1]));
-      assert.equal(await page.locator('textarea').inputValue(), '');
-      assert.equal(await previousWork.getAttribute('href'), workHash(works[0]));
-      assert.equal(await nextWork.getAttribute('href'), workHash(works[2]));
-      const neighborLayout = () => neighbors.evaluate(nav => {
-        const bounds = nav.getBoundingClientRect();
-        const links = [...nav.querySelectorAll('a')].map(a => a.getBoundingClientRect());
-        const references = document.querySelector('.ballot-references').getBoundingClientRect();
-        const sameLine = Math.abs(links[0].top - links[1].top) < 1;
-        return {
-          underReferences: Math.abs(bounds.left - references.left) < 1 && bounds.top > references.bottom,
-          sameLine,
-          touchTargets: links.every(box => box.height >= 44 && box.width >= 44),
-          fits: links.every(box => box.left >= 0 && box.right <= innerWidth + 1),
-          separate: sameLine ? links[0].right < links[1].left : links[0].bottom < links[1].top
-        };
-      });
-      assert.deepEqual(await neighborLayout(), { underReferences:true, sameLine:true, touchTargets:true, fits:true, separate:true });
-      if (process.env.JURY_QA_SCREENSHOTS) {
-        await page.evaluate(async () => {
-          await document.fonts.ready;
-          scrollTo(0, document.documentElement.scrollHeight);
-          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        });
-        await page.screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'phone' : 'computer') + '-work-neighbors.png') });
-      }
-      if (mobile) {
-        const viewport = page.viewportSize();
-        await page.setViewportSize({ width:320, height:viewport.height });
-        const style = await page.addStyleTag({url:'/text-200.css'});
-        assert.deepEqual(await neighborLayout(), { underReferences:true, sameLine:false, touchTargets:true, fits:true, separate:true });
-        await style.evaluate(node => node.remove());
-        await page.setViewportSize(viewport);
-      }
-      await act(previousWork);
-      await firstWorkHeading.waitFor();
-      assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
-      assert.deepEqual(await page.locator('input[name=nomination_keys]:checked').evaluateAll(
-        fields => fields.map(field => field.value)), ['context','experiment']);
-      assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
-      await page.goto(url + workHash(works.at(-1)));
-      await lastWorkHeading.waitFor();
-      assert.equal(await nextWork.count(), 0);
-      assert.equal(await previousWork.getAttribute('href'), workHash(works.at(-2)));
-      await act(previousWork);
-      await page.getByRole('heading', { name:works.at(-2).title, exact:true }).waitFor();
-      await page.goBack();
-      await lastWorkHeading.waitFor();
-      await page.goto(url + workHash(works[0]));
-      await firstWorkHeading.waitFor();
-
       await act(page.getByRole('link',{name:'К списку работ'}));
       await page.waitForFunction(id => document.activeElement?.id === id, id);
       await act(page.locator('a[id="' + id + '"]'));
@@ -664,7 +683,7 @@ try {
       assert.equal(await retryNominations.getAttribute('aria-expanded'), 'true');
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
       assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
-      assert.deepEqual(await page.locator('input[name=nomination_keys]:checked').evaluateAll(fields => fields.map(field => field.value)), ['context','experiment']);
+      assert.deepEqual(await page.locator('input[name=nomination_keys]:checked').evaluateAll(fields => fields.map(field => field.value)), ['statement','scale']);
       assert.ok(await submit.isEnabled());
       const finalPosition = await submit.evaluate(el => ({
         scroll: scrollY, button: el.getBoundingClientRect().top, height: document.documentElement.scrollHeight
@@ -683,7 +702,7 @@ try {
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       const savedBallot = (await sheet(login)).ballots.find(b => b.work_id === id);
       assert.equal(savedBallot.revision, 1);
-      assert.deepEqual(savedBallot.nomination_keys, ['context','experiment']);
+      assert.deepEqual(savedBallot.nomination_keys, ['statement','scale']);
       if (process.env.JURY_QA_SCREENSHOTS) {
         const screenshot = suffix => path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'phone' : 'computer') + suffix);
         await page.locator('.recommendations').screenshot({ path:screenshot('-recommendations.png') });
@@ -700,7 +719,7 @@ try {
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
       assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
       assert.deepEqual(await page.locator('input[name=nomination_keys]').evaluateAll(fields => fields
-        .filter(field => field.checked).map(field => field.value)), ['context','experiment']);
+        .filter(field => field.checked).map(field => field.value)), ['statement','scale']);
       await save(login, id, answers, 'Из другой вкладки', 1);
       await page.locator('textarea').fill('Моя правка');
       await act(submit);
@@ -718,7 +737,13 @@ try {
       assert.match(await steps.nth(0).innerText(), /^01/);
       assert.equal(await steps.nth(0).locator('[data-regulations]').count(), 1);
       assert.match((await steps.nth(1).locator(':scope > p').allTextContents()).join(' ').replace(/\s+/g, ' '), /^У вас есть доступ.+До 9 декабря.+14 декабря/);
-      assert.equal(await steps.nth(1).getByRole('button', { name: 'Бриф 3‑го этапа' }).count(), 1);
+      assert.equal(await steps.nth(0).getByText('Перед началом оценки вы можете ознакомиться с подробным регламентом жюри.', { exact:true }).count(), 1);
+      assert.equal(await steps.nth(1).getByRole('button', { name: 'Задание 3‑го этапа, которое получили участники' }).count(), 1);
+      const introduction = page.locator('.jury-introduction');
+      assert.equal(await introduction.getByText('На третьем (текущем) этапе', { exact:true }).count(), 1);
+      assert.equal(await introduction.getByText(/получили\s+задание/).count(), 1);
+      assert.equal(await introduction.getByText(/одну\s+или\s+несколько\s+представленных\s+концепций/).count(), 1);
+      assert.equal(await introduction.getByText(/конфликт\s+интересов|Спасибо|Регламент работы жюри/).count(), 0);
       assert.deepEqual(await page.locator('.work-number').allTextContents(), works.map((_, i) => String(i + 1).padStart(2, '0')));
       const regulations = page.getByRole('link', { name: 'Регламент жюри' });
       assert.equal(await regulations.getAttribute('href'), 'https://disk.360.yandex.ru/d/fixture');
@@ -746,36 +771,10 @@ try {
       assert.equal(await page.locator('#ranking-order').count(), 0);
       const ownRank = page.locator('#rank-' + id).locator('../..');
       assert.equal(await ownRank.locator('td').last().innerText(), String(answers[criterionKey]));
-      const rankedHrefs = await page.locator('.ranking tbody a').evaluateAll(links => links.map(a => a.hash));
-      const inRanking = rankedHrefs.indexOf('#rating/work/' + id);
-      assert.ok(inRanking === 0 || inRanking === 1);
-      const neighborHash = rankedHrefs[1 - inRanking];
-      const neighborId = neighborHash.split('/').at(-1);
       await act(page.locator('#rank-' + id));
       await page.getByRole('heading', { name: works[0].title }).waitFor();
-      const rankingNavigation = workNavigation();
-      const priorDirection = inRanking === 0 ? '[rel=next]' : '[rel=prev]';
-      const updatedDirection = inRanking === 0 ? '[rel=prev]' : '[rel=next]';
-      assert.equal(await rankingNavigation.locator(priorDirection).getAttribute('href'), neighborHash);
-      assert.equal(await rankingNavigation.getByRole('link').count(), 1);
-
-      const formBeforeRankingSave = await submit.evaluateHandle(el => el.form);
-      const newScore = page.locator(onlyCriterion + '[value="' + (inRanking === 0 ? '0' : '5') + '"]');
-      if (mobile) await newScore.locator('..').tap();
-      else await newScore.press('Space');
-      await act(submit);
-      await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
-      assert.ok(await formBeforeRankingSave.evaluate(form => form === document.querySelector('#voting form')));
-      await formBeforeRankingSave.dispose();
-      assert.equal(await rankingNavigation.locator(priorDirection).count(), 0);
-      const rankedNeighbor = rankingNavigation.locator(updatedDirection);
-      assert.equal(await rankedNeighbor.getAttribute('href'), neighborHash);
-      await act(rankedNeighbor);
-      await page.getByRole('heading', { name:works.find(work => work.id === neighborId).title }).waitFor();
-      assert.equal(new URL(page.url()).hash, neighborHash);
-      assert.equal(await rankingNavigation.locator(priorDirection).getAttribute('href'), '#rating/work/' + id);
       await act(page.getByRole('link', { name: 'К моему рейтингу' }));
-      await page.waitForFunction(id => document.activeElement?.id === 'rank-' + id, neighborId);
+      await page.waitForFunction(id => document.activeElement?.id === 'rank-' + id, id);
       assert.equal(await page.locator('#ranking-order').count(), 0);
       const atProjects = () => page.waitForFunction(() => {
         const section = document.querySelector('#projects');
@@ -859,7 +858,8 @@ try {
       await context.close();
       await checkRoleLayout(browser, options, act, { login:'jury-02', criterion:'concept' });
       await checkRoleLayout(browser, options, act, { login:technicalTest, criterion:'technical_review' });
-      console.log((mobile ? 'iPhone 13 WebKit' : channel) + ': regulation fetch and fallback, 50/50, both roles, neighboring works, enlarged text, retry, conflict and rollback passed.');
+      await checkNominationRace(browser, options, act, mobile);
+      console.log((mobile ? 'iPhone 13 WebKit' : channel) + ': regulation fetch and fallback, 50/50, both roles, enlarged text, two-tab nomination race and transfer, retry, conflict and rollback passed.');
     } finally { await browser.close(); }
   }
 } finally {
