@@ -117,6 +117,37 @@ export function renderPressFeature(issue, home) {
     : renderFeaturedIssue(issue, { id: issue.anchor, heading: 'h2', excerpt: issue.excerpt });
 }
 
+export function renderPrintRelease({ edition, latest, printRelease }) {
+  const { anchor, number, topic, description, availableFrom, outlets, source, video } = printRelease;
+  const id = escape(anchor);
+  const title = escape(`${edition} № ${number} ${topic}`);
+  const outletList = outlets.map(name => `<li>${escape(name)}</li>`).join('');
+  return {
+    press: `<section class="press-release" id="${id}" tabindex="-1" aria-labelledby="${id}-title">
+      <div>
+        <h2 id="${id}-title">${title}</h2>
+        <p>${escape(description)}</p>
+      </div>
+      <figure class="press-release-media">
+        <video src="@@ROOT@@${escape(video.src)}" poster="@@ROOT@@${escape(video.poster)}" width="${video.width}" height="${video.height}" controls playsinline preload="none" aria-label="Ролик о выпуске ${title}" aria-describedby="${id}-video-description"></video>
+        <figcaption class="screen-reader-only" id="${id}-video-description">${escape(video.description)}</figcaption>
+      </figure>
+      <div>
+        <details class="press-release-distribution">
+          <summary>Где найти печатный номер</summary>
+          <p>С ${dateMarkup(availableFrom)} в партнёрских точках</p>
+          <ul role="list">${outletList}</ul>
+        </details>
+        <div class="press-page-links">
+          ${latest ? `<a href="@@ROOT@@a-friend/#${escape(latest.anchor)}">Другие выпуски ${escape(edition)} в A–Friend</a>` : ''}
+          <a href="${escape(source)}">Анонс в Telegram</a>
+        </div>
+      </div>
+    </section>`,
+    friend: `<p class="membership-note">Вышел печатный <a href="@@ROOT@@press/#${id}">${title}</a>.</p>`
+  };
+}
+
 export function renderCurrentPrintIssues(issues) {
   const featured = issues.find(issue => issue.cover);
   const other = issues.filter(issue => issue !== featured).map(issue =>

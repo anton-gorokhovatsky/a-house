@@ -12,7 +12,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
+import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCover, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPrintRelease, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 import { clubPrograms } from '../src/data/club-programs.mjs';
@@ -173,6 +173,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const pressFeature = projects.find(project => project.href === '@@ROOT@@press/').featuredIssue;
   const houseProjects = projects.filter(project => project.venue);
   const printEditions = JSON.parse(await source('data/print-editions.json'));
+  const printReleases = printEditions.filter(series => series.printRelease).map(renderPrintRelease);
   const currentPrintIssues = subscriptionIssues(printEditions);
   const pressBooks = JSON.parse(await source('data/press-books.json'));
   const printDirectory = file('media/print');
@@ -328,6 +329,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
       .replace('<!-- PRESS FEATURE -->', () => renderPressFeature(pressFeature, home))
+      .replace('<!-- PRESS PRINT RELEASE -->', () => printReleases.map(release => release.press).join('\n'))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
       .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
       .replace('<!-- FRIEND FEATURED COVER -->', () => renderFriendCover(currentPrintIssues))
@@ -340,6 +342,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- PRINT ISSUES -->', () => printArchive)
       .replace('<!-- FRIEND EDITIONS -->', () => renderSubscriptionEntries(printEditions))
+      .replace('<!-- FRIEND PRINT RELEASE -->', () => printReleases.map(release => release.friend).join('\n'))
       .replace('{{todayHidden}}', program.todayCards ? '' : ' hidden')
       .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
       .replace('{{emptyHidden}}', program.hasEvents ? ' hidden' : '')

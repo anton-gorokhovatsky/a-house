@@ -86,6 +86,26 @@
   margin-block-end: .35em; font-size: var(--type-subsection); text-wrap: pretty;
 }
 .home-page .press-featured-copy > p + p { margin-block-start: .55em; }
+.press-release {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem var(--group); align-items: start;
+  max-inline-size: 70rem; scroll-margin-block-start: 1rem; overflow-wrap: break-word;
+}
+.home-page .press-release h2 { margin-block-end: .35em; text-wrap: pretty; }
+.press-release-media { margin: 0; min-inline-size: 0; }
+.press-release-media video { display: block; inline-size: 100%; block-size: auto; background: #161616; }
+.press-release-distribution summary {
+  min-block-size: 44px; padding-block: .45em; inline-size: fit-content; align-content: center;
+  cursor: pointer;
+}
+.home-page .press-release-distribution ul {
+  display: grid; gap: .25em 1em; margin-block-start: .45em;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11em), 1fr));
+}
+.home-page .press-release .press-page-links { margin-block-start: .2em; }
+@container publication-content (min-width: 55em) {
+  .press-release { grid-template-columns: minmax(0, .94fr) minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .press-release-media { grid-column: 2; grid-row: 1 / span 2; }
+}
 .press-friend-issues {
   display: grid; gap: var(--story-gap) var(--group); align-items: start;
   margin-block-start: var(--group);

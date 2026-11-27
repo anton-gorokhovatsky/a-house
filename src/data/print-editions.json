@@ -247,6 +247,37 @@
   {
     "seriesId": "a-sport",
     "edition": "A–Sport",
+    "printRelease": {
+      "anchor": "a-sport-05",
+      "number": 5,
+      "topic": "«Равновесие»",
+      "description": "Номер о связи физического и ментального здоровья мы подготовили вместе с «РБК Качество жизни». Нейрофизиолог Вячеслав Дубынин рассказывает, как устроена нервная система, а редакция предлагает архитектурный маршрут по Приэльбрусью.",
+      "availableFrom": "2026-11-28",
+      "outlets": [
+        "Дом A–House",
+        "Crocus Fitness",
+        "Sculpt",
+        "Кофемания BEZ TARELOK",
+        "Бани Малевича",
+        "The Rink Fitness",
+        "Velopraktika",
+        "ProTrener",
+        "Клиника Xella",
+        "Уралхим Run Factory",
+        "New League Badminton Club",
+        "Rover",
+        "Slimfit club",
+        "Корпус"
+      ],
+      "source": "https://t.me/ahouseproject/10835",
+      "video": {
+        "src": "media/press/a-sport-05.mp4",
+        "poster": "media/press/a-sport-05-poster.jpg",
+        "width": 1280,
+        "height": 720,
+        "description": "Под музыку сменяются кадры гор, интерьеров и тренировок. В финале появляется обложка пятого номера A–Sport."
+      }
+    },
     "latest": {
       "anchor": "friend-a-sport",
       "number": 4,

@@ -25,10 +25,33 @@ export function previewServer(root, base) {
         target = path.join(target, 'index.html');
       }
       const data = await readFile(target);
-      res.writeHead(200, {
+      const headers = {
         'Content-Type': types[path.extname(target)] || 'application/octet-stream',
         'X-Robots-Tag': 'noindex, nofollow'
-      });
+      };
+      if (headers['Content-Type'].startsWith('video/')) {
+        headers['Accept-Ranges'] = 'bytes';
+        const range = req.headers.range?.match(/^bytes=(\d*)-(\d*)$/);
+        if (range && (range[1] || range[2])) {
+          // Safari requests part of the MP4 before it can start inline playback.
+          const start = range[1] ? Number(range[1]) : Math.max(0, data.length - Number(range[2]));
+          const end = range[1] && range[2] ? Math.min(Number(range[2]), data.length - 1) : data.length - 1;
+          if (start > end) {
+            res.writeHead(416, { ...headers, 'Content-Range': `bytes */${data.length}` }).end();
+            return;
+          }
+          const chunk = data.subarray(start, end + 1);
+          res.writeHead(206, {
+            ...headers,
+            'Content-Range': `bytes ${start}-${end}/${data.length}`,
+            'Content-Length': chunk.length
+          });
+          res.end(req.method === 'HEAD' ? undefined : chunk);
+          return;
+        }
+        headers['Content-Length'] = data.length;
+      }
+      res.writeHead(200, headers);
       res.end(req.method === 'HEAD' ? undefined : data);
     } catch {
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex, nofollow' });
