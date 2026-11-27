@@ -310,8 +310,6 @@
 }
 .press-release-play:focus-visible { outline: 2px solid #fff; outline-offset: -5px; }
 .home-page .press-release-video-status { color: var(--quiet); font-size: var(--note-size); }
-.press-featured-issue { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem 1.4rem; align-items: start; }
-.press-featured-issue .press-featured-cover { width: min(52%, 10rem); height: auto; }
 .home-press-teaser .home-links { gap: 0 1.3em; }
 .home-press-teaser > .home-links { margin-block-start: var(--story-gap); }
 @media (min-width: 62em) {

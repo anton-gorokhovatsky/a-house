@@ -517,7 +517,7 @@ async function checkVisitorLinks(page, mobile) {
   assert.deepEqual(await features.locator('.home-project-portfolios h4 a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
   await editions.locator('.home-press-release video').waitFor();
-  assert.equal(await editions.locator('.press-featured-issue').count(), 0);
+  assert.equal(await editions.locator('.press-friend-issue').count(), 0);
   const issueLink = editions.getByRole('link', {name: 'О выпуске и где его найти', exact: true});
   assert.equal(await issueLink.locator('.external-link-mark').count(), 0);
   const issueURL = await issueLink.evaluate(link => link.href);
@@ -616,14 +616,18 @@ async function checkVisitorLinks(page, mobile) {
   ), 'A–Friend subscription conditions follow the subscription description, above the issue examples');
   const latestIssues = printCatalog.filter(series => series.latest)
     .sort((a, b) => b.latest.published.localeCompare(a.latest.published));
-  const featured = latestIssues.find(series => series.latest.cover);
-  const issueOrder = featured ? [featured, ...latestIssues.filter(series => series !== featured)] : latestIssues;
-  const issueTitles = await current.locator('.press-featured-issue h3, .press-friend-issues li p:first-child').allTextContents();
+  const issueTitles = await current.locator('.press-friend-issue h3').allTextContents();
   const plainText = text => text.replaceAll('\u00ad', '').replace(/\s+/g, ' ').trim();
-  assert.deepEqual(issueTitles.map(plainText), issueOrder.map(({edition, latest}) => plainText(edition + ' № ' + latest.number + ' ' + latest.topic)));
+  assert.deepEqual(issueTitles.map(plainText), latestIssues.map(({edition, latest}) => plainText(edition + ' № ' + latest.number + ' ' + latest.topic)));
   assert.deepEqual(await current.locator('.press-friend-issues time').evaluateAll(dates => dates.map(date => date.dateTime)),
-    issueOrder.map(({latest}) => latest.published));
-  if (featured) assert.equal(await current.locator('.press-featured-cover').evaluate(image => image.src), new URL(featured.latest.cover.src, url).href);
+    latestIssues.map(({latest}) => latest.published));
+  assert.deepEqual(await current.locator('.press-issue-cover').evaluateAll(images => images.map(image => image.src)),
+    latestIssues.filter(({latest}) => latest.cover).map(({latest}) => new URL(latest.cover.src, url).href));
+  if (!mobile) {
+    const rowTops = await current.locator('.press-friend-issue').evaluateAll(issues => issues.map(issue => issue.getBoundingClientRect().top));
+    assert.ok(rowTops.every((top, index) => index % 2 === 0 || Math.abs(top - rowTops[index - 1]) < 1),
+      'Fresh issues share a row in pairs on wide screens');
+  }
   const periodicals = page.locator('#periodicals');
   for (const media of await periodicals.locator('[data-press-motion]').all()) {
     const image = media.locator('img');
@@ -1007,21 +1011,25 @@ async function checkEditorialGrouping(page) {
   }
 
   await page.goto(url + 'press/#current-issues');
-  const issue = page.locator('#current-issues .press-featured-issue');
-  const group = await issue.evaluate(async el => {
+  const coveredIssues = page.locator('#current-issues .press-friend-issue:has(> img)');
+  const groups = await coveredIssues.evaluateAll(async issues => {
     await document.fonts.ready;
-    const cover = el.querySelector('.press-featured-cover').getBoundingClientRect();
-    const label = el.querySelector('.home-kicker');
-    const date = label.getBoundingClientRect();
-    const title = el.querySelector('h3').getBoundingClientRect();
-    return { width: cover.width, height: cover.height, coverBottom: cover.bottom, dateTop: date.top,
-      offset: date.top - cover.top, gap: date.left - cover.right, titleTop: title.top, dateBottom: date.bottom,
-      em: parseFloat(getComputedStyle(label).fontSize) };
+    return issues.map(issue => {
+      const cover = issue.querySelector('.press-issue-cover').getBoundingClientRect();
+      const label = issue.querySelector('.home-kicker');
+      const date = label.getBoundingClientRect();
+      const title = issue.querySelector('h3').getBoundingClientRect();
+      return { width: cover.width, height: cover.height, coverBottom: cover.bottom, dateTop: date.top,
+        offset: date.top - cover.top, gap: date.left - cover.right, titleTop: title.top, dateBottom: date.bottom,
+        em: parseFloat(getComputedStyle(label).fontSize) };
+    });
   });
-  assert.ok(group.width > 0 && group.height > 0 && group.titleTop >= group.dateBottom - 1);
-  const besideCover = Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em;
-  assert.ok(besideCover || group.coverBottom <= group.dateTop,
-    'The issue date and title must sit beside the cover or directly below it');
+  for (const group of groups) {
+    assert.ok(group.width > 0 && group.height > 0 && group.titleTop >= group.dateBottom - 1);
+    const besideCover = Math.abs(group.offset) < group.em && group.gap >= 0 && group.gap <= 2.5 * group.em;
+    assert.ok(besideCover || group.coverBottom <= group.dateTop,
+      'The issue date and title must sit beside the cover or directly below it');
+  }
 }
 
 async function checkPublicationEntry(page, mobile) {

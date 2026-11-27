@@ -97,19 +97,6 @@ function renderIssueLinks(issue) {
   return links.length ? `<div class="press-page-links">${links.join('')}</div>` : '';
 }
 
-function renderFeaturedIssue(issue) {
-  const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
-  return `<article class="press-featured-issue">
-    ${issue.cover ? printCover(issue, 'press-featured-cover') : ''}
-    <div class="press-featured-copy">
-      ${issue.published ? '<p class="home-kicker">' + dateMarkup(issue.published) + '</p>' : ''}
-      <h3>${title}</h3>
-      ${issue.description ? '<p>' + escape(issue.description) + '</p>' : ''}
-      ${renderIssueLinks(issue)}
-    </div>
-  </article>`;
-}
-
 function renderPrintVideo(video, id, title) {
   return `<figure class="press-release-media" data-press-release-player>
     <div class="press-release-player">
@@ -164,13 +151,19 @@ export function renderPrintRelease({ edition, latest, printRelease }) {
 }
 
 export function renderCurrentPrintIssues(issues) {
-  const featured = issues.find(issue => issue.cover);
-  const other = issues.filter(issue => issue !== featured).map(issue =>
-    `<li><p>${escape(issue.title)}</p><p class="home-kicker">${dateMarkup(issue.published)}</p>
-      ${issue.description ? '<p class="press-issue-summary">' + escape(issue.description) + '</p>' : ''}
-      ${renderIssueLinks(issue)}</li>`
-  ).join('');
-  return `<div class="press-friend-issues">${featured ? renderFeaturedIssue(featured) : ''}${other ? '<ul>' + other + '</ul>' : ''}</div>`;
+  const entries = issues.map(issue => {
+    const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
+    return `<article class="press-friend-issue">
+      ${issue.cover ? printCover(issue, 'press-issue-cover') : ''}
+      <div class="press-issue-copy">
+        <p class="home-kicker">${dateMarkup(issue.published)}</p>
+        <h3>${title}</h3>
+        ${issue.description ? '<p class="press-issue-summary">' + escape(issue.description) + '</p>' : ''}
+        ${renderIssueLinks(issue)}
+      </div>
+    </article>`;
+  });
+  return `<div class="press-friend-issues">${entries.join('\n')}</div>`;
 }
 
 export function renderSubscriptionEntries(issues) {
