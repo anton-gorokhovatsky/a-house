@@ -29,12 +29,19 @@
 .membership-request { max-inline-size: 32rem; }
 .membership-form, .friend-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
 .membership-form { margin: 1.5rem 0 0; }
-.friend-basket { margin-block-end: .4rem; }
-.friend-quantity { display: flex; flex-wrap: wrap; gap: .25rem .75rem; align-items: center; }
+.friend-basket {
+  display: flex; flex-wrap: wrap; align-items: start; gap: .4rem clamp(1.25rem, 3vw, 2rem);
+  margin-block-end: .4rem;
+}
+.friend-basket > * { min-inline-size: 0; max-inline-size: 100%; }
+.friend-basket label, .friend-total-label {
+  display: block; color: var(--quiet); font-size: var(--note-size); line-height: 1.4;
+}
+.friend-quantity { display: flex; flex-wrap: wrap; gap: .25rem; align-items: center; }
 .friend-basket button { color: var(--ink); background: transparent; padding: .3rem .5rem; }
-.friend-stepper { display: inline-flex; max-inline-size: 100%; border: 1px solid var(--ah-rule); }
+.friend-stepper { display: inline-flex; max-inline-size: 100%; }
 .friend-stepper button {
-  position: relative; display: grid; place-items: center; min-inline-size: max(44px, 2em);
+  display: grid; place-items: center; min-inline-size: max(44px, 1.7em); min-block-size: 44px; padding: 0;
 }
 .friend-stepper button span {
   position: relative; display: block; inline-size: .58em; block-size: .58em;
@@ -49,14 +56,21 @@
 @media (hover: hover) and (pointer: fine) {
   .friend-stepper button:not(:disabled):hover { background-color: var(--ah-surface); }
 }
-.friend-basket button:is([data-order-action="remove"],[data-order-action="restore"]) { text-decoration: underline; text-underline-offset: var(--link-underline-offset); }
+.friend-basket button:is([data-order-action="remove"],[data-order-action="restore"]) {
+  min-block-size: 44px; text-decoration: underline; text-underline-offset: var(--link-underline-offset);
+}
+.friend-basket button[data-order-action="remove"] { color: var(--quiet); font-size: var(--note-size); }
 .membership-request .friend-stepper input[type="number"] {
   inline-size: max(44px, 4.3ch); min-height: 44px; padding: .3rem .12rem;
-  border-block: 0; text-align: center; appearance: textfield;
-  background-color: var(--ah-surface); font: inherit; font-variant-numeric: tabular-nums lining-nums;
+  text-align: center; appearance: textfield; background: transparent;
+  font: inherit; font-variant-numeric: tabular-nums lining-nums;
 }
+.friend-stepper input[type="number"]:not([aria-invalid="true"]) { border-color: transparent; }
 .friend-quantity input::-webkit-inner-spin-button { appearance: none; }
-.home-page .friend-basket .friend-total { margin-top: .65rem; font-weight: var(--emphasis-weight); }
+.friend-total [data-order-total] {
+  display: block; align-content: center; min-block-size: 44px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
 .membership-request [hidden] { display: none !important; }
 .membership-field label, .membership-programs legend { display: block; margin-bottom: .27rem; font-weight: var(--label-weight); }
 .membership-optional { display: inline; margin-left: .4em; color: var(--quiet); font-size: var(--note-size); white-space: normal; }

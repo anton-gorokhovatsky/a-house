@@ -18,7 +18,9 @@
       <p>В заказе нет подписок.</p>
       <button type="button" data-order-action="restore">Вернуть в заказ</button>
     </div>
-    <p class="friend-total" aria-live="polite" aria-atomic="true">Итого <span data-order-total>{{friendTotal}}</span></p>
+    <p class="friend-total" aria-live="polite" aria-atomic="true">
+      <span class="friend-total-label">Итого</span> <span data-order-total>{{friendTotal}}</span>
+    </p>
   </div>
   <div class="friend-fields">
   {{formPolicy}}
