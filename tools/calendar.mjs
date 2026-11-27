@@ -1,8 +1,7 @@
+import { compareEventStarts, compareUpcomingEvents, moscowDay } from '../src/js/schedule-dates.js';
+
 const dateFormat = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 const monthFormat = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' });
-const moscowDate = new Intl.DateTimeFormat('sv-SE', {
-  timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
-});
 
 function escape(value) {
   return String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -32,6 +31,14 @@ export function eventDate({ start, end = start }) {
   const sameMonth = start.slice(0, 7) === end.slice(0, 7);
   const first = sameMonth ? String(Number(start.slice(-2))) : full(start);
   return time(start, first, year(start) !== year(end)) + (sameMonth ? '–' : ' — ') + time(end, full(end), true);
+}
+
+export function scheduleAttributes({ start, end = start, time = '', kind = '' }) {
+  return `data-start="${escape(start)}" data-end="${escape(end)}" data-time="${escape(time)}" data-kind="${escape(kind)}"`;
+}
+
+export function scheduleDate(event, absolute) {
+  return `<span data-absolute-date>${absolute}</span><time data-relative-date datetime="${escape(event.end || event.start)}" hidden></time>`;
 }
 
 function eventPageLink(event) {
@@ -98,7 +105,6 @@ function renderFilters(events, calendar) {
 }
 
 function renderEvent(event, calendar) {
-  const end = event.end || event.start;
   const name = escape(event.title);
   const time = event.time ? '<time class="calendar-time" datetime="' + escape(event.start + 'T' + event.time + '+03:00') + '">' + escape(event.time) + '</time>' : '';
   const children = event.audience === 'kids'
@@ -110,8 +116,8 @@ function renderEvent(event, calendar) {
   );
   if (event.booking) links.unshift('<a data-calendar-booking href="' + escape(event.booking.url) + '" hidden>' + bookingLabel(event) + '</a>');
   const price = event.price && !event.booking ? '<p data-calendar-price hidden>' + escape(event.price) + '</p>' : '';
-  return `<article class="calendar-event" id="${escape(event.id)}" data-calendar-event data-start="${escape(event.start)}" data-end="${escape(end)}" data-time="${escape(event.time || '')}" data-audience="${escape(event.audience || '')}" tabindex="-1" aria-labelledby="${escape(event.id)}-title">
-    <div class="calendar-date">${eventDate(event)}${time}</div>
+  return `<article class="calendar-event" id="${escape(event.id)}" data-calendar-event ${scheduleAttributes(event)} data-audience="${escape(event.audience || '')}" tabindex="-1" aria-labelledby="${escape(event.id)}-title">
+    <div class="calendar-date">${scheduleDate(event, eventDate(event) + time)}</div>
     <div class="calendar-event-copy">
       <div class="calendar-event-meta">${event.kind ? '<span>' + escape(event.kind) + '</span>' : ''}${children}</div>
       <h3 id="${escape(event.id)}-title"><a href="${escape(destination)}"${eventPageLink(event) ? '' : ' referrerpolicy="same-origin"'}>${name}</a></h3>
@@ -124,7 +130,7 @@ function renderEvent(event, calendar) {
 
 export function renderEventPage(event, base, now = new Date()) {
   const end = event.end || event.start;
-  const past = end < moscowDate.format(now);
+  const past = end < moscowDay(now);
   const calendar = base + 'calendar/';
   const venue = venueLine(event);
   const clock = event.time ? ' <time datetime="' + escape(event.start + 'T' + event.time + ':00+03:00') + '">' +
@@ -168,11 +174,11 @@ export function renderEventPage(event, base, now = new Date()) {
 
 export function renderCalendar(events, base, now = new Date()) {
   const calendar = escape(base) + 'calendar/';
-  const today = moscowDate.format(now);
-  const byDate = (a, b) => a.start.localeCompare(b.start) || (a.time || '').localeCompare(b.time || '');
-  const current = events.filter(event => (event.end || event.start) >= today).sort(byDate);
+  const today = moscowDay(now);
+  const current = events.filter(event => (event.end || event.start) >= today)
+    .sort((a, b) => compareUpcomingEvents(a, b, today));
   const past = events.filter(event => (event.end || event.start) < today).sort((a, b) =>
-    (b.end || b.start).localeCompare(a.end || a.start) || byDate(b, a)
+    (b.end || b.start).localeCompare(a.end || a.start) || compareEventStarts(b, a)
   );
   const entries = list => list.map(event => renderEvent(event, calendar)).join('\n');
   return `<header class="calendar-opening">

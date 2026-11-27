@@ -1,3 +1,5 @@
+import { compareEventStarts, isEventToday, moscowDay, updateScheduleDate } from './schedule-dates.js';
+
 (() => {
   const homeTitle = document.title;
   const overview = document.getElementById('overview');
@@ -145,45 +147,49 @@
   });
 
   // The calendar keeps the same public event address before and after the last day.
+  const todaysEvents = document.querySelector('[data-home-today]');
   const events = document.querySelector('[data-home-events]');
   const emptyEvents = document.querySelector('[data-events-empty]');
   const archive = document.querySelector('[data-past-calendar]');
-  const entries = [...document.querySelectorAll('#program [data-event-end]')];
+  const entries = [...document.querySelectorAll('#program [data-end]')];
   const spotlight = document.querySelector('[data-home-now]');
-  const featured = spotlight.querySelector('[data-event-end]');
-  const calendar = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
-  });
+  const featured = document.querySelector('#program .home-feature');
   let displayedDay;
   function openArchivedEvent(target) {
-    const item = target?.closest('#program [data-event-end]');
-    if (!item || item.dataset.eventEnd >= calendar.format(new Date())) return false;
+    const item = target?.closest('#program [data-end]');
+    if (!item || item.dataset.end >= moscowDay()) return false;
     const url = new URL(archive.href);
     url.hash = item.id;
     location.replace(url.href);
     return true;
   }
   function refreshDates() {
-    const today = calendar.format(new Date());
+    const today = moscowDay();
     if (today === displayedDay) return;
     displayedDay = today;
-    const featureIsCurrent = featured && featured.dataset.eventStart <= today && today <= featured.dataset.eventEnd;
-    spotlight.hidden = !featureIsCurrent;
     for (const item of entries) {
-      const expired = item.dataset.eventEnd < today;
+      const { start, end } = item.dataset;
+      const expired = end < today;
       item.hidden = expired;
-      const destination = item === featured && featureIsCurrent ? spotlight : events;
-      if (!expired && item.parentElement !== destination) {
-        const next = [...destination.children].find(entry => entry.dataset.eventStart > item.dataset.eventStart);
-        destination.insertBefore(item, next || null);
+      if (!expired) {
+        let destination = events;
+        if (isEventToday(item.dataset, today)) destination = todaysEvents;
+        else if (item === featured && start <= today) destination = spotlight;
+        if (item.parentElement !== destination) {
+          const next = [...destination.children].find(entry => compareEventStarts(entry.dataset, item.dataset) > 0);
+          destination.insertBefore(item, next || null);
+        }
       }
+      updateScheduleDate(item, today);
       const booking = item.querySelector('[data-event-booking]');
       if (booking) booking.hidden = expired;
-      const year = item.dataset.eventEnd.slice(0, 4);
+      const year = end.slice(0, 4);
       const yearLabel = item.querySelector('[data-event-year]');
       if (yearLabel) yearLabel.textContent = expired || year !== today.slice(0, 4) ? '\u00a0' + year : '';
     }
-    emptyEvents.hidden = [...events.children].some(item => !item.hidden);
+    todaysEvents.hidden = !todaysEvents.querySelector(':scope > :not([hidden])');
+    spotlight.hidden = !spotlight.querySelector(':scope > :not([hidden])');
+    emptyEvents.hidden = !todaysEvents.hidden || Boolean(events.querySelector(':scope > :not([hidden])'));
     openArchivedEvent(hashTarget());
   }
   refreshDates();

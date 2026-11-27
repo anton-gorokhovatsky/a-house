@@ -97,12 +97,11 @@ function renderMembership(kind, template, agreementTemplate, settings) {
   const legal = { ...settings, kind, termsLabel: friend ? 'Условия покупки' : 'Условия вступления' };
   const agreements = settings ? agreementTemplate
     .replace(/\{\{(kind|terms|termsLabel|consent|consentText)\}\}/g, (_, key) => escape(legal[key])) : '';
-  const notice = friend ? 'Оплата пока недоступна.' : 'Приём заявок пока закрыт.';
   const policyNote = kind + '-policy-window';
   const fields = {
     formAttributes: settings ? `method="post" action="${escape(settings.action)}"` : 'method="dialog"',
-    formNotice: settings ? '' : `<p class="membership-status">${notice}</p>`,
-    formPolicy: `<p class="membership-policy"><a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${policyNote}">Политика обработки персональных данных</a> <span id="${policyNote}">В&nbsp;новой вкладке</span></p>`,
+    formNotice: settings ? '' : '<p class="membership-status">Приём заявок пока закрыт.</p>',
+    formPolicy: friend && !settings ? '' : `<p class="membership-policy"><a href="@@ROOT@@politic_a-com/" target="_blank" rel="noopener noreferrer" aria-describedby="${policyNote}">Политика обработки персональных данных</a> <span id="${policyNote}">В&nbsp;новой вкладке</span></p>`,
     agreements,
     submitState: settings ? '' : ' disabled'
   };
@@ -236,6 +235,15 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   }
   await styles('styles');
   const scripts = ['js/site.js', 'js/services.js', 'js/interactions.js'];
+  const scheduleScripts = new Set(['js/home.js', 'js/calendar.js']);
+  const scheduleImport = './schedule-dates.js';
+  const scheduleBytes = await readFile(path.join(output, 'js', scheduleImport));
+  const scheduleDigest = createHash('sha256').update(scheduleBytes).digest('hex').slice(0,12);
+  await Promise.all([...scheduleScripts].map(async name => {
+    const target = path.join(output, name);
+    const script = await readFile(target, 'utf8');
+    await writeFile(target, script.replace(scheduleImport, scheduleImport + '?v=' + scheduleDigest));
+  }));
   function scriptsFor(page) {
     if (page.layout === 'project') return ['js/site.js', ...(page.slug === 'a_pass' ? ['js/services.js'] : ['js/project-stories.js'])];
     if (page.slug === 'home') return [...scripts, 'js/home.js'];
@@ -311,6 +319,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/\{\{venue\.(\w+)\.(\w+)\}\}/g, (_, name, field) => escape(venues[name][field]))
       .replace('<!-- FRIEND ORDER -->', () => orderForm)
       .replace('<!-- MEMBER FORM -->', () => applicationForm)
+      .replace('<!-- TODAY EVENTS -->', () => program.todayCards)
       .replace('<!-- PROGRAM FEATURE -->', () => program.feature)
       .replace('<!-- PROGRAM EVENTS -->', () => program.cards)
       .replace(/<!-- VENUE PROGRAM (\w+) -->/g, (_, key) => renderVenueProgram(home ? homeEvents : events, venues[key].name, base))
@@ -331,6 +340,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- PROJECT DIRECTIONS -->', () => projectGroups)
       .replace('<!-- PRINT ISSUES -->', () => printArchive)
       .replace('<!-- FRIEND EDITIONS -->', () => renderSubscriptionEntries(printEditions))
+      .replace('{{todayHidden}}', program.todayCards ? '' : ' hidden')
       .replace('{{featureHidden}}', program.featureIsCurrent ? '' : ' hidden')
       .replace('{{emptyHidden}}', program.hasEvents ? ' hidden' : '')
       .replace('<!-- EVENT CALENDAR -->', () => renderCalendar(events, base))
@@ -356,7 +366,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     const pageBody = prepareConsentDocuments(themedBody);
     const typeset = typesetText(documents.has(page.slug) ? formatDocumentTables(pageBody) : pageBody);
     const contentBody = delivery.rewriteHTML(markDeferredBackgrounds(typeset), { base, slug: page.slug });
-    const scriptTags = scriptsFor(page).map(name => '<script defer src="'+urls.get(name)+'"></script>').join('\n');
+    const scriptTags = scriptsFor(page).map(name => {
+      const loading = scheduleScripts.has(name) ? 'type="module"' : 'defer';
+      return '<script ' + loading + ' src="' + urls.get(name) + '"></script>';
+    }).join('\n');
     const pageScripts = contentBody.includes(' data-load-on-approach')
       ? '<script src="' + urls.get(nearbyImages) + '"></script>\n' + scriptTags
       : scriptTags;

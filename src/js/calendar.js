@@ -1,3 +1,5 @@
+import { compareEventStarts, compareUpcomingEvents, moscowDay, updateScheduleDate } from './schedule-dates.js';
+
 (() => {
   const calendar = document.querySelector('[data-calendar]');
   if (!calendar) return;
@@ -16,11 +18,6 @@
   const monthSelection = calendar.querySelector('[data-month-selection]');
   const monthLabel = monthSelection.querySelector('[data-selected-month]');
   const clearMonth = monthSelection.querySelector('[data-calendar-clear-month]');
-  const moscowDate = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
-  });
-  const chronological = (a, b) => a.dataset.start.localeCompare(b.dataset.start)
-    || a.dataset.time.localeCompare(b.dataset.time);
   let lastDate;
 
   function filterURL(month, kids) {
@@ -100,15 +97,16 @@
       history.replaceState(history.state, '', destination);
     }
 
-    lastDate = moscowDate.format(new Date());
+    const today = moscowDay();
     const currentEvents = [];
     const pastEvents = [];
     let visibleCurrent = 0;
     let visiblePast = 0;
     for (const event of events) {
-      const expired = event.dataset.end < lastDate;
+      const expired = event.dataset.end < today;
       const matches = inMonth(event, month) && (!kids || event.dataset.audience === 'kids');
       event.hidden = !matches;
+      if (today !== lastDate) updateScheduleDate(event, today);
       for (const item of event.querySelectorAll('[data-calendar-booking], [data-calendar-price]')) item.hidden = expired;
       for (const item of event.querySelectorAll('[data-booking-source]')) item.hidden = !expired;
       if (expired) {
@@ -119,8 +117,9 @@
         if (matches) visibleCurrent++;
       }
     }
-    order(upcoming, currentEvents.sort(chronological));
-    order(past, pastEvents.sort((a, b) => b.dataset.end.localeCompare(a.dataset.end) || chronological(b, a)));
+    lastDate = today;
+    order(upcoming, currentEvents.sort((a, b) => compareUpcomingEvents(a.dataset, b.dataset, today)));
+    order(past, pastEvents.sort((a, b) => b.dataset.end.localeCompare(a.dataset.end) || compareEventStarts(b.dataset, a.dataset)));
     for (const link of audienceLinks) syncLink(link, filterURL(month, !!link.dataset.calendarAudience), kids === !!link.dataset.calendarAudience);
     const total = visiblePast + visibleCurrent;
     const filtered = !!month || kids;
@@ -177,7 +176,7 @@
   window.addEventListener('hashchange', showSelection);
   window.addEventListener('pageshow', showSelection);
   function refreshDay() {
-    if (!document.hidden && moscowDate.format(new Date()) !== lastDate) showSelection();
+    if (!document.hidden && moscowDay() !== lastDate) showSelection();
   }
   document.addEventListener('visibilitychange', refreshDay);
   window.setInterval(refreshDay, 60000);

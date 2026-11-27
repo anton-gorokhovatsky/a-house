@@ -198,7 +198,7 @@ async function checkHomeNavigation(page) {
 
 async function checkExpiredProgram(page) {
   await page.goto(url);
-  const endDates = await page.locator('#program [data-event-end]').evaluateAll(items => items.map(item => item.dataset.eventEnd));
+  const endDates = await page.locator('#program [data-end]').evaluateAll(items => items.map(item => item.dataset.end));
   if (!endDates.length) return;
   const afterProgram = new Date(endDates.sort().at(-1) + 'T12:00:00+03:00');
   afterProgram.setUTCDate(afterProgram.getUTCDate() + 1);
@@ -206,7 +206,7 @@ async function checkExpiredProgram(page) {
   await page.reload();
   assert.ok(await page.locator('[data-events-empty]').isVisible(), 'An ended program must point visitors to fresh announcements');
   assert.equal(await page.locator('[data-home-now]').isVisible(), false, 'An expired exhibition cannot be featured as current');
-  const ids = await page.locator('#program [data-event-end]').evaluateAll(items => items.map(item => item.id));
+  const ids = await page.locator('#program [data-end]').evaluateAll(items => items.map(item => item.id));
   await page.locator('[data-past-calendar]').click();
   await page.waitForURL(url + 'calendar/#past');
   const past = page.locator('#past');
@@ -1150,12 +1150,18 @@ async function checkMembershipForm(page, kind) {
   const submit = form.locator('button[type="submit"]');
   const settings = membershipSettings(kind);
   const policy = form.locator('.membership-policy a');
-  assert.ok(await policy.isVisible());
-  assert.equal(await policy.getAttribute('href'), base + 'politic_a-com/');
-  assert.equal(await policy.getAttribute('href'),
-    await page.locator('.footer-legal a[href$="/politic_a-com/"]').getAttribute('href'));
-  assert.ok(await policy.evaluate(link =>
-    link.compareDocumentPosition(link.closest('form').elements.namedItem('name')) & Node.DOCUMENT_POSITION_FOLLOWING));
+  const footerPolicy = page.locator('.footer-legal a[href$="/politic_a-com/"]');
+  assert.ok(await footerPolicy.isVisible());
+  assert.equal(await footerPolicy.getAttribute('href'), base + 'politic_a-com/');
+  if (kind === 'friend' && !settings) {
+    assert.equal(await policy.count(), 0);
+    assert.equal(await form.locator('.membership-status').count(), 0);
+  } else {
+    assert.ok(await policy.isVisible());
+    assert.equal(await policy.getAttribute('href'), await footerPolicy.getAttribute('href'));
+    assert.ok(await policy.evaluate(link =>
+      link.compareDocumentPosition(link.closest('form').elements.namedItem('name')) & Node.DOCUMENT_POSITION_FOLLOWING));
+  }
   await name.fill('Тестовый читатель');
   await email.fill('reader');
   await email.press('Tab');
@@ -1175,7 +1181,7 @@ async function checkMembershipForm(page, kind) {
     assert.equal(await form.getAttribute('method'), 'dialog');
     assert.equal(await form.getAttribute('action'), null);
     assert.ok(await submit.isDisabled());
-    assert.ok(await form.locator('.membership-status').evaluate(notice =>
+    if (kind === 'member') assert.ok(await form.locator('.membership-status').evaluate(notice =>
       notice.compareDocumentPosition(notice.closest('form').elements.namedItem('name')) & Node.DOCUMENT_POSITION_FOLLOWING));
     const address = page.url();
     const posted = [];

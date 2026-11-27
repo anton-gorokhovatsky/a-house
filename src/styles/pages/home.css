@@ -166,6 +166,8 @@
 .home-program-links { display: flex; flex-wrap: wrap; gap: 0 1.45rem; margin-top: clamp(.85rem, 1.8vw, 1.65rem); }
 .home-program-links a { display: inline-block; align-content: center; min-height: 44px; }
 .home-events { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: var(--group); }
+.home-today:not([hidden]) { margin-block-end: var(--group); }
+.home-program [data-relative-date] { color: var(--ink); font-weight: var(--emphasis-weight); }
 .home-event-main { position: relative; }
 .home-event-link::after { content: ''; position: absolute; inset: 0; }
 .home-event .home-meta { display: flex; flex-wrap: wrap; gap: .12rem .9rem; }
