@@ -411,8 +411,8 @@ try {
       const steps = page.locator('.intro .step');
       assert.match(await steps.nth(0).innerText(), /^01/);
       assert.equal(await steps.nth(0).locator('[data-regulations]').count(), 1);
-      assert.match((await steps.nth(1).innerText()).replace(/\s+/g, ' '), /^02 У вас есть доступ.+До 9 декабря.+14 декабря/);
-      assert.equal(await steps.nth(1).getByRole('button', { name: 'Бриф для участников 3-го этапа' }).count(), 1);
+      assert.match((await steps.nth(1).locator(':scope > p').allTextContents()).join(' ').replace(/\s+/g, ' '), /^У вас есть доступ.+До 9 декабря.+14 декабря/);
+      assert.equal(await steps.nth(1).getByRole('button', { name: 'Бриф для участников 3‑го этапа' }).count(), 1);
       assert.deepEqual(await page.locator('.work-number').allTextContents(), works.map((_, i) => String(i + 1).padStart(2, '0')));
       const regulations = page.getByRole('link', { name: 'Регламент жюри' });
       assert.match(await regulations.getAttribute('href'), /^blob:/);
