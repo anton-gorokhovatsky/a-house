@@ -173,7 +173,10 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const pressFeature = projects.find(project => project.href === '@@ROOT@@press/').featuredIssue;
   const houseProjects = projects.filter(project => project.venue);
   const printEditions = JSON.parse(await source('data/print-editions.json'));
-  const printReleases = printEditions.filter(series => series.printRelease).map(renderPrintRelease);
+  const printReleases = printEditions.filter(series => series.printRelease)
+    .sort((a, b) => b.printRelease.availableFrom.localeCompare(a.printRelease.availableFrom))
+    .map(renderPrintRelease);
+  const homePrintRelease = printReleases[0];
   const currentPrintIssues = subscriptionIssues(printEditions);
   const pressBooks = JSON.parse(await source('data/press-books.json'));
   const printDirectory = file('media/print');
@@ -332,7 +335,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- PRESS PRINT RELEASE -->', () => printReleases.map(release => release.press).join('\n'))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
       .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
-      .replace('<!-- FRIEND FEATURED COVER -->', () => renderFriendCover(currentPrintIssues))
+      .replace('<!-- HOME PRINT RELEASE -->', () => homePrintRelease?.homeLink ?? '')
+      .replace('<!-- FRIEND EDITORIAL PREVIEW -->', () => homePrintRelease?.homePreview ?? renderFriendCover(currentPrintIssues))
       .replace('<!-- PRESS CONTENTS -->', () => renderPressNavigation(page.slug))
       .replace('<!-- PRESS BOOKMARKS -->', () => renderPressBookmarks(projects.find(project => project.overview === 'news').href))
       .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks))
