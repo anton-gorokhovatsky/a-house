@@ -97,7 +97,7 @@ function renderIssueLinks(issue) {
   return links.length ? `<div class="press-page-links">${links.join('')}</div>` : '';
 }
 
-function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt } = {}) {
+function renderFeaturedIssue(issue, { id } = {}) {
   const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
   const headingId = id ? escape(id) + '-title' : '';
   const attributes = id ? ` id="${escape(id)}" tabindex="-1" aria-labelledby="${headingId}"` : '';
@@ -105,16 +105,12 @@ function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt } = {}) {
     ${issue.cover ? printCover(issue, 'press-featured-cover') : ''}
     <div class="press-featured-copy">
       ${issue.published ? '<p class="home-kicker">' + dateMarkup(issue.published) + '</p>' : ''}
-      <${heading}${headingId ? ' id="' + headingId + '"' : ''}>${title}</${heading}>
+      <h3${headingId ? ' id="' + headingId + '"' : ''}>${title}</h3>
       ${issue.description ? '<p>' + escape(issue.description) + '</p>' : ''}
-      ${excerpt ? '<p>' + escape(excerpt) + '</p>' : ''}
+      ${issue.excerpt ? '<p>' + escape(issue.excerpt) + '</p>' : ''}
       ${renderIssueLinks(issue)}
     </div>
   </article>`;
-}
-
-export function renderPressFeature(issue) {
-  return renderFeaturedIssue(issue, { id: issue.anchor, heading: 'h2', excerpt: issue.excerpt });
 }
 
 function renderPrintVideo(video, id, title) {
@@ -180,10 +176,13 @@ export function renderCurrentPrintIssues(issues) {
   return `<div class="press-friend-issues">${featured ? renderFeaturedIssue(featured) : ''}${other ? '<ul>' + other + '</ul>' : ''}</div>`;
 }
 
-export function renderFeaturedPrintProject(projects) {
+export function renderPeriodicalIssues(projects, featuredIssue) {
   const special = projects.flatMap(project => project.specialIssue ? [project.specialIssue] : [])
     .sort((a, b) => b.published.localeCompare(a.published))[0];
-  return special ? renderFeaturedIssue(special) : '';
+  return `<div class="press-periodical-issues">
+    ${renderFeaturedIssue(featuredIssue, { id: featuredIssue.anchor })}
+    ${special ? renderFeaturedIssue(special) : ''}
+  </div>`;
 }
 
 export function renderSubscriptionEntries(issues) {

@@ -529,12 +529,11 @@ async function checkVisitorLinks(page, mobile) {
   await issueLink.waitFor({state:'visible'});
   await page.goto(url + '#home-press-issue');
   await page.waitForURL(url + 'press/#a-build');
-  const issue = page.getByRole('article', {name: 'A–Build о новом Доме A–House'});
-  await issue.getByRole('heading', {level: 2}).waitFor();
+  const periodicalIssues = page.locator('#periodicals .press-periodical-issues');
+  const issue = periodicalIssues.getByRole('article', {name: 'A–Build о новом Доме A–House'});
+  await issue.getByRole('heading', {level: 3}).waitFor();
   await issue.locator('.press-featured-cover').evaluate(image => image.decode());
-  assert.ok(await issue.evaluate(element => Boolean(
-    element.compareDocumentPosition(document.getElementById('current-issues')) & Node.DOCUMENT_POSITION_FOLLOWING
-  )));
+  await periodicalIssues.getByRole('heading', {name: /A–Focus/, level: 3}).waitFor();
   const announcement = issue.getByRole('link', {name: /О выпуске A–Build в Telegram/});
   assert.equal(await announcement.getAttribute('href'), 'https://t.me/ahouseproject/10610');
   assert.equal(await announcement.locator('.external-link-mark').getAttribute('aria-hidden'), 'true');

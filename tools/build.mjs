@@ -12,7 +12,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFeaturedPrintProject, renderFriendCovers, renderPressBookmarks, renderPressFeature, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPrintRelease, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
+import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFriendCovers, renderPeriodicalIssues, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPrintRelease, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 import { clubPrograms } from '../src/data/club-programs.mjs';
@@ -331,10 +331,9 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
-      .replace('<!-- PRESS FEATURE -->', () => renderPressFeature(pressFeature))
       .replace('<!-- PRESS PRINT RELEASE -->', () => printReleases.map(release => release.press).join('\n'))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
-      .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
+      .replace('<!-- PERIODICAL ISSUES -->', () => renderPeriodicalIssues(projects, pressFeature))
       .replace('<!-- HOME PRINT RELEASE -->', () => homePrintRelease?.homeLink ?? '')
       .replace('<!-- HOME PRESS PREVIEW -->', () => homePrintRelease?.homePreview ?? '')
       .replace('<!-- FRIEND FEATURED COVERS -->', () => renderFriendCovers(currentPrintIssues))

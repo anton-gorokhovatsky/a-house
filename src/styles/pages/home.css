@@ -312,23 +312,14 @@
 .home-page .press-release-video-status { color: var(--quiet); font-size: var(--note-size); }
 .press-featured-issue { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem 1.4rem; align-items: start; }
 .press-featured-issue .press-featured-cover { width: min(52%, 10rem); height: auto; }
-.press-inner > .press-featured-issue { max-inline-size: 43rem; }
-.press-inner > .press-featured-issue .press-featured-cover { width: min(56%, 11rem); }
 .home-press-teaser .home-links { gap: 0 1.3em; }
 .home-press-teaser > .home-links { margin-block-start: var(--story-gap); }
 @media (min-width: 62em) {
-  .print-release-layout, .press-inner > .press-featured-issue:has(img) {
+  .print-release-layout {
     grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: 1rem var(--group);
   }
   .print-release-layout:has(> .press-release-media) { grid-template-rows: auto 1fr; }
   .print-release-layout > .press-release-media { grid-column: 2; grid-row: 1 / span 2; }
-  .press-inner > .press-featured-issue { max-inline-size: none; }
-  .press-inner > .press-featured-issue .press-featured-cover {
-    grid-column: 2; grid-row: 1; width: min(100%, 13rem);
-  }
-  .press-inner > .press-featured-issue .press-featured-copy {
-    grid-column: 1; grid-row: 1; min-inline-size: 0;
-  }
 }
 .book-list { container: book-list / inline-size; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr)); align-items: start; gap: var(--story-gap) var(--group); }
 .press-book { display: grid; grid-template-columns: minmax(0, .47fr) minmax(0, 1fr); align-items: start; gap: clamp(.85rem, 1.65vw, 1.6rem); }
