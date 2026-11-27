@@ -806,7 +806,9 @@ try {
       assert.equal(await page.evaluate(() => document.activeElement.id), 'projects');
       await page.goBack();
       assert.equal(new URL(page.url()).hash, '');
-      await page.waitForFunction(() => scrollY === 0);
+      // Chromium can restore the top one CSS pixel from zero.
+      await page.waitForFunction(() =>
+        Math.abs(scrollY) <= 1 && document.activeElement === document.querySelector('.welcome h1'));
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.evaluate(() => {
         document.addEventListener('click', () => {
