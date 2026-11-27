@@ -310,7 +310,9 @@ try {
       assert.deepEqual(await scale.locator('.scale-number').allTextContents(), ['0','1','2','3','4','5']);
       assert.equal(await scale.locator('li:visible').count(), 6);
       assert.equal(await criterion.locator('.criterion-number').innerText(), '01');
-      assert.match(await criterion.locator('.criterion-weight').innerText(), /^Вес\s+50\u202f%$/u);
+      const weightNote = criterion.getByText(/^Вес критерия в\s+итоговой оценке\s+—\s+50\s+%\.$/u);
+      assert.equal(await weightNote.count(), 1);
+      assert.ok(await weightNote.isHidden());
       assert.equal(await criterion.locator('details[open]').count(), 0);
       const grid = await criterion.evaluate(el => {
         const score = el.querySelector('.score-choices').getBoundingClientRect();
@@ -421,6 +423,7 @@ try {
       assert.equal(await page.getByRole('link', { name:'Критерии третьего этапа' }).count(), 0);
       const guide = criterion.getByText('Подробнее о критерии', { exact:true });
       await act(guide);
+      await weightNote.waitFor({state:'visible'});
       assert.equal(await criterion.locator('details[open]').count(), 1);
       await page.waitForFunction(text => document.querySelector('.criterion-final details[open] .scale-body')?.innerText.includes(text),
         mobile ? 'тревожность, радиофобию' : 'менее 4');
@@ -429,9 +432,10 @@ try {
         assert.match(await page.locator('.guide-list li:last-child').innerText(), /тревожность, радиофобию/);
       } else {
         assert.equal(await criterion.locator('details .scale-values li:visible').count(), 6);
-        assert.match(await criterion.locator('details p').innerText(), /менее 4/);
+        assert.equal(await criterion.locator('details p').filter({hasText:/менее 4/}).count(), 1);
       }
       await act(guide);
+      await weightNote.waitFor({state:'hidden'});
       assert.equal(await criterion.locator('details[open]').count(), 0);
       assert.equal(await scale.locator('li:visible').count(), 6);
       const nominations = page.getByRole('button',{name:'Критерии номинаций',exact:true});
