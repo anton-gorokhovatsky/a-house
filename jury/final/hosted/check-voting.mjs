@@ -363,8 +363,10 @@ try {
         return {
           sectionGap: size('.ballot h2').top - size('.work-return').bottom,
           aligned: Math.abs(middle(label) - middle(button)) < 1,
-          sizeAtRight: fileSize.left - button.right >= 12 && fileSize.left - button.right <= 24 &&
-            Math.abs((fileSize.top + fileSize.bottom) / 2 - (button.top + button.bottom) / 2) < 1,
+          sizeAtRight: Math.abs(fileSize.left - button.right - 10) < 1 &&
+            Math.abs(fileSize.bottom - button.bottom - fileSize.height * .1) < 1 &&
+            parseFloat(getComputedStyle(document.querySelector('#work-pdf-size')).fontSize) >
+              parseFloat(getComputedStyle(document.querySelector('#open-pdf')).fontSize),
           commentGap: Math.round(size('.comment-label').top - size('.score-scale').bottom),
           lowerDivider: getComputedStyle(document.querySelector('.criterion-final')).borderBlockEndWidth
         };
