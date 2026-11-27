@@ -3,14 +3,16 @@ with active_ballots as (
     case when v.is_test then coalesce(nullif(trim(u.raw_user_meta_data ->> 'full_name'), ''),
       case when v.technical then 'Тест технического жюри' else 'Тестовый член жюри' end)
     end as test_name,
-    (b.answers ->> 'concept')::numeric as concept,
-    (b.answers ->> 'technical_review')::numeric as technical_score,
+    (visible.answers ->> 'concept')::numeric as concept,
+    (visible.answers ->> 'technical_review')::numeric as technical_score,
     b.comment, v.is_test, b.updated_at
   from public.jury_final_ballots b
   join public.jury_final_control c on c.active_rubric = b.rubric
   join public.jury_works w on w.id = b.work_id
   join public.jury_final_voters v on v.user_id = b.user_id
   join auth.users u on u.id = b.user_id
+  cross join lateral (select public.jury_final_visible_answers(b.rubric, b.answers, v.technical) as answers) visible
+  where visible.answers <> '{}'::jsonb
 ), concepts as (
   select work_id, avg(concept) as mean_concept
   from active_ballots where not is_test group by work_id

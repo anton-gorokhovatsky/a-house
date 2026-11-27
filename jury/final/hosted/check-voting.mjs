@@ -14,20 +14,23 @@ const fixtures = new Map(Array.from({ length: 15 }, (_, i) => {
 }));
 const pdf = await readFile(new URL('./test/sheets.pdf', import.meta.url));
 const works = [...fixtures].map((_, i) => ({ id: (i + 1).toString(16).padStart(24, '0'), title: 'Работа ' + (i + 1), bytes: pdf.length }));
+const technicalTest = 'jury-test-technical';
+fixtures.set(technicalTest, '00000000-0000-4000-8000-000000000016');
 await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
   create schema auth; create schema storage; create table storage.objects(bucket_id text);
-  create table auth.users(id uuid primary key, email text);
+  create table auth.users(id uuid primary key, email text, raw_user_meta_data jsonb default '{}'::jsonb);
   create function auth.uid() returns uuid language sql stable as
     $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;`);
 await db.exec(await readFile(new URL('schema.sql', import.meta.url), 'utf8'));
 for (const [login, id] of fixtures) {
-  await db.query('insert into auth.users values ($1,$2)', [id, login + '@jury.example.com']);
+  await db.query('insert into auth.users (id, email) values ($1,$2)', [id, login + '@jury.example.com']);
   await db.query('insert into public.jury_members values ($1)', [id]);
 }
 for (const [i, work] of works.entries()) {
   await db.query('insert into public.jury_works values ($1,$2,$3,$4)', [work.id, i + 1, work.title, work.bytes]);
 }
 await db.exec(await readFile(new URL('voting.sql', import.meta.url), 'utf8'));
+await db.query('insert into public.jury_final_voters (user_id, technical, is_test) values ($1,true,true)', [fixtures.get(technicalTest)]);
 await db.exec("update public.jury_final_control set regulations_url='https://disk.360.yandex.ru/d/fixture'");
 
 async function queryAs(login, sql, values = []) {
@@ -60,25 +63,88 @@ await assert.rejects(legacySave('jury-02', probe, oldAnswers, 'Вчерашня�
 assert.equal((await sheet('jury-02')).ballots.length,0);
 assert.equal(Number((await stats()).ballot_count),0);
 const regular = { concept:0 };
-const tech = { concept:0, technical_review:4 };
+const tech = { technical_review:4 };
+const raw = async login => (await db.query(
+  'select answers, comment, revision, updated_at from public.jury_final_ballots where user_id=$1 and work_id=$2 and rubric=$3',
+  [fixtures.get(login), probe, currentRubric])).rows[0];
+const reportSql = await readFile(new URL('sheets-report.sql', import.meta.url), 'utf8');
+const report = async () => (await db.query(reportSql)).rows[0].report;
+const installRoleSplit = await readFile(new URL('voting-role-split.sql', import.meta.url), 'utf8');
+const rollbackRoleSplit = await readFile(new URL('rollback-role-split.sql', import.meta.url), 'utf8');
+
+for (const [login, concept] of [['jury-01',1],['jury-02',3],['jury-04',4],['jury-05',5]]) {
+  await save(login, probe, { concept }, '', 0);
+}
+assert.equal((await stats()).working_score, null);
+await save('jury-03', probe, { concept:2, technical_review:4 }, 'До разделения ролей', 0);
+await save(technicalTest, probe, { concept:0, technical_review:5 }, 'Технический тест', 0);
+assert.equal(Number((await stats()).working_score),3.5);
+const archivedTechnical = await raw('jury-03');
+const archivedTest = await raw(technicalTest);
+
+await db.exec(installRoleSplit);
+assert.equal((await sheet('jury-02')).accepting,true);
 assert.equal((await sheet('jury-08')).role, 'observer');
-assert.deepEqual((await sheet('jury-03')).criteria.map(c=>[c.key,c.weight]), [['concept',50],['technical_review',50]]);
-assert.deepEqual((await sheet('jury-01')).criteria.map(c=>c.key), ['concept']);
+assert.deepEqual((await sheet('jury-08')).criteria, []);
+for (const login of ['jury-03', technicalTest]) {
+  assert.equal((await sheet(login)).role, 'technical');
+  assert.deepEqual((await sheet(login)).criteria.map(c => [c.key,c.weight]), [['technical_review',50]]);
+}
+assert.deepEqual((await sheet('jury-03')).ballots[0].answers, tech);
+assert.deepEqual((await sheet(technicalTest)).ballots[0].answers, {technical_review:5});
+assert.deepEqual((await sheet('jury-01')).criteria.map(c=>[c.key,c.weight]), [['concept',50]]);
 await assert.rejects(save('jury-08', probe, regular, '', 0), { code: '42501' });
 await assert.rejects(save('jury-02', probe, tech, '', 0), { code: '22023' });
 await assert.rejects(save('jury-02', probe, { concept:6 }, '', 0), { code: '22023' });
 await assert.rejects(save('jury-02', probe, { concept:null }, '', 0), { code: '22023' });
 await assert.rejects(save('jury-03', probe, regular, '', 0), { code: '22023' });
+await assert.rejects(save('jury-03', probe, { concept:2, technical_review:4 }, '', 1), { code: 'PT412' });
 await assert.rejects(queryAs('jury-02', 'select * from public.jury_final_ballots'), { code: '42501' });
-for (const [login, concept] of [['jury-01',1],['jury-02',3],['jury-04',4],['jury-05',5]]) {
-  await save(login, probe, { concept }, '', 0);
-}
-assert.equal((await stats()).working_score, null);
-await save('jury-03', probe, { concept:2, technical_review:4 }, '', 0);
-assert.equal(Number((await stats()).working_score),3.5);
+assert.deepEqual(await raw('jury-03'), archivedTechnical);
+assert.deepEqual(await raw(technicalTest), archivedTest);
+assert.equal(Number((await stats()).ballot_count),5);
+assert.equal(Number((await stats()).technical_count),1);
+assert.equal(Number((await stats()).working_score),3.625);
 assert.equal((await stats()).meets_prize_feasibility_threshold,true);
-await save('jury-03', probe, { concept:2, technical_review:3 }, '', 1);
+const asService = await db.transaction(async tx => {
+  await tx.exec('set local role service_role');
+  return (await tx.query('select working_score from public.jury_final_work_summary where work_id=$1', [probe])).rows[0];
+});
+assert.equal(Number(asService.working_score), 3.625);
+const exported = await report();
+const exportedWork = exported.works.find(w => w.work_id === probe);
+assert.equal(exportedWork.mean_concept, 3.25);
+assert.equal(exportedWork.mean_feasibility, 4);
+assert.equal(exportedWork.working_score, 3.625);
+for (const [login, score, isTest] of [['jury-03', 4, false], [technicalTest, 5, true]]) {
+  const ballot = exported.ballots.find(b => b.login === login && b.work_id === probe);
+  assert.equal(ballot.concept, null);
+  assert.equal(ballot.technical_score, score);
+  assert.equal(ballot.is_test, isTest);
+}
+assert.equal((await save('jury-03', probe, tech, 'До разделения ролей', 0)).revision, 1);
+assert.deepEqual(await raw('jury-03'), archivedTechnical);
+const edited = await save('jury-03', probe, {technical_review:3}, 'После разделения ролей', 1);
+assert.deepEqual(edited.answers, {technical_review:3});
+assert.equal(edited.revision, 2);
+assert.deepEqual((await raw('jury-03')).answers, {concept:2, technical_review:3});
+assert.equal(Number((await stats()).working_score),3.125);
 assert.equal((await stats()).meets_prize_feasibility_threshold,false);
+const freshTest = await save(technicalTest, works[12].id, {technical_review:0}, 'Новый технический тест', 0);
+assert.deepEqual(freshTest.answers, {technical_review:0});
+
+const beforeRoleRollback = await raw('jury-03');
+await db.exec(rollbackRoleSplit);
+assert.equal((await sheet('jury-03')).rubric, currentRubric);
+assert.equal((await sheet('jury-03')).accepting,true);
+assert.deepEqual((await sheet('jury-03')).criteria.map(c => c.key), ['concept','technical_review']);
+assert.deepEqual((await sheet('jury-03')).ballots[0].answers, {concept:2, technical_review:3});
+assert.deepEqual((await sheet(technicalTest)).ballots.find(b => b.work_id === works[12].id).answers, {technical_review:0});
+assert.equal((await report()).ballots.find(b => b.login === 'jury-03' && b.work_id === probe).concept, 2);
+assert.deepEqual(await raw('jury-03'), beforeRoleRollback);
+await db.exec(installRoleSplit);
+assert.deepEqual((await sheet('jury-03')).ballots[0].answers, {technical_review:3});
+assert.deepEqual(await raw('jury-03'), beforeRoleRollback);
 await db.exec(await readFile(new URL('rollback-50-50.sql', import.meta.url), 'utf8'));
 assert.equal((await legacySheet('jury-02')).accepting,true);
 assert.equal((await sheet('jury-02')).ballots[0].comment,'До обновления');
@@ -98,6 +164,12 @@ assert.equal(Number((await stats()).ballot_count),5);
 await db.exec('update public.jury_final_control set accepting=false');
 await assert.rejects(save('jury-01', works[4].id, regular, '', 0), { code: 'PT403' });
 await db.exec('update public.jury_final_control set accepting=true');
+
+console.log('PGlite: role-specific ballots, historical scores, retries, 50/50, export, test exclusions and both rollbacks passed.');
+if (process.env.JURY_QA_DB_ONLY) {
+  await db.close();
+  process.exit(0);
+}
 
 const files = new Set(['index.html', ...cabinetAssets.keys(), 'config.js', 'cabinet.js', 'gallery.js', 'ranking.js', 'sheets.js', 'voting.js', 'views.js', 'criteria.js', 'typography.js']);
 const server = http.createServer(async (req, res) => {
@@ -162,11 +234,17 @@ try {
         await act(page.getByRole('button',{ name:'Войти', exact:true }));
       };
       const id = works[0].id;
+      const criterionKey = mobile ? 'concept' : 'technical_review';
+      const onlyCriterion = 'input[name=' + criterionKey + ']';
+      const answers = mobile ? regular : tech;
       await page.goto(url + '#work/' + id);
       await signIn(login);
       await page.getByRole('heading', { name:'Ваша оценка' }).waitFor();
       assert.equal(await page.getByText('Критерии оценки', { exact: true }).count(), 0);
       assert.equal(await page.locator('input[name=technical_review]').count(), mobile ? 0 : 6);
+      assert.equal(await page.locator('input[name=concept]').count(), mobile ? 6 : 0);
+      assert.equal(await page.getByText('Шкала оценки концепции', { exact:true }).count(), mobile ? 1 : 0);
+      assert.equal(await page.getByText('Шкала реализуемости', { exact:true }).count(), mobile ? 0 : 1);
       const strip = page.locator('.sheet-strip');
       const dialog = page.locator('dialog[open]');
       const second = strip.locator('[data-page="2"]');
@@ -201,32 +279,47 @@ try {
       await page.getByRole('link', { name:'Положение о работе жюри' }).waitFor();
       assert.equal(await page.getByRole('link', { name:'Критерии третьего этапа' }).count(), 0);
       const guide = page.getByText('Что учитывать при оценке концепции', { exact:true });
-      await act(guide);
-      await page.waitForFunction(() =>
-        document.querySelector('.guide-list li:last-child')?.innerText.includes('тревожность, радиофобию'));
-      assert.equal(await page.locator('.guide-list li:visible').count(), 6);
-      await act(guide);
+      if (mobile) {
+        await act(guide);
+        await page.waitForFunction(() =>
+          document.querySelector('.guide-list li:last-child')?.innerText.includes('тревожность, радиофобию'));
+        assert.equal(await page.locator('.guide-list li:visible').count(), 6);
+        await act(guide);
+      } else {
+        assert.equal(await guide.count(), 0);
+        const scale = page.getByText('Шкала реализуемости', { exact:true });
+        await act(scale);
+        assert.equal(await page.locator('.scale-values li:visible').count(), 6);
+        await act(scale);
+      }
       const nominations = page.getByText('Критерии номинаций',{exact:true});
       await act(nominations);
       assert.equal(await page.locator('.nominations h3:visible').count(),4);
       assert.ok(await page.getByText(/Реализуемость\s+не\s+является обязательным условием/).isVisible());
       await act(nominations);
-      assert.equal(await page.locator('.criterion').count(), mobile ? 1 : 2);
+      assert.equal(await page.locator('.criterion').count(), 1);
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
-      const answers = mobile ? regular : tech;
-      for (const [key, score] of Object.entries(answers)) {
-        const radio = page.locator('input[name="' + key + '"][value="' + (score ?? 'na') + '"]');
-        if (mobile) await radio.locator('..').tap();
-        else { await radio.focus(); await radio.press('Space'); }
+      if (mobile) {
+        await page.locator(onlyCriterion + '[value="0"]').locator('..').tap();
+        await page.locator('textarea').fill('Мой комментарий');
+      } else {
+        await page.evaluate(({ user, work }) => {
+          localStorage.setItem('jury.draft.v1/' + user + '/final_50_50/' + work, JSON.stringify({
+            revision:0, answers:{concept:2, technical_review:4}, comment:'Мой комментарий'
+          }));
+        }, { user:fixtures.get(login), work:id });
+        await page.reload();
+        await page.locator('.save-ballot').waitFor();
+        assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
+        assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), '4');
       }
-      await page.locator('textarea').fill('Мой комментарий');
       await act(page.getByRole('link',{name:'К списку работ'}));
       await act(page.locator('a[id="' + id + '"]'));
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
       await page.reload();
       await page.locator('.save-ballot').waitFor();
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
-      assert.equal(await page.locator('input[name=concept]:checked').inputValue(), '0');
+      assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
       await act(page.getByRole('button', { name:'Выйти' }));
       await page.reload();
       await signIn('jury-08');
@@ -242,7 +335,7 @@ try {
       await page.goto(url + '#work/' + id);
       await signIn(login);
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
-      assert.equal(await page.locator('input[name=concept]:checked').inputValue(), '0');
+      assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
       assert.equal((await sheet(login)).ballots.some(b => b.work_id === id), false);
       const submit = page.locator('.save-ballot');
       await act(submit);
@@ -257,7 +350,7 @@ try {
       await signIn(login);
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
-      assert.equal(await page.locator('input[name=concept]:checked').inputValue(), '0');
+      assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
       await save(login, id, answers, 'Из другой вкладки', 1);
       await page.locator('textarea').fill('Моя правка');
       await act(submit);
@@ -286,12 +379,14 @@ try {
       await act(page.getByRole('link', { name: 'Мой рейтинг работ' }));
       await page.locator('.ranking').waitFor();
       assert.equal(await page.locator('.ranking tbody tr').count(), 2);
-      if (!mobile) await page.locator('#ranking-order').selectOption('technical_review');
+      assert.equal(await page.locator('#ranking-order').count(), 0);
+      const ownRank = page.locator('#rank-' + id).locator('../..');
+      assert.equal(await ownRank.locator('td').last().innerText(), String(answers[criterionKey]));
       await act(page.locator('#rank-' + id));
       await page.getByRole('heading', { name: works[0].title }).waitFor();
       await act(page.getByRole('link', { name: 'К моему рейтингу' }));
       await page.waitForFunction(id => document.activeElement?.id === 'rank-' + id, id);
-      if (!mobile) assert.equal(await page.locator('#ranking-order').inputValue(), 'technical_review');
+      assert.equal(await page.locator('#ranking-order').count(), 0);
       await act(page.getByRole('link', { name: 'К списку работ' }));
       assert.equal(await page.locator('.sheet-progress').innerText().then(t => t.replace(/\s+/g, ' ')), 'Оценено 2 из 15');
       await act(page.getByRole('button',{ name:'Выйти' }));

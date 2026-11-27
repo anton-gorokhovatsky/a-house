@@ -39,13 +39,10 @@ const smallest = works.reduce((a, b) => a.bytes < b.bytes ? a : b);
 const largest = works.reduce((a, b) => a.bytes > b.bytes ? a : b);
 const last = works.at(-1);
 
-async function checkLoginTypography(page, alignLeft) {
+async function checkLoginTypography(page) {
   const title = await page.locator('.hero h1').evaluate(async heading => {
     await document.fonts.ready;
-    const style = getComputedStyle(heading);
-    const canvas = document.createElement('canvas').getContext('2d');
-    canvas.font = style.fontSize + ' ' + style.fontFamily;
-    const logoLeft = document.querySelector('.hero img').getBoundingClientRect().left;
+    const logo = document.querySelector('.hero img').getBoundingClientRect();
     const words = Array.from(heading.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
     const walker = document.createTreeWalker(document.querySelector('.login-card h2'), NodeFilter.SHOW_TEXT);
     const titleWords = [];
@@ -64,8 +61,7 @@ async function checkLoginTypography(page, alignLeft) {
         const range = document.createRange();
         range.selectNodeContents(node);
         const rects = range.getClientRects();
-        const bearing = canvas.measureText(node.textContent[0].toUpperCase()).actualBoundingBoxLeft;
-        return { lines: rects.length, inkOffset: rects[0].left - bearing - logoLeft };
+        return { lines: rects.length, offset: (rects[0].left + rects[0].right - logo.left - logo.right) / 2 };
       })
     };
   });
@@ -73,7 +69,7 @@ async function checkLoginTypography(page, alignLeft) {
   assert.deepEqual(title.words.map(word => word.lines), [1, 1], 'Each word of the contest title must fit on one line.');
   assert.equal(title.formWords.length, 3);
   assert.ok(title.formWords.every(lines => lines === 1), 'The sign-in heading should wrap between words.');
-  if (alignLeft) assert.ok(title.words.every(word => Math.abs(word.inkOffset) <= 2), 'Align both opening capitals with the logo.');
+  assert.ok(title.words.every(word => Math.abs(word.offset) <= 2), 'Centre both words beneath the logo.');
 }
 
 async function useFixture(context, fault) {
@@ -135,13 +131,13 @@ try {
       };
       await page.goto(url + '#work/' + profile.work.id);
       await button('Войти').waitFor();
-      await checkLoginTypography(page, !profile.touch);
+      await checkLoginTypography(page);
       if (profile.touch) {
         const original = page.viewportSize();
         await page.setViewportSize({ width: 320, height: 568 });
         await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
         assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), '32px');
-        await checkLoginTypography(page, false);
+        await checkLoginTypography(page);
         await page.evaluate(() => { document.documentElement.style.removeProperty('font-size'); });
         await page.setViewportSize(original);
       }
