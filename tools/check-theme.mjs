@@ -61,11 +61,11 @@ export async function checkTheme(browser, url) {
     const light = await canvas(page);
     const lightContacts = await contacts(page);
     assert.ok(luminance(lightContacts) < .15, 'Contacts keep their dark background on a light page');
-    const artwork = page.locator('.home-friend-promo-inner :is(.home-friend-cover, .home-friend-release) img');
-    assert.equal(await artwork.count(), 1, 'The subscription teaser shows one image from an issue');
-    await artwork.scrollIntoViewIfNeeded();
-    await artwork.evaluate(img => img.decode());
-    const image = () => artwork.evaluate(img => [img.currentSrc, getComputedStyle(img).filter]);
+    const cover = page.locator('.home-friend-cover img');
+    assert.equal(await cover.count(), 1, 'The subscription teaser shows an issue cover');
+    await cover.scrollIntoViewIfNeeded();
+    await cover.evaluate(img => img.decode());
+    const image = () => cover.evaluate(img => [img.currentSrc, getComputedStyle(img).filter]);
     const original = await image();
     await page.emulateMedia({ colorScheme: 'dark' });
     await systemChoice.getByText('В системе тёмная', { exact: true }).waitFor();
