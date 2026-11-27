@@ -310,7 +310,7 @@ try {
       assert.deepEqual(await scale.locator('.scale-number').allTextContents(), ['0','1','2','3','4','5']);
       assert.equal(await scale.locator('li:visible').count(), 6);
       assert.equal(await criterion.locator('.criterion-number').innerText(), mobile ? '01' : '02');
-      assert.match(await criterion.locator('.criterion-weight').innerText(), /Вес критерия\s+50\s+%/u);
+      assert.match(await criterion.locator('.criterion-weight').innerText(), /Вес критерия\s+50\u202f%/u);
       assert.equal(await criterion.locator('details[open]').count(), 0);
       const grid = await criterion.evaluate(el => {
         const score = el.querySelector('.score-choices').getBoundingClientRect();
@@ -335,12 +335,17 @@ try {
         const middle = rect => rect.left + rect.width / 2;
         return {
           sectionGap: size('.ballot h2').top - size('.work-return').bottom,
-          aligned: [label, fileSize].every(rect => Math.abs(middle(rect) - middle(button)) < 1),
-          sizeUnderButton: button.bottom < fileSize.top && fileSize.top - button.bottom < 12
+          aligned: Math.abs(middle(label) - middle(button)) < 1,
+          sizeAtRight: fileSize.left - button.right >= 12 && fileSize.left - button.right <= 24 &&
+            Math.abs((fileSize.top + fileSize.bottom) / 2 - (button.top + button.bottom) / 2) < 1,
+          commentGap: Math.round(size('.comment-label').top - size('.score-scale').bottom),
+          lowerDivider: getComputedStyle(document.querySelector('.criterion-final')).borderBlockEndWidth
         };
       });
       assert.ok(layout.sectionGap >= 24 && layout.sectionGap <= 66);
-      assert.ok(layout.aligned && layout.sizeUnderButton);
+      assert.ok(layout.aligned && layout.sizeAtRight);
+      assert.equal(layout.lowerDivider, '0px');
+      assert.equal(layout.commentGap, mobile ? 28 : 56);
       const strip = page.locator('.sheet-strip');
       const dialog = page.locator('dialog[open]');
       const second = strip.locator('[data-page="2"]');
@@ -392,6 +397,13 @@ try {
       const nominations = page.getByText('Критерии номинаций',{exact:true});
       await act(nominations);
       assert.equal(await page.locator('.nominations h3:visible').count(),4);
+      const guideLayout = await page.locator('.nominations').evaluate(el => {
+        const summary = el.querySelector('summary').getBoundingClientRect();
+        const title = el.querySelector('h3');
+        return [title.getBoundingClientRect().top - summary.bottom, getComputedStyle(title).fontFamily];
+      });
+      assert.ok(guideLayout[0] >= 12);
+      assert.match(guideLayout[1], /MTS Compact/);
       assert.ok(await page.getByText(/Реализуемость\s+не\s+является обязательным условием/).isVisible());
       await act(nominations);
       assert.equal(await page.locator('.criterion').count(), 1);

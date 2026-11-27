@@ -164,7 +164,7 @@ function field(criterion, answers, standardScale, updated, regulationsUrl) {
     })
     : criterion.key === 'concept' ? conceptGuide : '';
   const controls = '<div class="score-choices">' + choices + '</div>' + site;
-  const weight = escape(criterion.weight) + ' %';
+  const weight = escape(criterion.weight) + ' %';
   if (updated) {
     const number = String(criterion.position).padStart(2, '0');
     const title = technical ? technicalTitle : criterion.key === 'concept' ? conceptTitle : criterion.label;
