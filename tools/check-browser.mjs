@@ -248,11 +248,10 @@ async function checkSharedPageLayout(page) {
   assert.equal(title, brand, 'The A–Pass title starts at the common page edge');
   assert.equal(form, title, 'The A–Pass form starts below the title');
 
-  const featuredIssue = selector => ['.press-featured-cover', '.press-featured-copy'].map(child => selector + ' ' + child);
   assert.deepEqual(
-    await columns('', featuredIssue('.home-press-teaser > .press-featured-issue')),
-    await columns('press/', featuredIssue('.press-inner > .press-featured-issue')),
-    'The same featured issue has matching cover and copy columns'
+    await columns('', ['.home-press-release h4', '.home-press-release video']),
+    await columns('press/', ['.press-release h2', '.press-release video']),
+    'The featured print release has matching heading and video columns'
   );
 
   const documentText = ['.document-inner h1', '.document-copy'];
@@ -517,27 +516,29 @@ async function checkVisitorLinks(page, mobile) {
   const portfolios = selected.find(project => project.feature.portfolios).feature.portfolios;
   assert.deepEqual(await features.locator('.home-project-portfolios h4 a').evaluateAll(links => links.map(link => link.href)), portfolios.map(item => item.href));
   const editions = page.locator('section[aria-labelledby="collection-editions"]');
-  const pressFeature = editions.getByRole('article', {name: 'A–Build о новом Доме A–House'});
-  const cover = pressFeature.locator('.press-featured-cover');
-  await cover.scrollIntoViewIfNeeded();
-  await cover.evaluate(image => image.decode());
-  const photo = await cover.getAttribute('src');
-  const issueLink = pressFeature.getByRole('link', {name: 'О выпуске A–Build', exact: true});
+  await editions.locator('.home-press-release video').waitFor();
+  assert.equal(await editions.locator('.press-featured-issue').count(), 0);
+  const issueLink = editions.getByRole('link', {name: 'О выпуске и где его найти', exact: true});
   assert.equal(await issueLink.locator('.external-link-mark').count(), 0);
+  const issueURL = await issueLink.evaluate(link => link.href);
   await activate(issueLink);
+  await page.waitForURL(issueURL);
+  await page.locator('.press-release video').waitFor();
+  await page.goBack();
+  await page.waitForURL(url);
+  await issueLink.waitFor({state:'visible'});
+  await page.goto(url + '#home-press-issue');
   await page.waitForURL(url + 'press/#a-build');
   const issue = page.getByRole('article', {name: 'A–Build о новом Доме A–House'});
   await issue.getByRole('heading', {level: 2}).waitFor();
-  assert.equal(await issue.locator('.press-featured-cover').getAttribute('src'), photo);
+  await issue.locator('.press-featured-cover').evaluate(image => image.decode());
   assert.ok(await issue.evaluate(element => Boolean(
     element.compareDocumentPosition(document.getElementById('current-issues')) & Node.DOCUMENT_POSITION_FOLLOWING
   )));
   const announcement = issue.getByRole('link', {name: /О выпуске A–Build в Telegram/});
   assert.equal(await announcement.getAttribute('href'), 'https://t.me/ahouseproject/10610');
   assert.equal(await announcement.locator('.external-link-mark').getAttribute('aria-hidden'), 'true');
-  await page.goBack();
-  await page.waitForURL(url);
-  await issueLink.waitFor({state:'visible'});
+  await page.goto(url);
   const archiveLink = editions.getByRole('link', {name:'Архив печатных номеров', exact:true});
   assert.equal(await archiveLink.evaluate(link => link.href), url + 'press/#print-archive');
   const editorialTitles = await page.locator('#media h3.editorial-pair-title:visible').allInnerTexts();

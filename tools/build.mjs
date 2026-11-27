@@ -331,7 +331,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace('<!-- A-HOUSE JOBS -->', () => jobs)
       .replace('<!-- PROJECT NAVIGATION -->', () => projectNavigation)
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
-      .replace('<!-- PRESS FEATURE -->', () => renderPressFeature(pressFeature, home))
+      .replace('<!-- PRESS FEATURE -->', () => renderPressFeature(pressFeature))
       .replace('<!-- PRESS PRINT RELEASE -->', () => printReleases.map(release => release.press).join('\n'))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
       .replace('<!-- FEATURED PRINT PROJECT -->', () => renderFeaturedPrintProject(projects))
@@ -365,7 +365,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       })
       .replace('{{siteVersion}}', versionLabel)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
-      .replace('<!-- HOME BOOKMARKS -->', () => renderHomeBookmarks(base));
+      .replace('<!-- HOME BOOKMARKS -->', () => renderHomeBookmarks(base, pressFeature));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => footerTheme);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => footerTheme + '</footer>');

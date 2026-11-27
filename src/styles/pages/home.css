@@ -312,25 +312,21 @@
 .home-page .press-release-video-status { color: var(--quiet); font-size: var(--note-size); }
 .press-featured-issue { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem 1.4rem; align-items: start; }
 .press-featured-issue .press-featured-cover { width: min(52%, 10rem); height: auto; }
-.home-press-teaser > .press-featured-issue { margin-block: var(--story-gap) .7rem; }
-:is(.home-press-teaser, .press-inner) > .press-featured-issue { max-inline-size: 43rem; }
-:is(.home-press-teaser, .press-inner) > .press-featured-issue .press-featured-cover { width: min(56%, 11rem); }
-.home-press-teaser .press-featured-copy h4 {
-  margin: 0 0 .35em; font: 400 var(--story-size)/1.14 var(--display); text-wrap: pretty;
-}
-.home-press-teaser .press-featured-copy p { max-inline-size: 45ch; text-wrap: pretty; }
+.press-inner > .press-featured-issue { max-inline-size: 43rem; }
+.press-inner > .press-featured-issue .press-featured-cover { width: min(56%, 11rem); }
 .home-press-teaser .home-links { gap: 0 1.3em; }
+.home-press-teaser > .home-links { margin-block-start: var(--story-gap); }
 @media (min-width: 62em) {
-  .print-release-layout, :is(.home-press-teaser, .press-inner) > .press-featured-issue:has(img) {
+  .print-release-layout, .press-inner > .press-featured-issue:has(img) {
     grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: 1rem var(--group);
   }
   .print-release-layout:has(> .press-release-media) { grid-template-rows: auto 1fr; }
   .print-release-layout > .press-release-media { grid-column: 2; grid-row: 1 / span 2; }
-  :is(.home-press-teaser, .press-inner) > .press-featured-issue { max-inline-size: none; }
-  :is(.home-press-teaser, .press-inner) > .press-featured-issue .press-featured-cover {
+  .press-inner > .press-featured-issue { max-inline-size: none; }
+  .press-inner > .press-featured-issue .press-featured-cover {
     grid-column: 2; grid-row: 1; width: min(100%, 13rem);
   }
-  :is(.home-press-teaser, .press-inner) > .press-featured-issue .press-featured-copy {
+  .press-inner > .press-featured-issue .press-featured-copy {
     grid-column: 1; grid-row: 1; min-inline-size: 0;
   }
 }

@@ -85,21 +85,19 @@ export function renderFriendCovers(issues) {
   </ul>`;
 }
 
-function renderIssueLinks(issue, homeLink) {
+function renderIssueLinks(issue) {
   const links = [];
-  if (homeLink) {
-    links.push(`<a href="${escape(homeLink)}">О выпуске ${escape(issue.edition)}</a>`);
-  } else if (issue.announcement) {
+  if (issue.announcement) {
     const name = issue.number ? `${issue.edition} № ${issue.number}` : issue.edition || issue.title;
     links.push(`<a href="${escape(issue.announcement)}">О выпуске ${escape(name)} в Telegram</a>`);
   }
   if (issue.article) {
     links.push(`<a href="${escape(issue.article.href)}">${escape(issue.article.title)}</a>`);
   }
-  return links.length ? `<div class="${homeLink ? 'home-links' : 'press-page-links'}">${links.join('')}</div>` : '';
+  return links.length ? `<div class="press-page-links">${links.join('')}</div>` : '';
 }
 
-function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt, homeLink } = {}) {
+function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt } = {}) {
   const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
   const headingId = id ? escape(id) + '-title' : '';
   const attributes = id ? ` id="${escape(id)}" tabindex="-1" aria-labelledby="${headingId}"` : '';
@@ -110,15 +108,13 @@ function renderFeaturedIssue(issue, { id, heading = 'h3', excerpt, homeLink } = 
       <${heading}${headingId ? ' id="' + headingId + '"' : ''}>${title}</${heading}>
       ${issue.description ? '<p>' + escape(issue.description) + '</p>' : ''}
       ${excerpt ? '<p>' + escape(excerpt) + '</p>' : ''}
-      ${renderIssueLinks(issue, homeLink)}
+      ${renderIssueLinks(issue)}
     </div>
   </article>`;
 }
 
-export function renderPressFeature(issue, home) {
-  return home
-    ? renderFeaturedIssue(issue, { id: 'home-press-issue', heading: 'h4', homeLink: '@@ROOT@@press/#' + issue.anchor })
-    : renderFeaturedIssue(issue, { id: issue.anchor, heading: 'h2', excerpt: issue.excerpt });
+export function renderPressFeature(issue) {
+  return renderFeaturedIssue(issue, { id: issue.anchor, heading: 'h2', excerpt: issue.excerpt });
 }
 
 function renderPrintVideo(video, id, title) {
@@ -362,7 +358,7 @@ export function renderPressBookmarks(newsHref) {
   ]);
 }
 
-export function renderHomeBookmarks(base) {
+export function renderHomeBookmarks(base, featuredIssue) {
   const bookmarks = [
     ['partnership', 'partnership/', 'Сотрудничество'],
     ['partnership-heading', 'partnership/', 'Сотрудничество'],
@@ -370,6 +366,7 @@ export function renderHomeBookmarks(base) {
     ['rec2309704211', 'partnership/#rec2309704211', 'Городские пространства'],
     ['home-books', 'press/books/', 'Книги A–Press'],
     ['home-periodicals', 'press/#periodicals', 'Газеты и журналы'],
+    ['home-press-issue', 'press/#' + featuredIssue.anchor, featuredIssue.title],
     ['issue-a-sport', 'press/#a-sport-02', 'A–Sport № 2 «Движение»']
   ];
   return renderSectionBookmarks(bookmarks.map(([id, path, title]) => [id, base + path, title]));
