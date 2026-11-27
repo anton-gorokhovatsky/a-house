@@ -661,12 +661,12 @@ try {
         const labels = anchors.map(a => rect(a.querySelector('span')));
         const arrows = anchors.map(a => rect(a.querySelector('svg')));
         const references = rect(document.querySelector('.ballot-references'));
-        const field = rect(document.querySelector('#voting textarea'));
+        const gallery = rect(document.querySelector('.work-gallery .sheets'));
         const sameLine = Math.abs(links[0].top - links[1].top) < 1;
         return {
           underReferences: bounds.top > references.bottom,
-          onFormEdges: [labels, arrows].every(([left, right]) =>
-            Math.abs(left.left - references.left) < 1 && Math.abs(right.right - field.right) < 1),
+          onGalleryEdges: [labels, arrows].every(([left, right]) =>
+            Math.abs(left.left - gallery.left) < 1 && Math.abs(right.right - gallery.right) < 1),
           arrowsAboveLabels: arrows.every((box, i) => box.bottom < labels[i].top),
           sameLine,
           touchTargets: links.every(box => box.height >= 44 && box.width >= 44),
@@ -674,7 +674,7 @@ try {
           separate: sameLine ? links[0].right < links[1].left : links[0].bottom < links[1].top
         };
       });
-      assert.deepEqual(await neighborLayout(), { underReferences:true, onFormEdges:true, arrowsAboveLabels:true, sameLine:true, touchTargets:true, fits:true, separate:true });
+      assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsAboveLabels:true, sameLine:true, touchTargets:true, fits:true, separate:true });
       assert.deepEqual(await neighbors.locator('.work-neighbor-arrow').evaluateAll(arrows => arrows.map(arrow => ({
         width: arrow.getBoundingClientRect().width,
         height: arrow.getBoundingClientRect().height,
@@ -699,7 +699,7 @@ try {
         const viewport = page.viewportSize();
         await page.setViewportSize({ width:320, height:viewport.height });
         const style = await page.addStyleTag({url:'/text-200.css'});
-        assert.deepEqual(await neighborLayout(), { underReferences:true, onFormEdges:true, arrowsAboveLabels:true, sameLine:false, touchTargets:true, fits:true, separate:true });
+        assert.deepEqual(await neighborLayout(), { underReferences:true, onGalleryEdges:true, arrowsAboveLabels:true, sameLine:false, touchTargets:true, fits:true, separate:true });
         await style.evaluate(node => node.remove());
         await page.setViewportSize(viewport);
       }
