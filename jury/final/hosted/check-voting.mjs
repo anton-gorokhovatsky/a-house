@@ -309,7 +309,7 @@ try {
       });
       assert.deepEqual(await scale.locator('.scale-number').allTextContents(), ['0','1','2','3','4','5']);
       assert.equal(await scale.locator('li:visible').count(), 6);
-      assert.equal(await criterion.locator('.criterion-number').innerText(), mobile ? '01' : '02');
+      assert.equal(await criterion.locator('.criterion-number').innerText(), '01');
       assert.match(await criterion.locator('.criterion-weight').innerText(), /^Вес\s+50\u202f%$/u);
       assert.equal(await criterion.locator('details[open]').count(), 0);
       const grid = await criterion.evaluate(el => {
@@ -333,7 +333,7 @@ try {
           groupGap, checkGap,
           afterSave: Math.round(rect('.ballot-references').top - rect('.save-ballot').bottom),
           upperDivider: style('.score-choices').borderBlockStartWidth,
-          headingStyle: ['.criterion-main h3', '.recommendations legend'].map(sel => {
+          headingStyle: ['.criterion-main h3', '.recommendation-step h3'].map(sel => {
             const heading = style(sel);
             return [heading.fontSize, heading.lineHeight, heading.fontFamily];
           }),
@@ -355,6 +355,9 @@ try {
       assert.equal(formRhythm.separate, true);
       const recommendations = page.locator('input[name=nomination_keys]');
       assert.equal(await recommendations.count(), 4);
+      assert.equal(await page.locator('.recommendation-step .criterion-number').textContent(), '02');
+      assert.equal(await page.getByRole('group', {name:'Рекомендовать на номинации по желанию',exact:true})
+        .getByRole('checkbox').count(), 4);
       const fileAction = page.getByRole('button', { name:'Открыть PDF', exact:true });
       assert.match(await fileAction.getAttribute('aria-describedby'), /^work-pdf-size$/);
       assert.equal(await fileAction.locator('small').count(), 0);
