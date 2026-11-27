@@ -234,9 +234,10 @@ if (process.env.JURY_QA_DB_ONLY) {
 const files = new Set(['index.html', ...cabinetAssets.keys(), 'config.js', 'cabinet.js', 'gallery.js', 'ranking.js', 'sheets.js', 'voting.js', 'views.js', 'criteria.js', 'typography.js']);
 const server = http.createServer(async (req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname.slice(1) || 'index.html';
-  if (name === 'text-200.css') {
+  const zoom = /^text-(200|225|250)\.css$/.exec(name);
+  if (zoom) {
     res.writeHead(200, { 'content-type':'text/css' });
-    return res.end('html { font-size:200% }');
+    return res.end('html { font-size:' + zoom[1] + '% }');
   }
   if (!files.has(name) && !/^pdfjs-[0-9.]+\/(?:(?:cmaps|iccs|wasm|standard_fonts)\/)?[\w.-]+$/.test(name)) return res.writeHead(404).end();
   const type = cabinetAssets.get(name)?.type ?? (/\.m?js$/.test(name) ? 'text/javascript' : name.endsWith('.wasm') ? 'application/wasm' : name.endsWith('.html') ? 'text/html' : 'application/octet-stream');
@@ -266,11 +267,17 @@ async function intercept(context, fault) {
     if (endpoint === '/rest/v1/jury_works') return reply(200, works);
     if (endpoint.endsWith('/jury_final_rubric_sheet')) return reply(200, await sheet(login));
     if (endpoint.endsWith('/jury_save_rubric_ballot')) {
+      if (fault.saveUnavailable) { fault.saveUnavailable = false; return reply(503); }
       try {
         const record = await save(login, body.p_work_id, body.p_answers, body.p_comment, body.p_revision, body.p_rubric, body.p_nomination_keys);
         if (fault.lost) { fault.lost = false; return route.abort('failed'); }
         return reply(200, record);
       } catch (e) { return reply(e.code.startsWith('PT') ? Number(e.code.slice(2)) : 403, { message:e.message }); }
+    }
+    if (endpoint.startsWith('/storage/v1/object/authenticated/jury-final/regulations/')) {
+      fault.regulationsRequests = (fault.regulationsRequests ?? 0) + 1;
+      await fault.regulationsGate;
+      if (fault.regulationsError) return reply(503);
     }
     if (req.headers().range && fault.sheetError) { fault.sheetError = false; return reply(503); }
     if (endpoint.startsWith('/storage/v1/object/authenticated/')) return route.fulfill({ status:200, headers:cors, contentType:'application/pdf', body:pdf });
@@ -278,13 +285,67 @@ async function intercept(context, fault) {
   });
 }
 
+async function observeRegulationsPreview(page) {
+  await page.evaluate(() => {
+    window.open = () => ({
+      document: { body: {} },
+      closed: false,
+      location: { replace(href) { document.body.dataset.regulationsPreview = href; } }
+    });
+  });
+}
+
+async function checkRoleLayout(browser, options, act, role) {
+  const context = await browser.newContext(options);
+  try {
+    const fault = { regulationsError: true };
+    await intercept(context, fault);
+    const page = await context.newPage();
+    await page.goto(url + '#work/' + works[0].id);
+    await page.getByLabel('Логин', { exact:true }).fill(role.login);
+    await page.getByLabel('Пароль').fill('test');
+    await act(page.getByRole('button', { name:'Войти', exact:true }));
+    await page.getByRole('heading', { name:'Оценка работы' }).waitFor();
+    assert.deepEqual(await page.locator('.criterion-number').allTextContents(), ['01', '02']);
+    assert.deepEqual(await page.locator('.criterion input[type=radio]').evaluateAll(fields => [...new Set(fields.map(field => field.name))]), [role.criterion]);
+    assert.equal(await page.getByRole('group', { name:'Рекомендовать на номинации по желанию', exact:true }).getByRole('checkbox').count(), 4);
+
+    assert.equal(fault.regulationsRequests, undefined);
+    const regulations = page.getByRole('link', { name:'Положение о работе жюри' });
+    await observeRegulationsPreview(page);
+    await act(regulations);
+    await page.waitForFunction(() => document.body.dataset.regulationsPreview === 'https://disk.360.yandex.ru/d/fixture');
+    assert.equal(fault.regulationsRequests, 1);
+
+    for (const [width, zoom] of [[740, 225], [768, 250]]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const style = await page.addStyleTag({ url:'/text-' + zoom + '.css' });
+      const layout = await page.locator('.recommendation-step').evaluate(step => {
+        const [number, title, choices] = [...step.children].map(child => child.getBoundingClientRect());
+        const opticalInset = parseFloat(getComputedStyle(step.firstElementChild).insetInlineStart) || 0;
+        return {
+          widths: [number.width, title.width, choices.width],
+          stacked: number.bottom <= title.top && title.bottom <= choices.top,
+          aligned: Math.abs(number.left - opticalInset - title.left) < 1 && Math.abs(title.left - choices.left) < 1,
+          fits: choices.right <= innerWidth && document.documentElement.scrollWidth <= innerWidth + 1
+        };
+      });
+      assert.ok(layout.widths.every(actual => actual > width / 2) && layout.stacked && layout.aligned && layout.fits,
+        role.login + ' at ' + width + 'px / ' + zoom + '%: ' + JSON.stringify(layout));
+      await style.evaluate(node => node.remove());
+    }
+  } finally { await context.close(); }
+}
+
 try {
   for (const [engine, login] of [[webkit, 'jury-01'], [chromium, 'jury-03']]) {
     const mobile = engine === webkit;
-    const browser = await engine.launch(mobile ? {} : { channel: 'chrome' });
+    const channel = process.env.JURY_CHROMIUM_CHANNEL || 'chrome';
+    const browser = await engine.launch(mobile ? {} : { channel });
     try {
-      const context = await browser.newContext(mobile ? devices['iPhone 13'] : { viewport:{ width:1440, height:900 } });
-      const fault = { lost:true, sheetError:true };
+      const options = mobile ? devices['iPhone 13'] : { viewport:{ width:1440, height:900 } };
+      const context = await browser.newContext(options);
+      const fault = { lost:true, sheetError:true, saveUnavailable:true };
       await intercept(context, fault);
       let page = await context.newPage();
       const act = loc => mobile ? loc.tap() : loc.press('Enter');
@@ -516,8 +577,43 @@ try {
       assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
       assert.equal((await sheet(login)).ballots.some(b => b.work_id === id), false);
       const submit = page.locator('.save-ballot');
+      const retryGuide = page.locator('.criterion-final summary');
+      const retryNominations = page.getByRole('button', { name:'Критерии номинаций' });
+      await act(retryGuide);
+      await act(retryNominations);
+      const originalForm = await submit.evaluateHandle(el => el.form);
+      await page.evaluate(() => document.fonts.ready);
+      if (!mobile) await submit.focus();
+      await submit.evaluate(el => el.scrollIntoView({ block:'center', behavior:'instant' }));
+      const startingPosition = await submit.evaluate(el => ({
+        scroll: scrollY, button: el.getBoundingClientRect().top, height: document.documentElement.scrollHeight
+      }));
+      const failed = () => page.getByText(/Сервер\s+не\s+подтвердил\s+сохранение/).waitFor();
+      if (mobile) await submit.tap();
+      else await page.keyboard.press('Enter');
+      await failed();
+      assert.equal((await sheet(login)).ballots.some(b => b.work_id === id), false);
+      assert.ok(await originalForm.evaluate(form => form === document.querySelector('#voting form')));
+      await originalForm.dispose();
+      assert.equal(await page.locator('.criterion-final details[open]').count(), 1);
+      assert.equal(await retryNominations.getAttribute('aria-expanded'), 'true');
+      assert.equal(await page.locator('textarea').inputValue(), 'Мой комментарий');
+      assert.equal(await page.locator(onlyCriterion + ':checked').inputValue(), String(answers[criterionKey]));
+      assert.deepEqual(await page.locator('input[name=nomination_keys]:checked').evaluateAll(fields => fields.map(field => field.value)), ['context','experiment']);
+      assert.ok(await submit.isEnabled());
+      const finalPosition = await submit.evaluate(el => ({
+        scroll: scrollY, button: el.getBoundingClientRect().top, height: document.documentElement.scrollHeight
+      }));
+      assert.ok(Math.abs(finalPosition.button - startingPosition.button) <= 2,
+        'Save button moved in the viewport: ' + JSON.stringify({ startingPosition, finalPosition }));
+      assert.ok(await page.locator('.ballot-feedback').evaluate(el => {
+        const box = el.getBoundingClientRect();
+        return box.top >= 0 && box.bottom <= innerHeight && document.activeElement === el;
+      }));
+      await act(retryGuide);
+      await act(retryNominations);
       await act(submit);
-      await page.getByText(/Сервер\s+не\s+подтвердил\s+сохранение/).waitFor();
+      await failed();
       await act(submit);
       await page.getByText('Оценка сохранена.', { exact:true }).waitFor();
       const savedBallot = (await sheet(login)).ballots.find(b => b.work_id === id);
@@ -528,7 +624,7 @@ try {
         await page.locator('.recommendations').screenshot({ path:screenshot('-recommendations.png') });
         await page.locator('.ballot h2').evaluate(el => el.scrollIntoView({block:'start'}));
         await page.screenshot({ path:screenshot('-score-layout.png') });
-        await criterion.screenshot({ path:screenshot('-criterion.png') });
+        await page.locator('.criterion-final').screenshot({ path:screenshot('-criterion.png') });
         await page.locator('.work-return').evaluate(el => el.scrollIntoView({block:'center'}));
         await page.screenshot({ path:screenshot('-pdf-to-ballot.png') });
         await page.screenshot({ path:path.join(process.env.JURY_QA_SCREENSHOTS, (mobile ? 'mobile' : 'desktop') + '-ballot.png'),fullPage:true });
@@ -560,7 +656,21 @@ try {
       assert.equal(await steps.nth(1).getByRole('button', { name: 'Бриф 3‑го этапа' }).count(), 1);
       assert.deepEqual(await page.locator('.work-number').allTextContents(), works.map((_, i) => String(i + 1).padStart(2, '0')));
       const regulations = page.getByRole('link', { name: 'Регламент жюри' });
-      assert.match(await regulations.getAttribute('href'), /^blob:/);
+      assert.equal(await regulations.getAttribute('href'), 'https://disk.360.yandex.ru/d/fixture');
+      assert.equal(fault.regulationsRequests, undefined);
+      await observeRegulationsPreview(page);
+      let releaseRegulations;
+      fault.regulationsGate = new Promise(resolve => { releaseRegulations = resolve; });
+      try {
+        const request = page.waitForRequest(req => new URL(req.url()).pathname.includes('/regulations/'));
+        await act(regulations);
+        await request;
+        assert.ok(await page.locator('#projects-heading').isVisible());
+        assert.equal(await page.locator('body').getAttribute('data-regulations-preview'), null);
+      } finally { releaseRegulations(); }
+      await page.waitForFunction(() => document.body.dataset.regulationsPreview?.startsWith('blob:'));
+      assert.equal(await regulations.getAttribute('href'), 'https://disk.360.yandex.ru/d/fixture');
+      assert.equal(fault.regulationsRequests, 1);
       const marked = page.locator('a[id="' + id + '"]');
       assert.equal(await marked.locator('.work-mark.is-scored svg').count(), 1);
       assert.ok((await marked.ariaSnapshot()).includes('Оценена'));
@@ -653,7 +763,10 @@ try {
         assert.ok(view.imageHeight >= view.height * .45 && view.controlsEnd <= view.height + 1 && view.widthFits);
         await act(enlargedDialog.getByRole('button', { name: 'Закрыть' }));
       }
-      console.log((mobile ? 'iPhone 13 WebKit' : 'Chrome') + ': 50/50, roles, nominations, retry, sign-in, conflict and rollback with preserved ballots passed.');
+      await context.close();
+      await checkRoleLayout(browser, options, act, { login:'jury-02', criterion:'concept' });
+      await checkRoleLayout(browser, options, act, { login:technicalTest, criterion:'technical_review' });
+      console.log((mobile ? 'iPhone 13 WebKit' : channel) + ': regulation fetch and fallback, 50/50, both roles, enlarged text, retry, conflict and rollback passed.');
     } finally { await browser.close(); }
   }
 } finally {

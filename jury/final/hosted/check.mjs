@@ -110,9 +110,10 @@ async function useFixture(context, fault) {
 }
 
 try {
+  const channel = process.env.JURY_CHROMIUM_CHANNEL || 'chrome';
   for (const profile of [
     { name: 'iPhone 13 WebKit', engine: webkit, options: {}, screen: devices['iPhone 13'], touch: true, work: smallest },
-    { name: 'Chrome', engine: chromium, options: { channel: 'chrome' },
+    { name: channel === 'chrome' ? 'Chrome' : 'Chromium', engine: chromium, options: { channel },
       screen: { viewport: { width: 1440, height: 900 } }, touch: false, work: largest }
   ]) {
     const browser = await profile.engine.launch(profile.options);
