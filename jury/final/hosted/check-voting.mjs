@@ -327,15 +327,20 @@ try {
         const groupGap = Math.round(rect('.score-choices').top - rect('.criterion-final summary').bottom);
         const checkGap = Math.round(rect('.save-ballot').top - rect('.nomination-option:last-child').bottom);
         return {
-          sizes: ['.score-scale', '.comment-label', '.ballot textarea', '.recommendations legend',
-            '.nomination-option', '.save-ballot', '.ballot-references summary', '.ballot-references .ballot-rules']
+          sizes: ['.score-scale', '.comment-label', '.ballot textarea',
+            '.nomination-option', '.save-ballot', '.ballot-reference-toggle', '.ballot-references .ballot-rules']
             .map(sel => style(sel).fontSize),
           groupGap, checkGap,
           afterSave: Math.round(rect('.ballot-references').top - rect('.save-ballot').bottom),
           upperDivider: style('.score-choices').borderBlockStartWidth,
-          disclosureStyles: ['.criterion-final summary', '.ballot-references summary'].map(sel => {
+          headingStyle: ['.criterion-main h3', '.recommendations legend'].map(sel => {
+            const heading = style(sel);
+            return [heading.fontSize, heading.lineHeight, heading.fontFamily];
+          }),
+          disclosureStyles: ['.criterion-final summary', '.ballot-reference-toggle'].map(sel => {
             const s = style(sel);
-            return [s.textDecorationLine, s.textUnderlineOffset, getComputedStyle(element(sel),'::before').display];
+            const marker = getComputedStyle(element(sel),'::before');
+            return [s.textDecorationLine, s.textUnderlineOffset, marker.display !== 'none' && marker.content !== 'none'];
           }),
           separate: element('#voting form').nextElementSibling === element('.ballot-references')
         };
@@ -345,6 +350,7 @@ try {
       assert.equal(formRhythm.checkGap, formRhythm.groupGap);
       assert.equal(formRhythm.afterSave, mobile ? 28 : 56);
       assert.equal(formRhythm.upperDivider, '0px');
+      assert.deepEqual(formRhythm.headingStyle[0], formRhythm.headingStyle[1]);
       assert.deepEqual(formRhythm.disclosureStyles[0], formRhythm.disclosureStyles[1]);
       assert.equal(formRhythm.separate, true);
       const recommendations = page.locator('input[name=nomination_keys]');
@@ -354,7 +360,7 @@ try {
       assert.equal(await fileAction.locator('small').count(), 0);
       assert.match(await page.locator('#work-pdf-size').innerText(), /МБ$/);
       await page.evaluate(() => document.fonts.ready);
-      const layout = await page.evaluate(() => {
+      const layout = await page.evaluate(mobile => {
         const size = sel => document.querySelector(sel).getBoundingClientRect();
         const button = size('#open-pdf');
         const label = size('#work-pdf-label');
@@ -363,14 +369,16 @@ try {
         return {
           sectionGap: size('.ballot h2').top - size('.work-return').bottom,
           aligned: Math.abs(middle(label) - middle(button)) < 1,
-          sizeAtRight: Math.abs(fileSize.left - button.right - 10) < 1 &&
+          sizeAtRight: fileSize.left > button.right &&
+            (mobile ? Math.abs(fileSize.left - button.right - 10) < 1 :
+              Math.abs(fileSize.left - size('.criterion-main').left) < 1) &&
             Math.abs(fileSize.bottom - button.bottom - fileSize.height * .1) < 1 &&
             parseFloat(getComputedStyle(document.querySelector('#work-pdf-size')).fontSize) >
               parseFloat(getComputedStyle(document.querySelector('#open-pdf')).fontSize),
           commentGap: Math.round(size('.comment-label').top - size('.score-scale').bottom),
           lowerDivider: getComputedStyle(document.querySelector('.criterion-final')).borderBlockEndWidth
         };
-      });
+      }, mobile);
       assert.ok(layout.sectionGap >= 24 && layout.sectionGap <= 66);
       assert.ok(layout.aligned && layout.sizeAtRight);
       assert.equal(layout.lowerDivider, '0px');
@@ -423,24 +431,37 @@ try {
       await act(guide);
       assert.equal(await criterion.locator('details[open]').count(), 0);
       assert.equal(await scale.locator('li:visible').count(), 6);
-      const nominations = page.getByText('Критерии номинаций',{exact:true});
+      const nominations = page.getByRole('button',{name:'Критерии номинаций',exact:true});
       const submitOffset = () => page.locator('.save-ballot').evaluate(el =>
         el.getBoundingClientRect().top - el.form.querySelector('.ballot-follow-up').getBoundingClientRect().top);
       const buttonOffset = await submitOffset();
       const reference = page.getByRole('complementary', {name:'Справочные материалы'});
-      assert.equal(await reference.getByRole('link', {name:'Положение о работе жюри',exact:true}).count(),1);
+      const juryRules = reference.getByRole('link', {name:'Положение о работе жюри',exact:true});
+      assert.equal(await juryRules.count(), 1);
+      const helpLayout = () => reference.evaluate(el => {
+        const button = el.querySelector('button').getBoundingClientRect();
+        const rules = el.querySelector('.ballot-rules').getBoundingClientRect();
+        return [rules.left - button.left, rules.top - button.top];
+      });
+      const closedLayout = await helpLayout();
+      assert.ok(mobile ? closedLayout[1] > 0 : Math.abs(closedLayout[1]) < 1 && closedLayout[0] > 0);
+      assert.equal(await nominations.getAttribute('aria-expanded'), 'false');
       await act(nominations);
+      assert.equal(await nominations.getAttribute('aria-expanded'), 'true');
+      assert.deepEqual(await helpLayout(), closedLayout);
       assert.ok(Math.abs(await submitOffset() - buttonOffset) < 1);
       assert.equal(await page.locator('.nominations h3:visible').count(),4);
       const guideLayout = await page.locator('.nominations').evaluate(el => {
-        const summary = el.querySelector('summary').getBoundingClientRect();
+        const links = el.previousElementSibling.getBoundingClientRect();
         const title = el.querySelector('h3');
-        return [title.getBoundingClientRect().top - summary.bottom, getComputedStyle(title).fontFamily];
+        return [title.getBoundingClientRect().top - links.bottom, getComputedStyle(title).fontFamily];
       });
       assert.ok(guideLayout[0] >= 12);
       assert.match(guideLayout[1], /MTS Compact/);
       assert.ok(await page.getByText(/Реализуемость\s+не\s+является обязательным условием/).isVisible());
       await act(nominations);
+      assert.equal(await nominations.getAttribute('aria-expanded'), 'false');
+      assert.equal(await page.locator('.nominations h3:visible').count(), 0);
       assert.equal(await page.locator('.criterion').count(), 1);
       assert.equal(await page.locator('.criterion input:checked').count(), 0);
       if (mobile) {
