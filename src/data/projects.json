@@ -100,15 +100,6 @@
         "name": "A–Press",
         "indexDescription": "Книги, газеты и журналы",
         "description": "Издательство A–House выпускает книги, каталоги и периодику. На его странице можно посмотреть издания и найти места, где есть печатные номера.",
-        "featuredIssue": {
-          "anchor": "a-build",
-          "edition": "A–Build",
-          "title": "A–Build о новом Доме A–House",
-          "cover": { "src": "media/press/a-build-first-forum.jpg", "width": 586, "height": 800, "alt": "Экземпляры газеты A–Build в чёрной стойке" },
-          "description": "Газета к первому A–Forum о соавторах нового Дома. В номере рассказывают, откуда взялся винно-сливовый цвет главной лестницы и как свет меняет интерьеры в течение дня.",
-          "excerpt": "Авторы заглядывают в технические помещения, где скрыто оборудование Дома. Среди деталей интерьеров, которые рассматривает газета, — рисунок мрамора, фактура стен и авторская мебель.",
-          "announcement": "https://t.me/ahouseproject/10610"
-        },
         "href": "@@ROOT@@press/"
       },
       {
@@ -155,12 +146,6 @@
         "name": "Партнёрская газета A–Focus",
         "indexDescription": "Тематические выпуски на заказ",
         "overview": "editions",
-        "specialIssue": {
-          "title": "A–Focus «Дом предприни\u00adмателя»", "published": "2026-10-20",
-          "cover": { "src": "media/press/a-focus-house-entrepreneurs-cover.jpg", "width": 743, "height": 1050, "alt": "Оранжевая обложка A–Focus с названием «Дом предпринимателя»" },
-          "description": "Дарья Белякова и Андрей Завадских рассказывают, зачем A–House и Точка Банк открыли в бывшей котельной место для встреч предпринимателей.",
-          "article": { "title": "Читать интервью в A–News", "href": "https://news.ahouseproject.com/dom-predprinimatelya-intervyu-dari-belyakovoi-i-andreya-zavadskih/" }
-        },
         "works": [
           {"title": "Первый выпуск с Archipélago", "text": "Редакция и мебельный бренд собрали в одном номере интервью и календарь событий в предметном дизайне.", "href": "https://archipelago.studio/about/news/2250/?lang=ru"}
         ],

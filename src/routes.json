@@ -246,6 +246,33 @@
     ]
   },
   {
+    "slug": "press/a-build",
+    "title": "A–Build о новом Доме A–House",
+    "description": "Газета к первому A–Forum о соавторах нового Дома.",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "pressIssue": {
+      "edition": "A–Build",
+      "catalogueTitle": "О новом Доме A–House",
+      "cover": { "src": "media/press/a-build-first-forum.jpg", "width": 586, "height": 800, "alt": "Экземпляры газеты A–Build в чёрной стойке" },
+      "details": "В номере рассказывают, откуда взялся винно-сливовый цвет главной лестницы и как свет меняет интерьеры в течение дня.",
+      "excerpt": "Авторы заглядывают в технические помещения, где скрыто оборудование Дома. Среди деталей интерьеров, которые рассматривает газета, — рисунок мрамора, фактура стен и авторская мебель.",
+      "source": { "title": "О выпуске A–Build в Telegram", "href": "https://t.me/ahouseproject/10610" },
+      "parent": { "title": "Газеты и журналы", "anchor": "periodicals" }
+    }
+  },
+  {
+    "slug": "press/a-focus-house-entrepreneurs",
+    "title": "A–Focus «Дом предпринимателя»",
+    "description": "Дарья Белякова и Андрей Завадских рассказывают, зачем A–House и Точка Банк открыли в бывшей котельной место для встреч предпринимателей.",
+    "published": "2026-10-20",
+    "icon": "media/favicon-2-8b77dfa15dce.ico",
+    "pressIssue": {
+      "cover": { "src": "media/press/a-focus-house-entrepreneurs-cover.jpg", "width": 743, "height": 1050, "alt": "Оранжевая обложка A–Focus с названием «Дом предпринимателя»" },
+      "source": { "title": "Читать интервью в A–News", "href": "https://news.ahouseproject.com/dom-predprinimatelya-intervyu-dari-belyakovoi-i-andreya-zavadskih/" },
+      "parent": { "title": "Из выпусков A–Focus", "anchor": "a-focus-stories" }
+    }
+  },
+  {
     "slug": "press/archive",
     "title": "Архив печатных номеров — A–Press",
     "description": "Предыдущие номера газет и журналов издательства A–Press в открытом доступе.",

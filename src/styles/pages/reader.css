@@ -43,7 +43,7 @@
   text-decoration-thickness: .06em;
   text-underline-offset: var(--link-underline-offset);
 }
-.publication-issue a {
+:is(.publication-meta, .publication-issue) a {
   display: inline-block;
   max-inline-size: 100%;
   min-block-size: 44px;
@@ -63,6 +63,7 @@
   margin-inline: auto;
   object-fit: contain;
 }
+.publication-cover > .publication-print-cover { inline-size: auto; margin-inline: 0; }
 .publication-body figure img { max-block-size: none; }
 .publication-body :is(em, i) { font-family: var(--pro-text); }
 .publication-reader .publication-guide { display: block; cursor: zoom-in; }

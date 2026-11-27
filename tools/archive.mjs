@@ -97,17 +97,14 @@ function renderIssueLinks(issue) {
   return links.length ? `<div class="press-page-links">${links.join('')}</div>` : '';
 }
 
-function renderFeaturedIssue(issue, { id } = {}) {
+function renderFeaturedIssue(issue) {
   const title = escape(issue.title).replace(/\p{L}+(?:\u00ad\p{L}+)+»?/gu, '<span class="wrap-group">$&</span>');
-  const headingId = id ? escape(id) + '-title' : '';
-  const attributes = id ? ` id="${escape(id)}" tabindex="-1" aria-labelledby="${headingId}"` : '';
-  return `<article class="press-featured-issue"${attributes}>
+  return `<article class="press-featured-issue">
     ${issue.cover ? printCover(issue, 'press-featured-cover') : ''}
     <div class="press-featured-copy">
       ${issue.published ? '<p class="home-kicker">' + dateMarkup(issue.published) + '</p>' : ''}
-      <h3${headingId ? ' id="' + headingId + '"' : ''}>${title}</h3>
+      <h3>${title}</h3>
       ${issue.description ? '<p>' + escape(issue.description) + '</p>' : ''}
-      ${issue.excerpt ? '<p>' + escape(issue.excerpt) + '</p>' : ''}
       ${renderIssueLinks(issue)}
     </div>
   </article>`;
@@ -174,15 +171,6 @@ export function renderCurrentPrintIssues(issues) {
       ${renderIssueLinks(issue)}</li>`
   ).join('');
   return `<div class="press-friend-issues">${featured ? renderFeaturedIssue(featured) : ''}${other ? '<ul>' + other + '</ul>' : ''}</div>`;
-}
-
-export function renderPeriodicalIssues(projects, featuredIssue) {
-  const special = projects.flatMap(project => project.specialIssue ? [project.specialIssue] : [])
-    .sort((a, b) => b.published.localeCompare(a.published))[0];
-  return `<div class="press-periodical-issues">
-    ${renderFeaturedIssue(featuredIssue, { id: featuredIssue.anchor })}
-    ${special ? renderFeaturedIssue(special) : ''}
-  </div>`;
 }
 
 export function renderSubscriptionEntries(issues) {
@@ -308,10 +296,17 @@ function publicationCover(original) {
   return '<div class="publication-cover">' + sizeImages(content) + '</div>';
 }
 
-export function renderPublication(page, original) {
+export function renderPublication(page, original = '') {
   const related = relatedReading.get(page.slug);
   const relatedDate = related?.published ? '<span class="publication-meta">' + dateMarkup(related.published) + '</span>' : '';
-  const section = page.section ? '<span>' + escape(page.section) + '</span>' : '';
+  const issue = page.pressIssue;
+  const section = issue ? `<a href="@@ROOT@@press/#${escape(issue.parent.anchor)}">${escape(issue.parent.title)}</a>`
+    : (page.section ? '<span>' + escape(page.section) + '</span>' : '');
+  const cover = issue ? '<div class="publication-cover">' + printCover(issue, 'publication-print-cover') + '</div>'
+    : publicationCover(original);
+  const body = issue ? '<p>' + escape([page.description, issue.details].filter(Boolean).join(' ')) + '</p>' +
+    (issue.excerpt ? '<p>' + escape(issue.excerpt) + '</p>' : '') : publicationBody(original, page.slug);
+  const readingLink = issue?.source ?? related;
   const timestamps = [...original.matchAll(/<meta itemprop="date(?:Published|Modified)" content="[^"]+">/g)].map(([tag]) => tag).join('');
   return `<div class="home-page" id="allrecords">
     <!-- EDITORIAL HEADER -->
@@ -322,9 +317,9 @@ export function renderPublication(page, original) {
           <div class="publication-meta">${dateMarkup(page.published)}${section}</div>
           <h1 itemprop="headline">${escape(page.title)}</h1>
         </header>
-        ${publicationCover(original)}
-        <div class="publication-body" itemprop="articleBody">${publicationBody(original, page.slug)}</div>
-        ${related ? '<p class="publication-issue">' + relatedDate + '<a href="' + escape(related.href) + '">' + escape(related.title) + '</a></p>' : ''}
+        ${cover}
+        <div class="publication-body" itemprop="articleBody">${body}</div>
+        ${readingLink ? '<p class="publication-issue">' + relatedDate + '<a href="' + escape(readingLink.href) + '">' + escape(readingLink.title) + '</a></p>' : ''}
       </article>
     </main>
     <!-- FOOTER -->
@@ -349,15 +344,16 @@ function renderSectionBookmarks(entries) {
   return '<div class="section-bookmarks">' + links.join('') + '</div>';
 }
 
-export function renderPressBookmarks(newsHref) {
+export function renderPressBookmarks(newsHref, aBuild) {
   return renderSectionBookmarks([
     ['online', newsHref, 'Читать журнал A–News'],
+    ['a-build', '@@ROOT@@' + aBuild.slug + '/', aBuild.title],
     ...['books', 'books-heading', 'editions', 'press-editions-title', 'rec2308376921']
       .map(id => [id, '@@ROOT@@press/books/', pressBooksTitle])
   ]);
 }
 
-export function renderHomeBookmarks(base, featuredIssue) {
+export function renderHomeBookmarks(base, aBuild) {
   const bookmarks = [
     ['partnership', 'partnership/', 'Сотрудничество'],
     ['partnership-heading', 'partnership/', 'Сотрудничество'],
@@ -365,7 +361,7 @@ export function renderHomeBookmarks(base, featuredIssue) {
     ['rec2309704211', 'partnership/#rec2309704211', 'Городские пространства'],
     ['home-books', 'press/books/', 'Книги A–Press'],
     ['home-periodicals', 'press/#periodicals', 'Газеты и журналы'],
-    ['home-press-issue', 'press/#' + featuredIssue.anchor, featuredIssue.title],
+    ['home-press-issue', aBuild.slug + '/', aBuild.title],
     ['issue-a-sport', 'press/#a-sport-02', 'A–Sport № 2 «Движение»']
   ];
   return renderSectionBookmarks(bookmarks.map(([id, path, title]) => [id, base + path, title]));

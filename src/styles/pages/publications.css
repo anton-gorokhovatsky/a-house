@@ -53,7 +53,7 @@
   line-height: var(--leading-lead); text-wrap: pretty;
 }
 .press-page section, .partnership-stories section { margin-block-start: var(--chapter); }
-.press-page :is(#periodicals, #distribution, #print-archive, #press-interview) { scroll-margin-block-start: 1rem; }
+.press-page :is(#periodicals, #distribution, #print-archive, #a-focus-stories, #press-interview) { scroll-margin-block-start: 1rem; }
 .home-page :is(.press-page,.partnership-stories) section h2 { margin-bottom: .65em; }
 .home-page :is(.press-page,.partnership-stories) section h2 { font-size: var(--type-subsection); }
 .press-page picture, .press-page img { display: block; width: 100%; height: auto; }
@@ -81,17 +81,6 @@
 .home-page .press-page :is(.press-friend, #print-archive, .press-distribution) h2 { margin-block-end: .22em; }
 .home-page .press-page :is(.press-friend > p, .print-archive-intro) { max-inline-size: 57ch; text-wrap: pretty; }
 .home-page .press-page .press-friend > .home-action { margin-block-start: .72em; }
-.press-periodical-issues {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr));
-  align-items: start; gap: var(--group); margin-block-start: var(--group);
-}
-.press-periodical-issues > [id] { scroll-margin-block-start: 1rem; }
-@container publication-content (min-width: 56em) {
-  .press-periodical-issues > .press-featured-issue:has(img) {
-    grid-template-columns: minmax(0, .36fr) minmax(0, 1fr);
-  }
-  .press-periodical-issues .press-featured-cover { width: 100%; }
-}
 .home-page .press-featured-copy > p + p { margin-block-start: .55em; }
 .press-page .press-release { margin-block-start: var(--group); scroll-margin-block-start: 1rem; }
 .home-page .press-page .press-release h2 { margin-block: .12em 0; text-wrap: pretty; }

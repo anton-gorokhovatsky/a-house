@@ -12,7 +12,7 @@ import { eventDestination, renderCalendar, renderEventPage, routesWithEvents } f
 import { renderProgram, renderVenueProgram } from './program.mjs';
 import { renderHomeProjects, renderProjectDirectory, renderProjectNavigation, renderProjectWorks } from './home-projects.mjs';
 import { renderJobs } from './jobs.mjs';
-import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFriendCovers, renderPeriodicalIssues, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPrintRelease, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
+import { renderHomeBookmarks, pdfMetadata, printArchiveFileNames, renderCurrentPrintIssues, renderFriendCovers, renderPressBookmarks, renderPressNavigation, renderPressBooks, renderPrintArchive, renderPrintFileLink, renderPrintRelease, renderPublication, renderSubscriptionEntries, subscriptionIssues } from './archive.mjs';
 import { isInstitutionPage, renderInstitutionPage } from './institution-pages.mjs';
 import { venues } from '../src/data/institution-pages.mjs';
 import { clubPrograms } from '../src/data/club-programs.mjs';
@@ -170,7 +170,6 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const directions = JSON.parse(await source('data/projects.json'));
   const projectNavigation = renderProjectNavigation(directions);
   const projects = directions.flatMap(group => group.projects);
-  const pressFeature = projects.find(project => project.href === '@@ROOT@@press/').featuredIssue;
   const houseProjects = projects.filter(project => project.venue);
   const printEditions = JSON.parse(await source('data/print-editions.json'));
   const printReleases = printEditions.filter(series => series.printRelease)
@@ -188,6 +187,15 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const projectGroups = renderProjectDirectory(directions);
   const pages = JSON.parse(await source('routes.json'));
   const routes = routesWithEvents(pages, events);
+  const aBuild = pages.find(page => page.slug === 'press/a-build');
+  const aBuildPeriodical = {
+    name: 'Газета ' + aBuild.pressIssue.edition,
+    href: '@@ROOT@@' + aBuild.slug + '/',
+    overview: 'editions',
+    works: [{ title: aBuild.pressIssue.catalogueTitle, text: aBuild.description }]
+  };
+  const periodicals = projects.flatMap(project => project.href === '@@ROOT@@press/#a-state'
+    ? [project, aBuildPeriodical] : [project]);
   const homeEvents = events.filter(event => event.home !== false);
   const program = renderProgram(homeEvents, await source('partials/program-feature.html'), base);
   const comfort = events.find(event => event.id === 'designing-comfort');
@@ -260,9 +268,9 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
   const clubPages = new Set(['club', 'member']);
   const housePages = new Set(['residents', 'dompredprinimatelya']);
   const documents = new Set(['agreement', 'agreement2', 'rules', 'politic_a-com', 'mts_docs']);
-  const pressPages = new Set(['press', 'press/archive', 'press/books']);
+  const pressPages = new Set(['press', 'press/archive', 'press/books', ...pages.filter(page => page.pressIssue).map(page => page.slug)]);
   const features = new Set(['special_projects', '404']);
-  const readerPage = page => page.slug.startsWith('tpost/');
+  const readerPage = page => page.pressIssue || page.slug.startsWith('tpost/');
   function pageStyles(page) {
     const {slug} = page;
     let style;
@@ -301,7 +309,8 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
     }
     const programPage = page.slug === 'calendar' || Boolean(page.event);
     const template = page.event ? 'event' : page.slug;
-    let pageContent = isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug) : await source('pages/' + template + '.html');
+    let pageContent = page.pressIssue ? ''
+      : (isInstitutionPage(page.slug) ? renderInstitutionPage(page.slug) : await source('pages/' + template + '.html'));
     if (readerPage(page)) pageContent = renderPublication(page, pageContent);
     const markup = pageContent.includes('<!-- EDITORIAL HEADER -->') ? pageContent :
       '<div id="allrecords" class="t-records home-page">\n<!-- EDITORIAL HEADER -->\n' + pageContent + '\n<!-- FOOTER -->\n</div>';
@@ -333,12 +342,12 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       .replace(/<!-- PROJECTS (\w+) -->/g, (_, group) => renderHomeProjects(projects, events, group))
       .replace('<!-- PRESS PRINT RELEASE -->', () => printReleases.map(release => release.press).join('\n'))
       .replace('<!-- CURRENT PRINT ISSUES -->', () => renderCurrentPrintIssues(currentPrintIssues))
-      .replace('<!-- PERIODICAL ISSUES -->', () => renderPeriodicalIssues(projects, pressFeature))
+      .replace('<!-- PRESS PERIODICALS -->', () => renderHomeProjects(periodicals, events, 'editions'))
       .replace('<!-- HOME PRINT RELEASE -->', () => homePrintRelease?.homeLink ?? '')
       .replace('<!-- HOME PRESS PREVIEW -->', () => homePrintRelease?.homePreview ?? '')
       .replace('<!-- FRIEND FEATURED COVERS -->', () => renderFriendCovers(currentPrintIssues))
       .replace('<!-- PRESS CONTENTS -->', () => renderPressNavigation(page.slug))
-      .replace('<!-- PRESS BOOKMARKS -->', () => renderPressBookmarks(projects.find(project => project.overview === 'news').href))
+      .replace('<!-- PRESS BOOKMARKS -->', () => renderPressBookmarks(projects.find(project => project.overview === 'news').href, aBuild))
       .replace('<!-- PUBLISHER BOOKS -->', () => renderPressBooks(pressBooks))
       .replaceAll('{{friendAction}}', friendAction)
       .replace('<!-- PRESS MEDIA KIT -->', () => renderPrintFileLink('@@ROOT@@' + mediaKitPath, 'Медиакит A–Press', pdfMetadata(mediaKit.size)))
@@ -364,7 +373,7 @@ export async function build(base = siteBase(process.env.SITE_BASE), { outputDire
       })
       .replace('{{siteVersion}}', versionLabel)
       .replaceAll('{{home}}', home ? '' : '@@ROOT@@')
-      .replace('<!-- HOME BOOKMARKS -->', () => renderHomeBookmarks(base, pressFeature));
+      .replace('<!-- HOME BOOKMARKS -->', () => renderHomeBookmarks(base, aBuild));
     let themedBody;
     if (body.includes('<!-- THEME CONTROL -->')) themedBody = body.replace('<!-- THEME CONTROL -->', () => footerTheme);
     else if (body.includes('</footer>')) themedBody = body.replace('</footer>', () => footerTheme + '</footer>');

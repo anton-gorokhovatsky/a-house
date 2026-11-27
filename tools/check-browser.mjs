@@ -528,15 +528,15 @@ async function checkVisitorLinks(page, mobile) {
   await page.waitForURL(url);
   await issueLink.waitFor({state:'visible'});
   await page.goto(url + '#home-press-issue');
-  await page.waitForURL(url + 'press/#a-build');
-  const periodicalIssues = page.locator('#periodicals .press-periodical-issues');
-  const issue = periodicalIssues.getByRole('article', {name: 'A–Build о новом Доме A–House'});
-  await issue.getByRole('heading', {level: 3}).waitFor();
-  await issue.locator('.press-featured-cover').evaluate(image => image.decode());
-  await periodicalIssues.getByRole('heading', {name: /A–Focus/, level: 3}).waitFor();
+  await page.waitForURL(url + 'press/a-build/');
+  const issue = page.locator('.publication-reader');
+  await issue.getByRole('heading', {name: 'A–Build о новом Доме A–House', level: 1}).waitFor();
+  await issue.getByRole('img', {name: 'Экземпляры газеты A–Build в чёрной стойке'}).evaluate(image => image.decode());
   const announcement = issue.getByRole('link', {name: /О выпуске A–Build в Telegram/});
   assert.equal(await announcement.getAttribute('href'), 'https://t.me/ahouseproject/10610');
   assert.equal(await announcement.locator('.external-link-mark').getAttribute('aria-hidden'), 'true');
+  await page.goto(url + 'press/#a-build', {waitUntil: 'commit'});
+  await page.waitForURL(url + 'press/a-build/');
   await page.goto(url);
   const archiveLink = editions.getByRole('link', {name:'Архив печатных номеров', exact:true});
   assert.equal(await archiveLink.evaluate(link => link.href), url + 'press/#print-archive');
@@ -637,7 +637,10 @@ async function checkVisitorLinks(page, mobile) {
     await activate(stop);
     assert.equal(await image.getAttribute('src'), still);
   }
-  assert.deepEqual((await periodicals.locator('.home-edition-brief h3').allTextContents()).map(plainText),
+  const aBuild = periodicals.locator('.home-edition-brief').filter({has: page.getByRole('heading', {name: 'Газета A–Build', exact: true})});
+  assert.equal(await aBuild.getByRole('link', {name: 'О новом Доме A–House', exact: true}).evaluate(link => link.href), url + 'press/a-build/');
+  assert.equal(await aBuild.getByRole('img').count(), 0);
+  assert.deepEqual((await periodicals.locator('.home-edition-brief h3').allTextContents()).map(plainText).filter(name => name !== 'Газета A–Build'),
     periodicalProjects.map(project => project.name));
   for (const series of printCatalog) {
     const destination = new URL('press/#' + (series.archiveAnchor || series.seriesId), url);
